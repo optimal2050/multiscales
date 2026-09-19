@@ -1,0 +1,6 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+benchmark/_data/
+benchmark/results/*.csv

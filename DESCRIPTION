@@ -1,0 +1,67 @@
+Package: multiscales
+Title: Nested Scales and Multi-Dimensional Indexes for Modeling
+Version: 0.1.0.9000
+Date: 2026-09-04
+URL: https://optimal2050.github.io/multiscales/r/,
+    https://optimal2050.github.io/multiscales/,
+    https://github.com/optimal2050/multiscales
+BugReports: https://github.com/optimal2050/multiscales/issues
+Authors@R:
+    person(given = "Oleg",
+           family = "Lugovoy",
+           role = c("aut", "cre"),
+           email = "olugovoy@optimalsolution.dev",
+           comment = c(ORCID = "0000-0001-5546-9875"))
+Description: A dimension-agnostic representation of nested discrete scales for
+    optimization and simulation models: a flat table of atoms plus the ordered
+    frames that group them, conversion of data between resolutions, and
+    combination of several scales into a product index. Time and space are
+    provided by the companion packages 'timescales' and 'geoscales'; any other
+    dimension - industries, income brackets, temperature regimes - is declared
+    directly.
+License: Apache License (>= 2)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.2)
+Imports:
+    dplyr,
+    rlang,
+    S7,
+    stats,
+    utils
+Suggests:
+    arrow,
+    data.table,
+    dtplyr,
+    ggplot2,
+    knitr,
+    pkgdown,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    tibble,
+    withr,
+    yaml
+Config/testthat/edition: 3
+Config/Needs/website: pkgdown, rmarkdown, ggplot2
+VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0
+Collate: 
+    'scale-class.R'
+    'product-class.R'
+    'array.R'
+    'backend.R'
+    'dataset.R'
+    'navigate.R'
+    'filter.R'
+    'frames.R'
+    'join.R'
+    'map.R'
+    'multiscales-package.R'
+    'recast.R'
+    'product-recast.R'
+    'reconcile.R'
+    'rules.R'
+    'scale-construct.R'
+    'utils.R'
+    'zzz.R'

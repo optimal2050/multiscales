@@ -2,7 +2,7 @@
 % Please edit documentation in R/recast.R
 \name{recast}
 \alias{recast}
-\title{Recast data through a scale}
+\title{Recast data through a scale (internal generic)}
 \usage{
 recast(data, x, ...)
 }
@@ -17,14 +17,13 @@ recast(data, x, ...)
 The recast data, in the input's class.
 }
 \description{
-The bare pipeline verb, dispatching on the scale object so pipelines chain
-across dimensions:
-\code{data |> recast(cal, "MONTH") |> recast(gs, to = "country")}.
-\code{\link[=recast_scale]{recast_scale()}} is the explicit worker.
+Dispatches on the scale object so one entry point serves both a \code{\link{Scale}}
+and a \code{\link{ScaleProduct}}. NOT exported: \code{timescales} owns the public \code{recast}
+generic and \code{geoscales} extends that same object, so exporting a second,
+unrelated generic of the same name would mask theirs for anyone attaching
+both -- and this one has no \code{Calendar} method.
 }
-\examples{
-s <- scale_example()
-d <- data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
-                capacity = c(1, 2, 3, 4, 5, 6))
-recast(d, s, to = "sector", rule = "sum")
+\details{
+\code{\link[=recast_scale]{recast_scale()}} and \code{\link[=recast_product]{recast_product()}} are the public verbs.
 }
+\keyword{internal}

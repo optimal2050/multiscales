@@ -158,7 +158,7 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
 # `[.S7_object`, which errors.
 #' @rdname sub-.Scale
 #' @export
-`[.multiscales::Scale` <- `[.Scale`
+`[.modelscales::Scale` <- `[.Scale`
 
 #' Collapse a Scale to a coarser frame
 #'

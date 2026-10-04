@@ -71,12 +71,12 @@ test_that("class() puts the child first and Scale at the tail", {
   # registrations. Whether this test-local class gets that prefix depends on
   # how the suite runs (R CMD check does, load_all() does not), so assert the
   # invariant that actually matters: the CHILD precedes Scale.
-  child <- which(cl %in% c("Widget", "multiscales::Widget"))
+  child <- which(cl %in% c("Widget", "modelscales::Widget"))
   expect_gt(length(child), 0L)
-  expect_true("multiscales::Scale" %in% cl)
+  expect_true("modelscales::Scale" %in% cl)
   expect_true(S7::S7_inherits(w, Scale))
   # this ordering is what lets a child's S3 method win over Scale's
-  expect_lt(min(child), match("multiscales::Scale", cl))
+  expect_lt(min(child), match("modelscales::Scale", cl))
   expect_identical(cl[[length(cl)]], "S7_object")
 })
 

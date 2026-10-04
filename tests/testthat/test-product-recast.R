@@ -296,7 +296,7 @@ test_that("the joint sd path also honours the backend contract", {
 test_that("filter_product() subsets one axis and keeps a product", {
   p <- .pp()
   q <- filter_product(p, "a", "sector", "P")
-  expect_s3_class(q, "multiscales::ScaleProduct")
+  expect_s3_class(q, "modelscales::ScaleProduct")
   expect_identical(product_size(q)$axes[["a"]], 4L)
   expect_identical(product_size(q)$axes[["b"]], 4L)
   expect_equal(unname(product_coverage(q)[["a"]]), 1000 / 3100)

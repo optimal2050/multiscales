@@ -42,7 +42,7 @@ NULL
 #' @seealso [`scale_product()`], [`product_atoms()`], [`product_size()`]
 #' @examples
 #' scale_product(a = scale_example(), b = scale_example2())
-#' @export
+#' @keywords internal
 ScaleProduct <- S7::new_class(
   "ScaleProduct",
   properties = list(
@@ -429,7 +429,7 @@ print.ScaleProduct <- function(x, ...) {
 S7::method(print, ScaleProduct) <- print.ScaleProduct
 
 #' @export
-`print.multiscales::ScaleProduct` <- print.ScaleProduct
+`print.modelscales::ScaleProduct` <- print.ScaleProduct
 
 #' @export
 #' @method names ScaleProduct
@@ -438,7 +438,7 @@ names.ScaleProduct <- function(x) names(S7::prop(x, "axes"))
 S7::method(names, ScaleProduct) <- names.ScaleProduct
 
 #' @export
-`names.multiscales::ScaleProduct` <- names.ScaleProduct
+`names.modelscales::ScaleProduct` <- names.ScaleProduct
 
 # Summary ----------------------------------------------------------------------
 
@@ -489,7 +489,7 @@ S7::method(summary, ScaleProduct) <- summary.ScaleProduct
 
 #' @rdname summary.ScaleProduct
 #' @export
-`summary.multiscales::ScaleProduct` <- summary.ScaleProduct
+`summary.modelscales::ScaleProduct` <- summary.ScaleProduct
 
 #' @rdname summary.ScaleProduct
 #' @export

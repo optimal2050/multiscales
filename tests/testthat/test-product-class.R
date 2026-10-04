@@ -6,7 +6,7 @@
 
 test_that("scale_product() combines named axes", {
   p <- .p2()
-  expect_s3_class(p, "multiscales::ScaleProduct")
+  expect_s3_class(p, "modelscales::ScaleProduct")
   expect_identical(names(p), c("a", "b"))
   expect_identical(names(scale_axes(p)), c("a", "b"))
   expect_identical(S7::prop(scale_axes(p, "a"), "meta")$name, "example")
@@ -127,7 +127,7 @@ test_that("joint_weights is accepted and validated but not required", {
                    stringsAsFactors = FALSE)
   q <- scale_product(a = scale_example(), b = scale_example2(),
                      joint_weights = jw)
-  expect_s3_class(q, "multiscales::ScaleProduct")
+  expect_s3_class(q, "modelscales::ScaleProduct")
 
   expect_error(
     scale_product(a = scale_example(), b = scale_example2(),

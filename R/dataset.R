@@ -186,7 +186,7 @@ write_scale_dataset <- function(data, x, path, partitioning = NULL,
   # Scales first: if one of them cannot be serialised, fail before writing
   # gigabytes of data that would then describe nothing.
   manifest <- list(
-    multiscales = as.character(utils::packageVersion("multiscales")),
+    modelscales = as.character(utils::packageVersion("modelscales")),
     kind = if (is_prod) "product" else "scale",
     keys = as.list(keys),
     axes = lapply(axes, .scale_manifest))

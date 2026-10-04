@@ -3,14 +3,14 @@
 \name{scale_leaftable}
 \alias{scale_leaftable}
 \alias{as.data.frame.Scale}
-\alias{as.data.frame.multiscales::Scale}
+\alias{as.data.frame.modelscales::Scale}
 \title{The leaftable of a Scale}
 \usage{
 scale_leaftable(x)
 
 \method{as.data.frame}{Scale}(x, row.names = NULL, optional = FALSE, ...)
 
-\method{as.data.frame}{`multiscales::Scale`}(x, row.names = NULL, optional = FALSE, ...)
+\method{as.data.frame}{`modelscales::Scale`}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
 \item{x}{A \code{\link{Scale}}.}

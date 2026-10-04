@@ -42,3 +42,4 @@ scale_example()
 \seealso{
 \code{\link[=scale_from_leaftable]{scale_from_leaftable()}}, \code{\link[=scale_frames]{scale_frames()}}, \code{\link[=scale_units]{scale_units()}}
 }
+\keyword{internal}

@@ -1116,12 +1116,15 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
 # The bare pipeline generic
 # -----------------------------------------------------------------------------
 
-#' Recast data through a scale
+#' Recast data through a scale (internal generic)
 #'
-#' The bare pipeline verb, dispatching on the scale object so pipelines chain
-#' across dimensions:
-#' `data |> recast(cal, "MONTH") |> recast(gs, to = "country")`.
-#' [`recast_scale()`] is the explicit worker.
+#' Dispatches on the scale object so one entry point serves both a [`Scale`]
+#' and a [`ScaleProduct`]. NOT exported: `timescales` owns the public `recast`
+#' generic and `geoscales` extends that same object, so exporting a second,
+#' unrelated generic of the same name would mask theirs for anyone attaching
+#' both -- and this one has no `Calendar` method.
+#'
+#' [`recast_scale()`] and [`recast_product()`] are the public verbs.
 #'
 #' @param data The data to recast.
 #' @param x The scale (or other object) to recast through.
@@ -1129,12 +1132,7 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
 #'
 #' @return The recast data, in the input's class.
 #'
-#' @examples
-#' s <- scale_example()
-#' d <- data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
-#'                 capacity = c(1, 2, 3, 4, 5, 6))
-#' recast(d, s, to = "sector", rule = "sum")
-#' @export
+#' @keywords internal
 recast <- S7::new_generic("recast", c("data", "x"))
 
 S7::method(recast, list(S7::class_any, Scale)) <-

@@ -37,3 +37,4 @@ scale_product(a = scale_example(), b = scale_example2())
 \seealso{
 \code{\link[=scale_product]{scale_product()}}, \code{\link[=product_atoms]{product_atoms()}}, \code{\link[=product_size]{product_size()}}
 }
+\keyword{internal}

@@ -1,4 +1,4 @@
 library(testthat)
-library(multiscales)
+library(modelscales)
 
-test_check("multiscales")
+test_check("modelscales")

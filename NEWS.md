@@ -1,4 +1,37 @@
-# multiscales 0.0.0.9000
+# modelscales 0.0.0.9000
+
+## Clustering
+
+* `clusterscales` is merged in. It was an experiment, never published, and
+  existed only because this package did -- its whole premise is that a
+  clustering IS scale construction. `cluster_scale()`, `cluster_contiguous()`,
+  `cluster_medoids()`, `cluster_sweep()`, `scale_distance()` and its registry
+  (`register_scale_distance()` and friends, `SCALE_DISTANCES`) are now exported
+  here, unchanged.
+* It brings no new hard dependency -- its imports were already this package's
+  -- and one new optional one, `cluster`, for `pam`.
+* Keeping them apart had a cost beyond the extra repo: S7 class identity is
+  per-package, so a `Scale` built here and checked in the other package failed
+  `is this a Scale` whenever the two installs were out of step. One namespace
+  makes that impossible rather than merely unlikely.
+
+## The export surface
+
+* The S7 classes are no longer exported. `Scale` collided with
+  `ggplot2::Scale`, which every plotting user attaches, and a bare `recast`
+  generic collided with the one `timescales` owns and `geoscales` extends --
+  a second, unrelated generic of the same name would have masked theirs, and
+  this one has no `Calendar` method.
+* Reach them through `scale_class()` and `scale_product_class()`, which is what
+  subclassing needs (`S7::new_class(..., parent = scale_class())`, the point of
+  `scale_alias_property()`). Ask what an object is with `scale_is()` and
+  `scale_is_product()`. Named with the object prefix because `ggplot2` exports
+  `is_scale()` as well.
+* `recast_scale()` and `recast_product()` are unchanged and remain the verbs.
+  `print()`, `names()`, `as.data.frame()` and `[` still dispatch: `S3method()`
+  entries are NAMESPACE directives, not exports.
+* `tests/testthat/test-exports.R` asserts no export collides with `ggplot2`,
+  `scales`, `timescales` or `geoscales`, so this cannot come back.
 
 The dimension-agnostic engine shared by `timescales` and `geoscales`.
 

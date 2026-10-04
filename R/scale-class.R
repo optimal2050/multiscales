@@ -55,7 +55,7 @@
 #' @seealso [`scale_from_leaftable()`], [`scale_frames()`], [`scale_units()`]
 #' @examples
 #' scale_example()
-#' @export
+#' @keywords internal
 Scale <- S7::new_class(
   "Scale",
   properties = list(
@@ -411,7 +411,7 @@ S7::method(as.data.frame, Scale) <- as.data.frame.Scale
 
 #' @rdname scale_leaftable
 #' @export
-`as.data.frame.multiscales::Scale` <- as.data.frame.Scale
+`as.data.frame.modelscales::Scale` <- as.data.frame.Scale
 
 #' Weight columns of a Scale
 #'
@@ -464,7 +464,7 @@ S7::method(scale_payload_slice, Scale) <- function(x, i, ...) x
 #' @return An S7 property.
 #'
 #' @examples
-#' Aliased <- S7::new_class("Aliased", parent = Scale,
+#' Aliased <- S7::new_class("Aliased", parent = scale_class(),
 #'   properties = list(levels = scale_alias_property("frames")))
 #' a <- Aliased(leaftable = scale_leaftable(scale_example()),
 #'              frames = scale_frames(scale_example()),
@@ -628,10 +628,10 @@ print.Scale <- function(x, ...) {
 S7::method(print, Scale) <- print.Scale
 
 # Dispatch on the fully-qualified S7 class name: `class()` reports
-# `multiscales::Scale` first, and that is the registration base-R `print()`
+# `modelscales::Scale` first, and that is the registration base-R `print()`
 # finds before falling through to `print.S7_object`.
 #' @export
-`print.multiscales::Scale` <- print.Scale
+`print.modelscales::Scale` <- print.Scale
 
 # Summary ----------------------------------------------------------------------
 
@@ -698,7 +698,7 @@ S7::method(summary, Scale) <- summary.Scale
 
 #' @rdname summary.Scale
 #' @export
-`summary.multiscales::Scale` <- summary.Scale
+`summary.modelscales::Scale` <- summary.Scale
 
 #' @rdname summary.Scale
 #' @export
@@ -760,4 +760,55 @@ names.Scale <- function(x) scale_frames(x)
 S7::method(names, Scale) <- names.Scale
 
 #' @export
-`names.multiscales::Scale` <- names.Scale
+`names.modelscales::Scale` <- names.Scale
+
+#' Is this a scale, or a product of scales?
+#'
+#' The classes themselves are not exported -- `Scale` would mask
+#' `ggplot2::Scale` for anyone attaching both -- so these are how calling code
+#' asks. Build a scale with [`scale_from_leaftable()`] and a product with
+#' [`scale_product()`].
+#'
+#' Named with the object prefix rather than `is_scale()`, which `ggplot2`
+#' already exports.
+#'
+#' @param x Any object.
+#' @return A single `TRUE` or `FALSE`. A product is NOT a scale: it holds
+#'   several and materialises no atoms of its own.
+#' @examples
+#' scale_is(scale_example())
+#' scale_is(data.frame(unit = "U1"))
+#' scale_is_product(scale_product(a = scale_example(), b = scale_example2()))
+#' @export
+scale_is <- function(x) {
+  S7::S7_inherits(x, Scale)
+}
+
+#' @rdname scale_is
+#' @export
+scale_is_product <- function(x) {
+  S7::S7_inherits(x, ScaleProduct)
+}
+
+#' The scale classes, for subclassing and dispatch
+#'
+#' The classes are not exported under their own names -- `Scale` would mask
+#' `ggplot2::Scale` -- so these return them. Needed to build a subclass
+#' (`S7::new_class(..., parent = scale_class())`, which is what
+#' [`scale_alias_property()`] is for) or to register an S7 method against one.
+#' To merely ask what an object is, use [`scale_is()`].
+#'
+#' @return The S7 class object.
+#' @examples
+#' scale_class()
+#' S7::S7_inherits(scale_example(), scale_class())
+#' @export
+scale_class <- function() {
+  Scale
+}
+
+#' @rdname scale_class
+#' @export
+scale_product_class <- function() {
+  ScaleProduct
+}

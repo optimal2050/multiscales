@@ -1,11 +1,11 @@
-Package: multiscales
+Package: modelscales
 Title: Nested Scales and Multi-Dimensional Indexes for Modeling
 Version: 0.1.0.9000
-Date: 2026-09-04
-URL: https://optimal2050.github.io/multiscales/r/,
-    https://optimal2050.github.io/multiscales/,
-    https://github.com/optimal2050/multiscales
-BugReports: https://github.com/optimal2050/multiscales/issues
+Date: 2026-10-04
+URL: https://optimal2050.github.io/modelscales/r/,
+    https://optimal2050.github.io/modelscales/,
+    https://github.com/optimal2050/modelscales
+BugReports: https://github.com/optimal2050/modelscales/issues
 Authors@R:
     person(given = "Oleg",
            family = "Lugovoy",
@@ -32,6 +32,7 @@ Imports:
     utils
 Suggests:
     arrow,
+    cluster,
     data.table,
     dtplyr,
     ggplot2,
@@ -45,23 +46,27 @@ Suggests:
 Config/testthat/edition: 3
 Config/Needs/website: pkgdown, rmarkdown, ggplot2
 VignetteBuilder: knitr
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
 Collate: 
     'scale-class.R'
     'product-class.R'
     'array.R'
     'backend.R'
+    'cluster.R'
+    'contiguity.R'
     'dataset.R'
+    'distance.R'
     'navigate.R'
     'filter.R'
     'frames.R'
     'join.R'
     'map.R'
-    'multiscales-package.R'
+    'modelscales-package.R'
     'recast.R'
     'product-recast.R'
     'reconcile.R'
     'rules.R'
     'scale-construct.R'
+    'sweep.R'
     'utils.R'
     'zzz.R'

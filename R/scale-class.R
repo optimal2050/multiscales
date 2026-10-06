@@ -291,7 +291,10 @@ Scale <- S7::new_class(
 #' @param ... Passed to methods.
 #'
 #' @return A named list with elements `object`, `frame`, `frames`, `unit`,
-#'   `units`, `atoms`.
+#'   `units`, `atoms`, and optionally `register_rule` and `register_map`: the
+#'   calls that error messages suggest for registering a value column's rule
+#'   or an explicit crosswalk, when the dimension package offers its own
+#'   (`"register_geoscale_rule()"`).
 #'
 #' @examples
 #' scale_vocab(scale_example())
@@ -321,13 +324,22 @@ S7::method(scale_vocab, Scale) <- function(x, ...) {
 #' @export
 scale_rank <- function(x, frame) {
   .check_scale(x)
-  match(frame, S7::prop(x, "frames"))
+  frames <- S7::prop(x, "frames")
+  r <- match(frame, frames)
+  # The key is finer than every frame when it is the atom level, so it ranks
+  # one past the last. Without this the direction test in the recast pipeline
+  # compares against NA.
+  key <- S7::prop(x, "key")
+  r[is.na(r) & frame == key] <- length(frames) + 1L
+  r
 }
 
 #' Frames of a Scale
 #'
 #' The hierarchy names, ordered coarsest first. The last entry is the atom
-#' frame -- the finest units, which every other frame groups.
+#' frame whenever one frame enumerates the atoms; when none does -- a
+#' `Calendar`'s atoms are combinations of its frames -- the key column is the
+#' atom level instead.
 #'
 #' @param x A [`Scale`].
 #' @param finest Return only the finest (atom) frame.
@@ -362,9 +374,66 @@ scale_frames <- function(x, finest = FALSE) {
 #' @export
 scale_units <- function(x, frame = NULL) {
   .check_scale(x)
-  if (is.null(frame)) frame <- scale_frames(x, finest = TRUE)
+  if (is.null(frame)) frame <- .atom_level(x)
   .check_frame(x, frame)
+  if (identical(frame, S7::prop(x, "key")) &&
+      !frame %in% S7::prop(x, "frames")) {
+    return(unique(as.character(S7::prop(x, "leaftable")[[frame]])))
+  }
   S7::prop(x, "members")[[frame]]
+}
+
+#' The level at which a scale enumerates its atoms
+#'
+#' The finest frame when one code of it sits on each leaftable row, and the
+#' key column otherwise. A [`Scale`] built from a nested hierarchy is the
+#' first kind; a `timescales::Calendar` is the second, because its timeslices
+#' are combinations of its frames rather than codes of any one of them.
+#'
+#' Needed by the dimension packages: it is the `frame` to pass to
+#' [`join_scale()`] or [`recast_scale()`] for data keyed at the atoms.
+#'
+#' @param x A [`Scale`].
+#' @return A single string -- a frame name, or the key.
+#' @examples
+#' scale_atom_level(scale_example())
+#' @export
+scale_atom_level <- function(x) {
+  .check_scale(x)
+  .atom_level(x)
+}
+
+#' The level at which the leaftable enumerates atoms
+#'
+#' Usually the finest frame, which is how `scale_example()` and `Geoscale` are
+#' built: there the finest frame has one code per leaftable row. A `Calendar`
+#' is not like that -- its atoms are combinations of its frames
+#' (`d365_h24` has 8760 timeslices over YDAY x HOUR, and the irregular
+#' `m12_md365` has 365 over MONTH x MDAY, which is not even a full product) --
+#' so no frame enumerates them and the KEY column does.
+#'
+#' Decided this way rather than having the dimension packages declare an
+#' atom-level frame (so `calendar_timeframes()` would return
+#' `YDAY, HOUR, timeslice`). That alternative fits this package untouched and
+#' is worth reconsidering, but it changes the public output of a released
+#' package and reaches into every consumer that reads `@timeframes`, energyRt
+#' included. Declined on blast radius, not on merit.
+#' @noRd
+.atom_level <- function(x) {
+  frames <- S7::prop(x, "frames")
+  finest <- frames[length(frames)]
+  n <- length(S7::prop(x, "members")[[finest]])
+  if (!is.null(n) && n == nrow(S7::prop(x, "leaftable"))) finest
+  else S7::prop(x, "key")
+}
+
+#' The levels the navigation verbs step through: the frames, plus the key as
+#' the finest level when the key is the atom level.
+#' @noRd
+.nav_levels <- function(x) {
+  fr <- S7::prop(x, "frames")
+  at <- .atom_level(x)
+  if (at %in% fr) fr else c(fr, at)
 }
 
 #' The atom key column name
@@ -411,7 +480,7 @@ S7::method(as.data.frame, Scale) <- as.data.frame.Scale
 
 #' @rdname scale_leaftable
 #' @export
-`as.data.frame.modelscales::Scale` <- as.data.frame.Scale
+`as.data.frame.multiscales::Scale` <- as.data.frame.Scale
 
 #' Weight columns of a Scale
 #'
@@ -554,9 +623,10 @@ scale_residuals <- function(x, frame = NULL) {
     .stop("`%s` must be a single %s name; one of: %s",
           arg, v$frame, paste(f, collapse = ", "))
   }
-  if (!frame %in% f) {
+  if (!frame %in% c(f, S7::prop(x, "key"))) {
     .stop("`%s` = \"%s\" is not a %s of this %s; one of: %s",
-          arg, frame, v$frame, v$object, paste(f, collapse = ", "))
+          arg, frame, v$frame, v$object,
+          paste(unique(c(f, S7::prop(x, "key"))), collapse = ", "))
   }
   invisible(frame)
 }
@@ -628,10 +698,10 @@ print.Scale <- function(x, ...) {
 S7::method(print, Scale) <- print.Scale
 
 # Dispatch on the fully-qualified S7 class name: `class()` reports
-# `modelscales::Scale` first, and that is the registration base-R `print()`
+# `multiscales::Scale` first, and that is the registration base-R `print()`
 # finds before falling through to `print.S7_object`.
 #' @export
-`print.modelscales::Scale` <- print.Scale
+`print.multiscales::Scale` <- print.Scale
 
 # Summary ----------------------------------------------------------------------
 
@@ -698,7 +768,7 @@ S7::method(summary, Scale) <- summary.Scale
 
 #' @rdname summary.Scale
 #' @export
-`summary.modelscales::Scale` <- summary.Scale
+`summary.multiscales::Scale` <- summary.Scale
 
 #' @rdname summary.Scale
 #' @export
@@ -760,7 +830,7 @@ names.Scale <- function(x) scale_frames(x)
 S7::method(names, Scale) <- names.Scale
 
 #' @export
-`names.modelscales::Scale` <- names.Scale
+`names.multiscales::Scale` <- names.Scale
 
 #' Is this a scale, or a product of scales?
 #'
@@ -812,3 +882,7 @@ scale_class <- function() {
 scale_product_class <- function() {
   ScaleProduct
 }
+
+#' The rule-registration call to suggest in errors for a scale
+#' @noRd
+.rule_hint <- function(x) scale_vocab(x)$register_rule %||% "register_scale_rule()"

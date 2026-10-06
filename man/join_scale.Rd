@@ -9,7 +9,7 @@ join_scale(
   x,
   key = NULL,
   frame = NULL,
-  frames = NULL,
+  attach = NULL,
   meta = FALSE,
   weight = NULL,
   as_factor = TRUE,
@@ -25,11 +25,11 @@ join_scale(
 \item{key}{Name of the code column in \code{data}. Inferred from the scale's
 name, the keyed frame, or the scale's own key column.}
 
-\item{frame}{The frame the codes belong to. \code{NULL} (default) is inferred as
-the single frame name appearing among the data's columns.}
+\item{frame}{The frame the codes in \code{key} are at. \code{NULL} (default) is
+inferred as the single frame name appearing among the data's columns.}
 
-\item{frames}{Coarser frames whose codes to attach: \code{TRUE} for all of them,
-a character vector to choose, \code{NULL}/\code{FALSE} for none.}
+\item{attach}{Coarser frames whose codes to attach as new columns: \code{TRUE}
+for all of them, a character vector to choose, \code{NULL}/\code{FALSE} for none.}
 
 \item{meta}{Attach the unit's \code{share} and \code{weight} at the keyed frame.}
 
@@ -59,6 +59,7 @@ Existing columns are never overwritten -- a collision is an error.
 \examples{
 s <- scale_example()
 d <- data.frame(class = c("G1", "G2", "S1"), v = 1:3)
-join_scale(d, s, frames = TRUE)
+join_scale(d, s, attach = TRUE)
+join_scale(d, s, attach = "sector")
 join_scale(d, s, meta = TRUE)
 }

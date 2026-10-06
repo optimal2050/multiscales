@@ -6,8 +6,26 @@
 # third, introduced while fixing them -- ggplot2 exports `is_scale` too.
 
 test_that("no export collides with a package users attach alongside", {
-  ours <- getNamespaceExports("modelscales")
+  # A shared NAME is only a collision when it means a different OBJECT. The
+  # dimension packages re-export this package's `recast` generic, so the name
+  # is shared on purpose and identity is what matters.
+  ours <- getNamespaceExports("multiscales")
   for (pkg in c("ggplot2", "scales", "timescales", "geoscales")) {
+    skip_if_not_installed(pkg)
+    shared <- intersect(ours, getNamespaceExports(pkg))
+    for (nm in shared) {
+      expect_identical(getExportedValue("multiscales", nm),
+                       getExportedValue(pkg, nm),
+                       info = paste0(pkg, "::", nm))
+    }
+  }
+})
+
+test_that("unrelated packages share no export name at all", {
+  # ggplot2 and scales have no business sharing a name with this package --
+  # `Scale` and `is_scale` both did, which is why the classes are internal.
+  ours <- getNamespaceExports("multiscales")
+  for (pkg in c("ggplot2", "scales")) {
     skip_if_not_installed(pkg)
     expect_equal(intersect(ours, getNamespaceExports(pkg)), character(),
                  info = pkg)
@@ -17,10 +35,10 @@ test_that("no export collides with a package users attach alongside", {
 test_that("the classes are deliberately NOT exported", {
   # `Scale` would mask ggplot2::Scale, and a bare `recast` would mask the
   # generic timescales owns. Reached through scale_class() and the verbs.
-  ours <- getNamespaceExports("modelscales")
+  ours <- getNamespaceExports("multiscales")
   expect_false("Scale" %in% ours)
   expect_false("ScaleProduct" %in% ours)
-  expect_false("recast" %in% ours)
+  expect_true("recast" %in% ours)   # owned here, re-exported by the twins
   expect_true(all(c("scale_class", "scale_is", "recast_scale") %in% ours))
 })
 

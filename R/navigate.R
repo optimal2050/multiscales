@@ -164,11 +164,12 @@ NULL
 scale_children <- function(x, frame, unit, to = NULL) {
   .check_scale(x)
   .check_frame(x, frame)
-  fr <- S7::prop(x, "frames")
+  fr <- .nav_levels(x)
   i <- match(frame, fr)
   if (is.null(to)) {
     if (i == length(fr)) {
-      .stop("`%s` is the finest frame; it has no children", frame)
+      .stop("`%s` is the finest %s; it has no children", frame,
+            scale_vocab(x)$frame)
     }
     to <- fr[i + 1L]
   }
@@ -181,11 +182,12 @@ scale_children <- function(x, frame, unit, to = NULL) {
 scale_parents <- function(x, frame, unit, to = NULL) {
   .check_scale(x)
   .check_frame(x, frame)
-  fr <- S7::prop(x, "frames")
+  fr <- .nav_levels(x)
   i <- match(frame, fr)
   if (is.null(to)) {
     if (i == 1L) {
-      .stop("`%s` is the coarsest frame; it has no parents", frame)
+      .stop("`%s` is the coarsest %s; it has no parents", frame,
+            scale_vocab(x)$frame)
     }
     to <- fr[i - 1L]
   }
@@ -198,7 +200,7 @@ scale_parents <- function(x, frame, unit, to = NULL) {
 scale_descendants <- function(x, frame, unit, to = NULL) {
   .check_scale(x)
   .check_frame(x, frame)
-  fr <- S7::prop(x, "frames")
+  fr <- .nav_levels(x)
   i <- match(frame, fr)
   targets <- if (is.null(to)) {
     utils::tail(fr, length(fr) - i)
@@ -214,7 +216,7 @@ scale_descendants <- function(x, frame, unit, to = NULL) {
 scale_ancestors <- function(x, frame, unit, to = NULL) {
   .check_scale(x)
   .check_frame(x, frame)
-  fr <- S7::prop(x, "frames")
+  fr <- .nav_levels(x)
   i <- match(frame, fr)
   targets <- if (is.null(to)) {
     utils::head(fr, i - 1L)
@@ -246,13 +248,14 @@ scale_ancestors <- function(x, frame, unit, to = NULL) {
 #' @noRd
 .related <- function(x, frame, unit, to) {
   leaves <- S7::prop(x, "leaftable")
-  unknown <- setdiff(unit, S7::prop(x, "members")[[frame]])
+  unknown <- setdiff(unit, scale_units(x, frame))
   if (length(unknown) > 0L) {
-    .stop("code(s) not found at frame `%s`: %s", frame, .preview(unknown))
+    .stop("code(s) not found at %s `%s`: %s", scale_vocab(x)$frame, frame,
+          .preview(unknown))
   }
   hit <- leaves[[frame]] %in% unit
   out <- unique(stats::na.omit(as.character(leaves[[to]][hit])))
-  ord <- S7::prop(x, "members")[[to]]
+  ord <- scale_units(x, to)
   out[order(match(out, ord))]
 }
 

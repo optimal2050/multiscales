@@ -172,7 +172,7 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
 #' Either way a group that cannot be answered is not also reported as
 #' inconsistent.
 #' @noRd
-.check_copy_result <- function(res, copy_cols, backend) {
+.check_copy_result <- function(res, copy_cols, backend, unit = "unit") {
   if (length(copy_cols) == 0L) return(invisible(NULL))
   cols <- c(paste0(".ms_mx_", copy_cols), paste0(".ms_mn_", copy_cols),
             copy_cols)
@@ -183,7 +183,7 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
     if (any(ok & rng > 1e-9)) {
       stop(sprintf(
         paste0("rule \"copy\" for `%s`: values are not constant within a ",
-               "target unit"), v), call. = FALSE)
+               "target %s"), v, unit), call. = FALSE)
     }
   }
   invisible(NULL)
@@ -398,7 +398,7 @@ recast_scale <- function(data, x, from = NULL, to,
     }
     g <- recast_to_atoms(data, x, from = from, key = key, values = values,
                          rule = rule, weight = weight, collect = collect)
-    return(recast_from_atoms(g, to, to = scale_frames(to, finest = TRUE),
+    return(recast_from_atoms(g, to, to = .atom_level(to),
                              values = values, rule = rule,
                              na_action = na_action, collect = collect))
   }
@@ -408,7 +408,7 @@ recast_scale <- function(data, x, from = NULL, to,
   values <- .values_for(schema, key, frames_all, values)
   id_cols <- setdiff(names(schema), c(key, values, frames_all))
   rules <- .rules_for(values, rule, weight,
-                      scope = .scale_scope(x))
+                      scope = .scale_scope(x), hint = .rule_hint(x))
 
   # -- batching ---------------------------------------------------------------
   # Chunk by IDENTIFIER. That axis partitions the aggregation groups exactly,
@@ -548,7 +548,8 @@ recast_scale <- function(data, x, from = NULL, to,
   }
   wide <- .widen_maps(maps, from, to, key, wt_of, res_targets)
   res <- .recast_pipeline(data, backend, wide$jmap, key, values, rules,
-                          id_cols, map_by, missing_sources, wide$sfx)
+                          id_cols, map_by, missing_sources, wide$sfx,
+                          unit = v$unit)
 
   if (!identical(key, to)) {
     res <- dplyr::rename(res, !!rlang::sym(to) := !!rlang::sym(key))
@@ -813,7 +814,8 @@ recast_scale <- function(data, x, from = NULL, to,
 #' @noRd
 .recast_pipeline <- function(data, backend, jmap, key, values, rules,
                              id_cols, map_by = character(),
-                             missing_sources = "na", sfx = NULL) {
+                             missing_sources = "na", sfx = NULL,
+                             unit = "unit") {
   shared_ids <- intersect(map_by, id_cols)
 
   # THE JOIN. The crosswalk is the build side -- |map| rows, which is what the
@@ -870,7 +872,7 @@ recast_scale <- function(data, x, from = NULL, to,
   }
 
   if (length(copy_cols) > 0L) {
-    .check_copy_result(res, copy_cols, backend)
+    .check_copy_result(res, copy_cols, backend, unit)
   }
 
   drop_cols <- c(if (identical(missing_sources, "na"))
@@ -880,6 +882,133 @@ recast_scale <- function(data, x, from = NULL, to,
   res |>
     dplyr::select(-dplyr::any_of(drop_cols)) |>
     dplyr::rename(!!rlang::sym(key) := !!rlang::sym(".ms_to"))
+}
+
+# -----------------------------------------------------------------------------
+# recast_crosswalk()
+# -----------------------------------------------------------------------------
+
+#' Recast values through a given crosswalk
+#'
+#' The engine behind [`recast_scale()`], for a crosswalk built elsewhere: by a
+#' dimension package whose conversion cannot be read off one scale's
+#' leaftable, such as timescales mapping one calendar onto another through a
+#' datetime grid. The crosswalk says how much of each source code falls in
+#' each target code; the rules then aggregate exactly as in `recast_scale()`,
+#' on any supported backend.
+#'
+#' The crosswalk is a data frame with one row per (source, target) pair:
+#'
+#' * the source and target codes, in the columns named by `from` and `to`;
+#' * `n_from`, the number of atoms (grid points) in the source code, and
+#'   `n_overlap`, the number of them that fall in the target;
+#' * optionally `w`, the weight of the pair for `"weighted_mean"` -- by default
+#'   `n_overlap`;
+#' * optionally `w_from`, the source's total weight. With it, `"sum"` splits a
+#'   source across its targets by `w / w_from`; without it, by
+#'   `n_overlap / n_from`, an equal split over atoms;
+#' * any columns named in `by`.
+#'
+#' A target whose sources are only partly present in the data, per identifier
+#' combination, comes back `NA` unless `missing_sources = "ignore"`.
+#'
+#' @param data The data, in any supported backend, with a code column and one
+#'   or more numeric value columns.
+#' @param map The crosswalk, a `data.frame`.
+#' @param from,to Names of the source and target code columns of `map`.
+#' @param key Name of the code column of `data`. Defaults to `from`.
+#' @param values Value columns. Default: every numeric column that is neither
+#'   `key` nor in `ids`.
+#' @param rule One of [`SCALE_RULES`] other than the share rules, for every
+#'   value column, or a named vector with one entry per column. `NULL` looks
+#'   each column up with [`get_scale_rule()`].
+#' @param ids Identifier columns, preserved as groups. Default: every column
+#'   that is neither `key` nor a value column. Other columns are dropped.
+#' @param by Columns of `map` matched against the identically named
+#'   identifier columns of `data`, for a crosswalk that differs between
+#'   identifier values (a calendar crosswalk per year, say).
+#' @param targets Optional full target vocabulary. A materialised result is
+#'   completed to every target per identifier combination, in this order, with
+#'   `NA` where nothing landed; an `NA` entry adds an explicit `NA` row.
+#' @param missing_sources `"na"` (default) or `"ignore"`; see
+#'   [`recast_scale()`].
+#' @param unit The word for a target code in error messages.
+#' @param collect For lazy inputs: materialise (`TRUE`) or return the query.
+#'
+#' @return The recast data in its own class, with columns
+#'   `c(to, ids, values)`. Lazy in, lazy out.
+#'
+#' @examples
+#' # Two months onto one quarter, with the months' day counts as atoms
+#' map <- data.frame(month = c("m01", "m02"), quarter = "Q1",
+#'                   n_from = c(31, 28), n_overlap = c(31, 28))
+#' d <- data.frame(month = c("m01", "m02"), energy = c(310, 280),
+#'                 price = c(10, 20))
+#' recast_crosswalk(d, map, from = "month", to = "quarter",
+#'                  rule = c(energy = "sum", price = "weighted_mean"))
+#' @export
+recast_crosswalk <- function(data, map, from, to, key = from,
+                             values = NULL, rule = NULL, ids = NULL,
+                             by = character(), targets = NULL,
+                             missing_sources = c("na", "ignore"),
+                             unit = "unit", collect = NULL) {
+  missing_sources <- match.arg(missing_sources)
+  backend <- .ms_require_backend(data, "data")
+  schema <- .ms_schema(data)
+  .check_ms_cols(schema)
+  if (!is.data.frame(map)) .stop("`map` must be a data.frame")
+  need <- c(from, to, "n_from", "n_overlap", by)
+  absent <- setdiff(need, names(map))
+  if (length(absent) > 0L) {
+    .stop("`map` is missing column(s): %s", .preview(absent))
+  }
+  if (!key %in% names(schema)) {
+    .stop("the data has no column named `%s`; pass `key=`", key)
+  }
+
+  values <- .values_for(schema, key, ids %||% character(), values)
+  if (is.null(ids)) ids <- setdiff(names(schema), c(key, values))
+  bad_by <- setdiff(by, ids)
+  if (length(bad_by) > 0L) {
+    .stop("`by` column(s) are not identifier columns of the data: %s",
+          .preview(bad_by))
+  }
+  rules <- .rules_for(values, rule)
+  .no_share(rules, "recast_crosswalk")
+
+  map <- as.data.frame(map)
+  jmap <- map[c(from, to, "n_from", "n_overlap", by)]
+  names(jmap)[1:4] <- c(key, ".ms_to", ".ms_n_from", ".ms_n_overlap")
+  jmap$.ms_w <- if ("w" %in% names(map)) map$w else map$n_overlap
+  jmap$.ms_f <- if ("w_from" %in% names(map)) {
+    ifelse(map$w_from > 0, map$w / map$w_from, map$n_overlap / map$n_from)
+  } else {
+    map$n_overlap / map$n_from
+  }
+
+  res <- .recast_pipeline(data, backend, jmap, key, values, rules, ids,
+                          map_by = by, missing_sources = missing_sources,
+                          unit = unit)
+  if (!identical(key, to)) {
+    res <- dplyr::rename(res, !!rlang::sym(to) := !!rlang::sym(key))
+  }
+
+  if (.ms_is_lazy(backend) && !isTRUE(collect)) {
+    return(dplyr::select(res, dplyr::all_of(c(to, ids, values))))
+  }
+  res <- as.data.frame(dplyr::collect(res))
+  out <- if (is.null(targets)) {
+    res[, c(to, ids, values), drop = FALSE]
+  } else {
+    idc <- if (length(ids) > 0L) {
+      .ms_pull(dplyr::distinct(dplyr::select(.ms_lazy(data, backend),
+                                             dplyr::all_of(ids))))
+    } else {
+      data.frame()
+    }
+    .recast_complete(res, idc, targets, to, ids, values)
+  }
+  .ms_restore(out, backend, collect = collect)
 }
 
 # -----------------------------------------------------------------------------
@@ -951,7 +1080,8 @@ recast_to_atoms <- function(data, x, from = NULL, key = NULL, values = NULL,
   frames_all <- S7::prop(x, "frames")
   values <- .values_for(schema, key, frames_all, values)
   id_cols <- setdiff(names(schema), c(key, values, frames_all))
-  rules <- .rules_for(values, rule, weight, scope = .scale_scope(x))
+  rules <- .rules_for(values, rule, weight, scope = .scale_scope(x),
+                      hint = .rule_hint(x))
   .no_share(rules, "recast_to_atoms")
 
   akey <- scale_key(x)
@@ -1034,7 +1164,8 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
   values <- .values_for(schema, key, c(frames_all, "weight", wt_col), values)
   id_cols <- setdiff(names(schema),
                      c(key, values, frames_all, "weight", wt_col))
-  rules <- .rules_for(values, rule, weight = NULL, scope = .scale_scope(x))
+  rules <- .rules_for(values, rule, weight = NULL, scope = .scale_scope(x),
+                      hint = .rule_hint(x))
   .no_share(rules, "recast_from_atoms")
 
   leaves <- S7::prop(x, "leaftable")
@@ -1089,7 +1220,7 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
     dplyr::group_by(dplyr::across(dplyr::all_of(grp_cols))) |>
     dplyr::summarise(!!!exprs, .groups = "drop")
   if (length(copy_cols) > 0L) {
-    .check_copy_result(res, copy_cols, backend)
+    .check_copy_result(res, copy_cols, backend, scale_vocab(x)$unit)
     res <- dplyr::select(res, -dplyr::any_of(
       c(paste0(".ms_mx_", copy_cols), paste0(".ms_mn_", copy_cols))))
   }
@@ -1116,24 +1247,36 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
 # The bare pipeline generic
 # -----------------------------------------------------------------------------
 
-#' Recast data through a scale (internal generic)
+#' Recast data through a scale
 #'
-#' Dispatches on the scale object so one entry point serves both a [`Scale`]
-#' and a [`ScaleProduct`]. NOT exported: `timescales` owns the public `recast`
-#' generic and `geoscales` extends that same object, so exporting a second,
-#' unrelated generic of the same name would mask theirs for anyone attaching
-#' both -- and this one has no `Calendar` method.
+#' The bare pipeline verb, dispatching on the scale so one entry point serves
+#' a [`Scale`], a [`ScaleProduct`], and the dimension subclasses in
+#' `timescales` and `geoscales`, which register their own methods against this
+#' generic. [`recast_scale()`] and [`recast_product()`] are the explicit
+#' workers.
 #'
-#' [`recast_scale()`] and [`recast_product()`] are the public verbs.
+#' `from` is the SCALE, matching the convention the dimension packages
+#' established. The source FRAME -- `recast_scale()`'s own `from` -- is
+#' `from_frame` here, mirroring `geoscales`' `from_geoframe`.
 #'
-#' @param data The data to recast.
-#' @param x The scale (or other object) to recast through.
-#' @param ... Passed to the method (see [`recast_scale()`]).
+#' @param x The data to recast.
+#' @param from The scale to recast through.
+#' @param ... Passed to the dispatched method: for a [`Scale`] the arguments of
+#'   [`recast_scale()`], with `to` the target frame and `from_frame` the source
+#'   frame (inferred when omitted); for a [`ScaleProduct`] those of
+#'   [`recast_product()`].
 #'
 #' @return The recast data, in the input's class.
 #'
-#' @keywords internal
-recast <- S7::new_generic("recast", c("data", "x"))
+#' @examples
+#' s <- scale_example()
+#' d <- data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
+#'                 capacity = c(1, 2, 3, 4, 5, 6))
+#' recast(d, s, to = "sector", rule = "sum")
+#' @export
+recast <- S7::new_generic("recast", dispatch_args = c("x", "from"))
 
 S7::method(recast, list(S7::class_any, Scale)) <-
-  function(data, x, ...) recast_scale(data, x, ...)
+  function(x, from, to, from_frame = NULL, ...) {
+    recast_scale(data = x, x = from, from = from_frame, to = to, ...)
+  }

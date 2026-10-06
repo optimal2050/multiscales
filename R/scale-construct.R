@@ -115,13 +115,30 @@ scale_from_leaftable <- function(leaftable,
   }
 
   # Coarse-to-fine ordering sanity check --------------------------------------
-  n_codes <- vapply(members[frames], length, integer(1))
-  if (length(frames) > 1L && is.unsorted(n_codes)) {
-    inverted <- frames[c(FALSE, diff(n_codes) < 0)]
-    .warn(paste0("`frames` should be ordered coarsest first, but %s has ",
-                 "fewer codes than the frame before it. Aggregation ",
-                 "direction is taken from this order."),
-          .preview(inverted))
+  # Tests CONTAINMENT, not code counts. Counts are a proxy for granularity and
+  # a wrong one: `m12_md365` has 12 MONTH codes and 31 MDAY codes with the
+  # nesting the right way round, and cross-cutting frames (YDAY x HOUR) nest
+  # in neither direction, which is legal here. Only the REVERSE containment --
+  # each coarse code sitting inside one fine code -- means the list is
+  # actually upside down.
+  .nests_in <- function(fine, coarse) {
+    if (anyNA(leaftable[[fine]]) || anyNA(leaftable[[coarse]])) return(FALSE)
+    all(tapply(as.character(leaftable[[coarse]]),
+               as.character(leaftable[[fine]]),
+               function(z) length(unique(z))) == 1L)
+  }
+  if (length(frames) > 1L) {
+    inverted <- character()
+    for (i in seq_len(length(frames) - 1L)) {
+      a <- frames[i]; b <- frames[i + 1L]
+      if (.nests_in(a, b) && !.nests_in(b, a)) inverted <- c(inverted, b)
+    }
+    if (length(inverted) > 0L) {
+      .warn(paste0("`frames` should be ordered coarsest first, but %s ",
+                   "CONTAINS the frame before it. Aggregation direction is ",
+                   "taken from this order."),
+            .preview(inverted))
+    }
   }
 
   meta <- c(

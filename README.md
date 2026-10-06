@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# modelscales
+# multiscales
 
 <!-- badges: start -->
 
@@ -13,7 +13,7 @@ ordered *frames* that group them — and that shape fits time, space,
 industries, income brackets, temperature regimes or technology vintages
 equally well.
 
-`modelscales` is the engine under
+`multiscales` is the engine under
 [timescales](https://github.com/optimal2050/timescales) (calendars) and
 [geoscales](https://github.com/optimal2050/geoscales) (regions), whose
 classes are subclasses of `Scale`. Use it directly for any other
@@ -22,7 +22,7 @@ dimension.
 ## Installation
 
 ``` r
-pak::pkg_install("optimal2050/modelscales")
+pak::pkg_install("optimal2050/multiscales")
 ```
 
 ## A scale in one call
@@ -30,7 +30,7 @@ pak::pkg_install("optimal2050/modelscales")
 Declare the hierarchy, coarsest frame first:
 
 ``` r
-library(modelscales)
+library(multiscales)
 
 industries <- data.frame(
   section  = c("C",   "C",   "C",   "D",   "D"),

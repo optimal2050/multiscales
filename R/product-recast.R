@@ -102,7 +102,7 @@ NULL
       if (is.null(r)) {
         entry <- get_scale_rule(v, scope = .scale_scope(axes[[a]]))
         if (is.null(entry)) {
-          .stop(paste0("no rule for value column `%s` on axis `%s`. Pass ",
+          .stop(paste0("no aggregation rule for value column `%s` on axis `%s`. Pass ",
                        "`rules = list(%s = c(%s = \"...\"))` or register one ",
                        "with `register_scale_rule()`."), v, a, v, a)
         }
@@ -358,7 +358,7 @@ recast_product <- function(data, x, to,
 #' Target column name an axis's pass will produce
 #' @noRd
 .axis_target_name <- function(to_a) {
-  if (S7::S7_inherits(to_a, Scale)) scale_frames(to_a, finest = TRUE) else to_a
+  if (S7::S7_inherits(to_a, Scale)) .atom_level(to_a) else to_a
 }
 
 #' Guard the one way a sequence of passes can silently lose a column
@@ -461,7 +461,7 @@ recast_product <- function(data, x, to,
 # -----------------------------------------------------------------------------
 
 S7::method(recast, list(S7::class_any, ScaleProduct)) <-
-  function(data, x, ...) recast_product(data, x, ...)
+  function(x, from, to, ...) recast_product(data = x, x = from, to = to, ...)
 
 #' Attach every axis's labels to product-indexed data
 #'
@@ -472,14 +472,14 @@ S7::method(recast, list(S7::class_any, ScaleProduct)) <-
 #' @param data The data, carrying one key column per axis.
 #' @param x A [`ScaleProduct`].
 #' @param axes Axis names to attach; `NULL` (default) attaches all of them.
-#' @param ... Passed to [`join_scale()`] (`frames`, `meta`, `as_factor`, ...).
+#' @param ... Passed to [`join_scale()`] (`attach`, `meta`, `as_factor`, ...).
 #'
 #' @return `data` with each axis's labels attached, in its own class.
 #'
 #' @examples
 #' p <- scale_product(a = scale_example(), b = scale_example2())
 #' d <- data.frame(unit = c("U1", "U3"), period = c("p1", "p2"), v = 1:2)
-#' join_product(d, p, frames = TRUE)
+#' join_product(d, p, attach = TRUE)
 #' @export
 join_product <- function(data, x, axes = NULL, ...) {
   .check_product(x, "x")

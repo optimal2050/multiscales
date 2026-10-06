@@ -126,7 +126,7 @@ test_that("a column with no rule on some axis is an error", {
   p <- .pp()
   expect_error(
     recast_product(.pdata(), p, to = list(a = "sector", b = "era")),
-    "no rule for value column")
+    "no aggregation rule for value column")
 })
 
 test_that("per-axis weights are honoured", {
@@ -296,7 +296,7 @@ test_that("the joint sd path also honours the backend contract", {
 test_that("filter_product() subsets one axis and keeps a product", {
   p <- .pp()
   q <- filter_product(p, "a", "sector", "P")
-  expect_s3_class(q, "modelscales::ScaleProduct")
+  expect_s3_class(q, "multiscales::ScaleProduct")
   expect_identical(product_size(q)$axes[["a"]], 4L)
   expect_identical(product_size(q)$axes[["b"]], 4L)
   expect_equal(unname(product_coverage(q)[["a"]]), 1000 / 3100)
@@ -307,7 +307,7 @@ test_that("join_product() attaches every axis's labels", {
   p <- .pp()
   d <- data.frame(unit = c("U1", "U3"), period = c("p1", "p2"),
                   v = 1:2, stringsAsFactors = FALSE)
-  out <- join_product(d, p, frames = TRUE)
+  out <- join_product(d, p, attach = TRUE)
   expect_true(all(c("example", "example2") %in% names(out)))
   expect_true("example.sector" %in% names(out))
   expect_true("example2.era" %in% names(out))

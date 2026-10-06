@@ -212,7 +212,7 @@ test_that("per-column rules and weights are honoured", {
 test_that("a value column with no rule is an error, never a guess", {
   s <- scale_example()
   expect_error(recast_scale(.d6(), s, from = "unit", to = "sector"),
-               "no rule for value column")
+               "no aggregation rule for value column")
 })
 
 test_that("the rule registry supplies the default", {

@@ -4,7 +4,7 @@
 
 test_that("scale_example() has the documented shape", {
   s <- scale_example()
-  expect_s3_class(s, "modelscales::Scale")
+  expect_s3_class(s, "multiscales::Scale")
   expect_identical(scale_frames(s), c("sector", "class", "group", "unit"))
   expect_identical(scale_frames(s, finest = TRUE), "unit")
   expect_identical(scale_key(s), "unit")
@@ -89,7 +89,7 @@ test_that("members must match the non-NA codes present in the leaftable", {
   expect_s3_class(
     Scale(leaftable = df2, frames = c("grp", "unit"),
           members = list(grp = "A", unit = c("u1", "u2"))),
-    "modelscales::Scale")
+    "multiscales::Scale")
 })
 
 test_that("the key name is reserved as a frame except as the finest frame", {
@@ -97,7 +97,7 @@ test_that("the key name is reserved as a frame except as the finest frame", {
   df <- data.frame(grp = c("A", "A"), unit = c("u1", "u2"),
                    stringsAsFactors = FALSE)
   expect_s3_class(
-    scale_from_leaftable(df, frames = c("grp", "unit")), "modelscales::Scale")
+    scale_from_leaftable(df, frames = c("grp", "unit")), "multiscales::Scale")
   # illegal: the key name used as a coarser frame
   df2 <- data.frame(unit = c("A", "A"), leaf = c("u1", "u2"),
                     stringsAsFactors = FALSE)
@@ -158,7 +158,7 @@ test_that("coverage bookkeeping is validated against the leaftable", {
           members = S7::prop(s, "members"), key = "leaf",
           meta = list(weights = "w", coverage = c(w = 0.5),
                       parent_totals = list(w = 20))),
-    "modelscales::Scale")
+    "multiscales::Scale")
 })
 
 test_that("coverage must lie in (0, 1] over declared weights", {

@@ -2,12 +2,12 @@
 % Please edit documentation in R/filter.R
 \name{[.Scale}
 \alias{[.Scale}
-\alias{[.modelscales::Scale}
+\alias{[.multiscales::Scale}
 \title{Subset a Scale}
 \usage{
 \method{[}{Scale}(x, i, j, ...)
 
-\method{[}{`modelscales::Scale`}(x, i, j, ...)
+\method{[}{`multiscales::Scale`}(x, i, j, ...)
 }
 \arguments{
 \item{x}{A \code{\link{Scale}}.}

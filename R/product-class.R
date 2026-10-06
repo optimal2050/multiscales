@@ -429,7 +429,7 @@ print.ScaleProduct <- function(x, ...) {
 S7::method(print, ScaleProduct) <- print.ScaleProduct
 
 #' @export
-`print.modelscales::ScaleProduct` <- print.ScaleProduct
+`print.multiscales::ScaleProduct` <- print.ScaleProduct
 
 #' @export
 #' @method names ScaleProduct
@@ -438,7 +438,7 @@ names.ScaleProduct <- function(x) names(S7::prop(x, "axes"))
 S7::method(names, ScaleProduct) <- names.ScaleProduct
 
 #' @export
-`names.modelscales::ScaleProduct` <- names.ScaleProduct
+`names.multiscales::ScaleProduct` <- names.ScaleProduct
 
 # Summary ----------------------------------------------------------------------
 
@@ -489,7 +489,7 @@ S7::method(summary, ScaleProduct) <- summary.ScaleProduct
 
 #' @rdname summary.ScaleProduct
 #' @export
-`summary.modelscales::ScaleProduct` <- summary.ScaleProduct
+`summary.multiscales::ScaleProduct` <- summary.ScaleProduct
 
 #' @rdname summary.ScaleProduct
 #' @export

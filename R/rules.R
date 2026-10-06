@@ -211,7 +211,8 @@ clear_scale_rules <- function(param = NULL, scope = NULL) {
 #' @param scope Dimension namespace used for registry lookups.
 #' @return A named list, one entry per value column, each `list(rule, weight)`.
 #' @noRd
-.rules_for <- function(values, rule = NULL, weight = NULL, scope = NULL) {
+.rules_for <- function(values, rule = NULL, weight = NULL, scope = NULL,
+                       hint = "register_scale_rule()") {
   .per_column <- function(x, what) {
     if (is.null(x)) return(stats::setNames(vector("list", length(values)),
                                            values))
@@ -253,8 +254,8 @@ clear_scale_rules <- function(param = NULL, scope = NULL) {
     out[[v]] <- list(rule = r, weight = w)
   }
   if (length(missing) > 0L) {
-    .stop(paste0("no rule for value column(s): %s. Pass `rule=` or register ",
-                 "one with `register_scale_rule()`."), .preview(missing))
+    .stop(paste0("no aggregation rule for value column(s): %s. Pass `rule=` ",
+                 "or register one with `%s`."), .preview(missing), hint)
   }
   out
 }

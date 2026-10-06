@@ -67,7 +67,7 @@ test_that("cross-object maps need distinct names and shared keys", {
   df <- data.frame(grp = c("A", "B"), unit = c("z1", "z2"),
                    stringsAsFactors = FALSE)
   b <- scale_from_leaftable(df, frames = c("grp", "unit"), name = "disjoint")
-  expect_error(scale_map(a, b), "share no keys")
+  expect_error(scale_map(a, b), "share no `unit` keys")
 })
 
 test_that("scale_atom_pairs() is the documented seam", {
@@ -81,7 +81,7 @@ test_that("extra map columns are carried through `by`", {
   s <- scale_example()
   d <- scale_atom_pairs(s, "class", "group")
   d2 <- rbind(cbind(d, year = 2020), cbind(d, year = 2021))
-  m <- modelscales:::.finish_map(d2, "class", "group", by = "year")
+  m <- multiscales:::.finish_map(d2, "class", "group", by = "year")
   expect_true("year" %in% names(m))
   # the counts are per year, not doubled
   expect_equal(unique(m$n_from[m$class == "G1"]), 2L)

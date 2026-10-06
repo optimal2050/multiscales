@@ -47,5 +47,5 @@ test_that("the sweep can drive the constrained clustering too", {
 test_that("nothing in the package picks k for you", {
   # There is deliberately no `best_k()`: the sweep reports and the modeller
   # decides. This test exists so adding one is a conscious act.
-  expect_false(any(grepl("^best_k$", getNamespaceExports("clusterscales"))))
+  expect_false(any(grepl("^best_k$", getNamespaceExports("multiscales"))))
 })

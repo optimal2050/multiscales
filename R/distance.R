@@ -182,7 +182,7 @@ scale_distance <- function(data, x, frame = NULL, key = NULL, value = NULL,
 #' @noRd
 .resolve_frame <- function(x, frame) {
   if (!is.null(frame)) return(frame)
-  scale_frames(x, finest = TRUE)
+  .atom_level(x)
 }
 
 #' @noRd

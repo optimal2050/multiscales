@@ -25,10 +25,10 @@ NULL
 #' @param x The [`Scale`] to attach.
 #' @param key Name of the code column in `data`. Inferred from the scale's
 #'   name, the keyed frame, or the scale's own key column.
-#' @param frame The frame the codes belong to. `NULL` (default) is inferred as
-#'   the single frame name appearing among the data's columns.
-#' @param frames Coarser frames whose codes to attach: `TRUE` for all of them,
-#'   a character vector to choose, `NULL`/`FALSE` for none.
+#' @param frame The frame the codes in `key` are at. `NULL` (default) is
+#'   inferred as the single frame name appearing among the data's columns.
+#' @param attach Coarser frames whose codes to attach as new columns: `TRUE`
+#'   for all of them, a character vector to choose, `NULL`/`FALSE` for none.
 #' @param meta Attach the unit's `share` and `weight` at the keyed frame.
 #' @param weight Weight column used for `meta`. `NULL` uses the default.
 #' @param as_factor Return attached membership columns as factors with the
@@ -44,10 +44,11 @@ NULL
 #' @examples
 #' s <- scale_example()
 #' d <- data.frame(class = c("G1", "G2", "S1"), v = 1:3)
-#' join_scale(d, s, frames = TRUE)
+#' join_scale(d, s, attach = TRUE)
+#' join_scale(d, s, attach = "sector")
 #' join_scale(d, s, meta = TRUE)
 #' @export
-join_scale <- function(data, x, key = NULL, frame = NULL, frames = NULL,
+join_scale <- function(data, x, key = NULL, frame = NULL, attach = NULL,
                        meta = FALSE, weight = NULL, as_factor = TRUE,
                        collect = NULL,
                        diagnostics = c("auto", "on", "off")) {
@@ -65,6 +66,10 @@ join_scale <- function(data, x, key = NULL, frame = NULL, frames = NULL,
   # -- resolve the keyed frame and the key -----------------------------------
   if (is.null(frame)) {
     hit <- intersect(fr_all, names(schema))
+    # Fall back to the atom level when no frame column is present: a Calendar
+    # is keyed by its timeslices, which are combinations of its frames rather
+    # than codes of one. Only fires where this previously errored.
+    if (length(hit) == 0L) hit <- intersect(.atom_level(x), names(schema))
     if (length(hit) != 1L) {
       .stop(paste0("cannot infer the code %s from the data's columns ",
                    "(found: %s); pass `frame=`"),
@@ -85,19 +90,21 @@ join_scale <- function(data, x, key = NULL, frame = NULL, frames = NULL,
   }
 
   # -- what gets attached ----------------------------------------------------
-  coarser <- fr_all[seq_len(match(frame, fr_all) - 1L)]
-  if (isTRUE(frames)) frames <- coarser
-  if (!is.null(frames) && !isFALSE(frames)) {
-    bad <- setdiff(frames, coarser)
+  # scale_rank(), not match(): the atom level may be the KEY, which is not in
+  # `frames` and ranks one past the last. A raw match() gives NA here.
+  coarser <- fr_all[seq_len(scale_rank(x, frame) - 1L)]
+  if (isTRUE(attach)) attach <- coarser
+  if (!is.null(attach) && !isFALSE(attach)) {
+    bad <- setdiff(attach, coarser)
     if (length(bad) > 0L) {
-      .stop("`frames` must be coarser than '%s'; not: %s", frame,
+      .stop("`attach` must be coarser than '%s'; not: %s", frame,
             .preview(bad))
     }
   } else {
-    frames <- character(0)
+    attach <- character(0)
   }
   new_cols <- c(if (key != nm) nm,
-                paste0(nm, ".", frames),
+                paste0(nm, ".", attach),
                 if (isTRUE(meta)) paste0(nm, c(".share", ".weight")))
   clash <- intersect(new_cols, names(schema))
   if (length(clash) > 0L) {
@@ -129,8 +136,8 @@ join_scale <- function(data, x, key = NULL, frame = NULL, frames = NULL,
                     !is.na(!!ksym) & !(!!ksym %in% known)),
       dplyr::all_of(key))))[[key]]
     if (length(unknown) > 0L) {
-      .warn("%d code(s) in the `%s` column are not units at %s '%s': %s",
-            length(unknown), key, v$frame, frame,
+      .warn("%d code(s) in the `%s` column are not %s at %s '%s': %s",
+            length(unknown), key, v$units, v$frame, frame,
             .preview(unique(as.character(unknown))))
     }
   }
@@ -140,7 +147,7 @@ join_scale <- function(data, x, key = NULL, frame = NULL, frames = NULL,
 
   # membership columns: unique (frame, coarser) pairs; codes under more than
   # one parent are ambiguous -> NA + warning
-  for (cl in frames) {
+  for (cl in attach) {
     pairs <- unique(leaves[!is.na(leaves[[frame]]), c(frame, cl),
                            drop = FALSE])
     n_par <- table(pairs[[frame]])

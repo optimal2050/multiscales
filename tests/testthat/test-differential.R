@@ -190,7 +190,7 @@ test_that("join agrees on labels, memberships and meta", {
                   stringsAsFactors = FALSE)
   .same(geoscales::join_geoscale(d, gs), join_scale(d, ms), "labels")
   .same(geoscales::join_geoscale(d, gs, geoframes = TRUE),
-        join_scale(d, ms, frames = TRUE), "memberships")
+        join_scale(d, ms, attach = TRUE), "memberships")
   .same(geoscales::join_geoscale(d, gs, meta = TRUE, weight = "km2"),
         join_scale(d, ms, meta = TRUE, weight = "km2"), "meta")
 })

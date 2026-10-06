@@ -46,7 +46,7 @@ add("recast_scale lazy (query only)",
     check = .is_lazy)
 
 add("join_scale lazy (should be zero-scan)",
-    join_scale(ds, grid, key = "zone", frame = "zone", frames = TRUE),
+    join_scale(ds, grid, key = "zone", frame = "zone", attach = TRUE),
     check = .is_lazy)
 
 # -- the real work ----------------------------------------------------------

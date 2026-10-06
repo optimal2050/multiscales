@@ -15,7 +15,7 @@ test_that("the label column is named after the scale", {
 
 test_that("coarser frames attach with the scale-name prefix", {
   s <- scale_example()
-  out <- join_scale(.jd(), s, frames = TRUE)
+  out <- join_scale(.jd(), s, attach = TRUE)
   expect_true("example.sector" %in% names(out))
   expect_identical(as.character(out$example.sector), c("P", "P", "S"))
   # attached memberships are factors over the frame's full vocabulary
@@ -25,13 +25,13 @@ test_that("coarser frames attach with the scale-name prefix", {
 
 test_that("as_factor = FALSE returns plain character", {
   s <- scale_example()
-  out <- join_scale(.jd(), s, frames = TRUE, as_factor = FALSE)
+  out <- join_scale(.jd(), s, attach = TRUE, as_factor = FALSE)
   expect_type(out$example.sector, "character")
 })
 
 test_that("only coarser frames may be attached", {
   s <- scale_example()
-  expect_error(join_scale(.jd(), s, frames = "unit"), "must be coarser")
+  expect_error(join_scale(.jd(), s, attach = "unit"), "must be coarser")
 })
 
 test_that("meta attaches share and weight, and share sums to 1", {
@@ -51,7 +51,7 @@ test_that("a cross-cutting parent yields NA with a warning", {
   s <- scale_example()
   d <- data.frame(group = c("G1", "GB", "GC"), v = 1:3,
                   stringsAsFactors = FALSE)
-  expect_warning(out <- join_scale(d, s, frames = "class"), "does not nest")
+  expect_warning(out <- join_scale(d, s, attach = "class"), "does not nest")
   expect_true(is.na(out$example.class[out$group == "GB"]))
 })
 
@@ -92,8 +92,8 @@ test_that("several scales live side by side on one dataset", {
 
   d <- data.frame(unit = c("U1", "U3", "U5"), v = 1:3,
                   stringsAsFactors = FALSE)
-  out <- join_scale(join_scale(d, a, frames = "sector"), b,
-                    key = "unit", frame = "unit", frames = "big")
+  out <- join_scale(join_scale(d, a, attach = "sector"), b,
+                    key = "unit", frame = "unit", attach = "big")
   # one dataset now carries both scales' labels -- a direct crosswalk
   expect_true(all(c("example", "example.sector", "other", "other.big") %in%
                     names(out)))
@@ -112,7 +112,7 @@ test_that("join_scale() honours the contract on every backend", {
   s <- scale_example()
   expect_backend_contract(
     .jd(),
-    function(x, collect = NULL) join_scale(x, s, frames = TRUE,
+    function(x, collect = NULL) join_scale(x, s, attach = TRUE,
                                            as_factor = FALSE,
                                            collect = collect),
     key_cols = "class")

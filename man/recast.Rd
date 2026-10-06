@@ -2,28 +2,38 @@
 % Please edit documentation in R/recast.R
 \name{recast}
 \alias{recast}
-\title{Recast data through a scale (internal generic)}
+\title{Recast data through a scale}
 \usage{
-recast(data, x, ...)
+recast(x, from, ...)
 }
 \arguments{
-\item{data}{The data to recast.}
+\item{x}{The data to recast.}
 
-\item{x}{The scale (or other object) to recast through.}
+\item{from}{The scale to recast through.}
 
-\item{...}{Passed to the method (see \code{\link[=recast_scale]{recast_scale()}}).}
+\item{...}{Passed to the dispatched method: for a \code{\link{Scale}} the arguments of
+\code{\link[=recast_scale]{recast_scale()}}, with \code{to} the target frame and \code{from_frame} the source
+frame (inferred when omitted); for a \code{\link{ScaleProduct}} those of
+\code{\link[=recast_product]{recast_product()}}.}
 }
 \value{
 The recast data, in the input's class.
 }
 \description{
-Dispatches on the scale object so one entry point serves both a \code{\link{Scale}}
-and a \code{\link{ScaleProduct}}. NOT exported: \code{timescales} owns the public \code{recast}
-generic and \code{geoscales} extends that same object, so exporting a second,
-unrelated generic of the same name would mask theirs for anyone attaching
-both -- and this one has no \code{Calendar} method.
+The bare pipeline verb, dispatching on the scale so one entry point serves
+a \code{\link{Scale}}, a \code{\link{ScaleProduct}}, and the dimension subclasses in
+\code{timescales} and \code{geoscales}, which register their own methods against this
+generic. \code{\link[=recast_scale]{recast_scale()}} and \code{\link[=recast_product]{recast_product()}} are the explicit
+workers.
 }
 \details{
-\code{\link[=recast_scale]{recast_scale()}} and \code{\link[=recast_product]{recast_product()}} are the public verbs.
+\code{from} is the SCALE, matching the convention the dimension packages
+established. The source FRAME -- \code{recast_scale()}'s own \code{from} -- is
+\code{from_frame} here, mirroring \code{geoscales}' \code{from_geoframe}.
 }
-\keyword{internal}
+\examples{
+s <- scale_example()
+d <- data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
+                capacity = c(1, 2, 3, 4, 5, 6))
+recast(d, s, to = "sector", rule = "sum")
+}

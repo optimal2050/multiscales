@@ -71,12 +71,12 @@ test_that("class() puts the child first and Scale at the tail", {
   # registrations. Whether this test-local class gets that prefix depends on
   # how the suite runs (R CMD check does, load_all() does not), so assert the
   # invariant that actually matters: the CHILD precedes Scale.
-  child <- which(cl %in% c("Widget", "modelscales::Widget"))
+  child <- which(cl %in% c("Widget", "multiscales::Widget"))
   expect_gt(length(child), 0L)
-  expect_true("modelscales::Scale" %in% cl)
+  expect_true("multiscales::Scale" %in% cl)
   expect_true(S7::S7_inherits(w, Scale))
   # this ordering is what lets a child's S3 method win over Scale's
-  expect_lt(min(child), match("modelscales::Scale", cl))
+  expect_lt(min(child), match("multiscales::Scale", cl))
   expect_identical(cl[[length(cl)]], "S7_object")
 })
 
@@ -128,4 +128,27 @@ test_that("scale_vocab() can be overridden per dimension", {
   expect_identical(scale_vocab(w)$frame, "slot")
   # and the shared checker speaks the subclass's language
   expect_error(scale_units(w, "nope"), "is not a slot of this Widget")
+})
+
+test_that("a positional per-atom payload survives a row subset", {
+  Shaped <- S7::new_class("Shaped", parent = scale_class(),
+    properties = list(shape = S7::class_character),
+    validator = function(self) {
+      if (length(self@shape) != nrow(self@leaftable)) {
+        "`shape` needs one entry per leaftable row"
+      }
+    })
+  S7::method(scale_payload_slice, Shaped) <- function(x, i, ...) {
+    x@shape <- x@shape[i]
+    x
+  }
+  base <- scale_example()
+  lt <- scale_leaftable(base)
+  s <- Shaped(leaftable = lt, frames = scale_frames(base),
+              members = S7::prop(base, "members"), key = scale_key(base),
+              meta = S7::prop(base, "meta"),
+              shape = paste0("shape_", lt$unit))
+  p <- filter_scale(s, "sector", "P")
+  expect_identical(p@shape, paste0("shape_", scale_leaftable(p)$unit))
+  expect_true(S7::S7_inherits(p, Shaped))
 })

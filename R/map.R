@@ -112,8 +112,9 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
   .check_frame(x, from, "from")
   .check_frame(x, to, "to")
   if (identical(from, to)) {
-    .stop(paste0("`from` and `to` are the same frame (\"%s\"); the map's ",
-                 "label columns are named by the frames"), from)
+    v <- scale_vocab(x)
+    .stop(paste0("`from` and `to` are the same %s (\"%s\"); the map's ",
+                 "label columns are named by the %s"), v$frame, from, v$frames)
   }
 
   reg <- .get_scale_map(from, to, .scale_name(x, require = FALSE))
@@ -146,9 +147,11 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
   lt <- S7::prop(to, "leaftable")
   shared <- intersect(lf[[kf]], lt[[kt]])
   if (length(shared) == 0L) {
-    .stop(paste0("the atom layers of \"%s\" and \"%s\" share no keys; ",
-                 "register an explicit crosswalk with register_scale_map()"),
-          from_nm, to_nm)
+    keys <- if (identical(kf, kt)) sprintf("`%s` keys", kf) else "keys"
+    hint <- scale_vocab(from)$register_map %||% "register_scale_map()"
+    .stop(paste0("the atom layers of \"%s\" and \"%s\" share no %s; ",
+                 "register an explicit crosswalk with %s"),
+          from_nm, to_nm, keys, hint)
   }
   n_miss <- sum(!lf[[kf]] %in% shared)
   if (n_miss > 0L) {

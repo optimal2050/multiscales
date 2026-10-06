@@ -20,7 +20,9 @@ A character vector of frame names, or a single name when
 }
 \description{
 The hierarchy names, ordered coarsest first. The last entry is the atom
-frame -- the finest units, which every other frame groups.
+frame whenever one frame enumerates the atoms; when none does -- a
+\code{Calendar}'s atoms are combinations of its frames -- the key column is the
+atom level instead.
 }
 \examples{
 s <- scale_example()

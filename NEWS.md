@@ -1,4 +1,4 @@
-# modelscales 0.0.0.9000
+# multiscales 0.0.0.9000
 
 ## Clustering
 
@@ -17,6 +17,19 @@
 
 ## The export surface
 
+* New `recast_crosswalk()`: the recast engine over a crosswalk built
+  elsewhere, for dimension packages whose conversion is not read off one
+  scale -- timescales maps calendars onto each other through a datetime grid.
+  Same rules, backends and missing-source handling as `recast_scale()`.
+* Navigation (`scale_children()` and friends), `prune_scale()` and
+  `cluster_scale()` accept the key column as a level when it holds the atoms
+  (a `Calendar`'s timeslices). Before, they failed with a missing-value error.
+* The `"copy"` constancy error names the target in the scale's own words
+  ("timeslice" for a `Calendar`).
+* `join_scale()`'s `frames` argument is now `attach`: `frame` is the level the
+  codes are at, `attach` the coarser frames to add as columns.
+* New vignette, "Writing a dimension package": defining a `Scale` subclass,
+  its vocabulary, per-atom payloads, and registering methods from a package.
 * The S7 classes are no longer exported. `Scale` collided with
   `ggplot2::Scale`, which every plotting user attaches, and a bare `recast`
   generic collided with the one `timescales` owns and `geoscales` extends --

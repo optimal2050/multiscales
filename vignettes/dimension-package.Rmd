@@ -1,0 +1,232 @@
+---
+title: "Writing a dimension package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Writing a dimension package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+multiscales knows nothing about any particular dimension. A dimension --
+time, space, an industry classification, an income schedule -- lives in its
+own package, which defines a subclass of the multiscales `Scale` and adds what
+is specific to it: catalogs, data, plots, articles. Every multiscales verb
+then works on the new class unchanged, because the new class *is* a Scale.
+
+[timescales](https://github.com/optimal2050/timescales) (`Calendar`) and
+[geoscales](https://github.com/optimal2050/geoscales) (`Geoscale`) are built
+this way. This article walks through a small one: an industry classification.
+
+```{r setup}
+library(multiscales)
+```
+
+## The data
+
+A dimension starts from a leaftable: one row per atom, one column per frame,
+coarsest first, plus any numeric weight columns.
+
+```{r}
+nace <- data.frame(
+  section  = c("C", "C", "C", "D", "D"),
+  division = c("C10", "C10", "C24", "D35", "D35"),
+  activity = c("C10.1", "C10.5", "C24.1", "D35.1", "D35.2"),
+  gva      = c(30, 20, 50, 80, 20)
+)
+```
+
+## The subclass
+
+The class is an S7 class whose parent is `scale_class()`. The `Scale` class
+itself is not exported -- its name would mask `ggplot2::Scale` -- so this is
+the way to reach it.
+
+Two things are typical:
+
+* an **alias property** that names the inherited `frames` in the dimension's
+  own words (`timeframes` for a Calendar, `geoframes` for a Geoscale, `levels`
+  here), built with `scale_alias_property()`;
+* a **constructor** that fixes what is fixed for the dimension -- the key
+  column, the weight columns -- and delegates the rest to
+  `scale_from_leaftable()`.
+
+A subclass may also carry data per atom. This one keeps a title for each
+activity:
+
+```{r}
+titles <- data.frame(
+  activity = nace$activity,
+  title = c("Meat processing", "Dairy products", "Basic iron and steel",
+            "Electric power generation", "Gas distribution")
+)
+
+Industry <- S7::new_class(
+  "Industry",
+  parent = scale_class(),
+  properties = list(
+    levels = scale_alias_property("frames"),
+    titles = S7::class_data.frame
+  ),
+  constructor = function(leaftable, levels, titles) {
+    s <- scale_from_leaftable(leaftable, frames = levels, key = "activity",
+                              weights = "gva", name = "nace")
+    S7::new_object(s, titles = titles)
+  },
+  validator = function(self) {
+    if (!all(self@leaftable$activity %in% self@titles$activity)) {
+      "every activity needs a title"
+    }
+  }
+)
+
+ind <- Industry(nace, levels = c("section", "division", "activity"),
+                titles = titles)
+ind@levels
+```
+
+## Everything already works
+
+No method has been written yet, and the whole engine is available:
+
+```{r}
+scale_is(ind)
+scale_units(ind, "division")
+
+jobs <- data.frame(activity = nace$activity, jobs = c(5, 3, 8, 2, 1))
+recast_scale(jobs, ind, from = "activity", to = "section",
+             values = "jobs", rule = "sum")
+```
+
+The bare `recast()` generic dispatches on the Scale method too:
+
+```{r}
+recast(jobs, ind, to = "division", values = "jobs", rule = "sum")
+```
+
+So do `join_scale()`, `filter_scale()`, the navigation verbs,
+`scale_product()`, clustering and the Arrow store.
+
+## Speaking the dimension's language
+
+The engine's messages are written once and filled in from `scale_vocab()`.
+Without a method an Industry is described in neutral words:
+
+```{r, error = TRUE}
+recast_scale(jobs, ind, from = "activity", to = "group",
+             values = "jobs", rule = "sum")
+```
+
+A method supplies the dimension's own:
+
+```{r, error = TRUE}
+S7::method(scale_vocab, Industry) <- function(x, ...) {
+  list(object = "Industry", frame = "level", frames = "levels",
+       unit = "industry", units = "industries", atoms = "activities")
+}
+
+recast_scale(jobs, ind, from = "activity", to = "group",
+             values = "jobs", rule = "sum")
+```
+
+## Carrying data per atom
+
+When a verb keeps only some atoms -- `filter_scale()`, `prune_scale()`, `[` --
+the engine rebuilds the object from a copy, so the class and every extra
+property survive. It then calls `scale_payload_slice()` so the subclass can cut
+its own per-atom data down to match:
+
+```{r}
+S7::method(scale_payload_slice, Industry) <- function(x, i, ...) {
+  x@titles <- x@titles[x@titles$activity %in% x@leaftable$activity, ,
+                       drop = FALSE]
+  x
+}
+
+mfg <- filter_scale(ind, "section", "C")
+class(mfg)
+mfg@titles
+scale_coverage(mfg)
+```
+
+The engine validates the object once, after the hook has run, so the payload
+may be positional -- one element per leaftable row, as geoscales' geometry is
+-- or keyed by atom code, as the titles are here.
+
+## Frames that cross-cut
+
+The industry frames nest: every activity sits in one division, every division
+in one section. Not every dimension is like that. A calendar's `YDAY` and
+`HOUR` cut across each other, and its atoms -- the 8760 timeslices -- are
+combinations of the two rather than codes of either. multiscales handles this
+when the key column holds the atoms: `scale_atom_level()` then returns the key
+instead of the finest frame, and the verbs route through it.
+
+```{r}
+scale_atom_level(ind)
+```
+
+## In a package
+
+A script can register methods directly, as above. A package registers them on
+the multiscales generics through S7's external-generic mechanism, so that they
+are found without multiscales importing the dimension package:
+
+```{r, eval = FALSE}
+# R/industry-class.R
+.scale_vocab_generic <- S7::new_external_generic("multiscales",
+                                                 "scale_vocab", "x")
+S7::method(.scale_vocab_generic, Industry) <- function(x, ...) {
+  list(object = "Industry", frame = "level", frames = "levels",
+       unit = "industry", units = "industries", atoms = "activities")
+}
+
+# A dimension-specific recast method, if the dimension needs extra arguments
+# (timescales' takes `year`, for instance):
+.recast_generic <- S7::new_external_generic("multiscales", "recast",
+                                            c("x", "from"))
+S7::method(.recast_generic, list(S7::class_any, Industry)) <-
+  function(x, from, to, ...) {
+    recast_industry(x, from, to, ...)
+  }
+
+# R/zzz.R
+.onLoad <- function(libname, pkgname) {
+  S7::methods_register()
+}
+```
+
+and declares the dependency:
+
+```
+Imports:
+    multiscales,
+    S7
+```
+
+Re-exporting the generic, as timescales and geoscales do, lets
+`library(yourpackage)` alone provide `recast()`:
+
+```{r, eval = FALSE}
+#' @importFrom multiscales recast
+#' @export
+multiscales::recast
+```
+
+## Things to keep in mind
+
+* **Never test a class name by spelling.** An S7 class defined in a package is
+  `"yourpackage::Industry"` in `class()`, but plain `"Industry"` under
+  `pkgload::load_all()`. Use `scale_is()`, or `S7::S7_inherits()` against the
+  class object.
+* **Stored objects carry their class.** An object saved to `data/` or an `.rds`
+  records its class and its parent's. If either changes -- a rename, a new
+  parent -- the saved object no longer passes `scale_is()` and every verb
+  rejects it with "`x` must be a Scale object". Rebuild shipped datasets after
+  any class change.
+* **Keep the dimension in the dimension package.** multiscales depends on no
+  dimension package; nothing in it should need to know that calendars or
+  regions exist.

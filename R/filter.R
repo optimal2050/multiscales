@@ -38,10 +38,10 @@ NULL
 
 #' Rebuild a Scale from a row subset
 #'
-#' Props are set in ONE assignment so the validator sees a consistent object,
-#' and the update is made on a copy of `x` itself -- which preserves the
-#' concrete class and any extra properties a subclass carries. The payload
-#' hook then subsets whatever the subclass keeps per atom.
+#' The update is made on a copy of `x` itself, which preserves the concrete
+#' class and any extra properties a subclass carries. The payload hook then
+#' subsets whatever the subclass keeps per atom, and the object is validated
+#' once, when everything is consistent.
 #' @noRd
 .rebuild <- function(x, keep, fr, drop_empty_frames = FALSE,
                      meta = S7::prop(x, "meta")) {
@@ -68,10 +68,14 @@ NULL
     }
   }
 
-  out <- x
-  S7::props(out) <- list(leaftable = leaves, frames = fr, members = members,
-                         meta = meta)
-  scale_payload_slice(out, keep)
+  # The core props are set unchecked: a subclass's per-atom payload still has
+  # the old rows until the hook slices it, and validating in between would
+  # reject a payload that is positional (one element per leaftable row).
+  out <- S7::set_props(x, leaftable = leaves, frames = fr, members = members,
+                       meta = meta, .check = FALSE)
+  out <- scale_payload_slice(out, keep)
+  S7::validate(out)
+  out
 }
 
 #' Subset a Scale by unit
@@ -109,7 +113,8 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
 
   unknown <- setdiff(unit, S7::prop(x, "members")[[frame]])
   if (length(unknown) > 0L) {
-    .stop("code(s) not found at frame `%s`: %s", frame, .preview(unknown))
+    .stop("code(s) not found at %s `%s`: %s", scale_vocab(x)$frame, frame,
+          .preview(unknown))
   }
 
   keep <- which(leaves[[frame]] %in% unit)
@@ -158,7 +163,7 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
 # `[.S7_object`, which errors.
 #' @rdname sub-.Scale
 #' @export
-`[.modelscales::Scale` <- `[.Scale`
+`[.multiscales::Scale` <- `[.Scale`
 
 #' Collapse a Scale to a coarser frame
 #'
@@ -181,13 +186,15 @@ prune_scale <- function(x, frame) {
   .check_scale(x)
   .check_frame(x, frame)
   fr <- S7::prop(x, "frames")
+  # The key as atom level is finer than every frame: nothing to prune.
+  if (!frame %in% fr) return(x)
   keep_fr <- fr[seq_len(match(frame, fr))]
 
   leaves0 <- S7::prop(x, "leaftable")
   covered <- !is.na(leaves0[[frame]])
   leaves  <- leaves0[covered, , drop = FALSE]
   if (nrow(leaves) == 0L) {
-    .stop("no atoms have a code at frame `%s`", frame)
+    .stop("no atoms have a code at %s `%s`", scale_vocab(x)$frame, frame)
   }
 
   wts <- scale_weights(x)

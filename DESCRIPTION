@@ -1,11 +1,11 @@
-Package: modelscales
+Package: multiscales
 Title: Nested Scales and Multi-Dimensional Indexes for Modeling
 Version: 0.1.0.9000
-Date: 2026-10-04
-URL: https://optimal2050.github.io/modelscales/r/,
-    https://optimal2050.github.io/modelscales/,
-    https://github.com/optimal2050/modelscales
-BugReports: https://github.com/optimal2050/modelscales/issues
+Date: 2026-10-05
+URL: https://optimal2050.github.io/multiscales/r/,
+    https://optimal2050.github.io/multiscales/,
+    https://github.com/optimal2050/multiscales
+BugReports: https://github.com/optimal2050/multiscales/issues
 Authors@R:
     person(given = "Oleg",
            family = "Lugovoy",
@@ -35,6 +35,7 @@ Suggests:
     cluster,
     data.table,
     dtplyr,
+    geoscales,
     ggplot2,
     knitr,
     pkgdown,
@@ -43,6 +44,7 @@ Suggests:
     tibble,
     withr,
     yaml
+Remotes: optimal2050/geoscales
 Config/testthat/edition: 3
 Config/Needs/website: pkgdown, rmarkdown, ggplot2
 VignetteBuilder: knitr
@@ -61,7 +63,7 @@ Collate:
     'frames.R'
     'join.R'
     'map.R'
-    'modelscales-package.R'
+    'multiscales-package.R'
     'recast.R'
     'product-recast.R'
     'reconcile.R'

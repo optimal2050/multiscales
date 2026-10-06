@@ -71,7 +71,7 @@ the scale with those groups added as a new, coarser frame.
 The new frame goes directly above the clustered one, which is the only
 position that is always true: the clusters are coarser than \code{frame} by
 construction, but they need not nest inside any existing coarser frame, and
-\code{modelscales} does not require them to. Use
+\code{multiscales} does not require them to. Use
 \code{scale_nests()} to ask whether a given pair happens to nest.
 }
 \examples{

@@ -46,7 +46,7 @@
 #' The new frame goes directly above the clustered one, which is the only
 #' position that is always true: the clusters are coarser than `frame` by
 #' construction, but they need not nest inside any existing coarser frame, and
-#' `modelscales` does not require them to. Use
+#' `multiscales` does not require them to. Use
 #' `scale_nests()` to ask whether a given pair happens to nest.
 #'
 #' @examples
@@ -185,7 +185,7 @@ withr_seed <- function(seed) {
   fr <- scale_frames(x)
   lt[[new_frame]] <- unname(code[as.character(lt[[frame]])])
 
-  at <- match(frame, fr)
+  at <- scale_rank(x, frame)
   new_frames <- append(fr, new_frame, after = at - 1L)
 
   meta <- S7::prop(x, "meta")

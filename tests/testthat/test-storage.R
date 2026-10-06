@@ -105,7 +105,7 @@ test_that("a product dataset round-trips through the store", {
   ds <- open_scale_dataset(path)
 
   expect_s3_class(ds, "scale_dataset")
-  expect_s3_class(ds$scale, "modelscales::ScaleProduct")
+  expect_s3_class(ds$scale, "multiscales::ScaleProduct")
   expect_identical(names(scale_axes(ds$scale)), c("a", "b"))
   expect_identical(product_keys(ds$scale), product_keys(p))
 
@@ -163,7 +163,7 @@ test_that("a single Scale round-trips too", {
   dir <- withr::local_tempdir()
   write_scale_dataset(d, s, file.path(dir, "s"))
   ds <- open_scale_dataset(file.path(dir, "s"))
-  expect_s3_class(ds$scale, "modelscales::Scale")
+  expect_s3_class(ds$scale, "multiscales::Scale")
   expect_identical(scale_units(ds$scale), scale_units(s))
 })
 

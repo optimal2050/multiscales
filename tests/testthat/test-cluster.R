@@ -7,7 +7,7 @@ test_that("the result is the scale with a new frame above the clustered one", {
   cl <- cluster_scale(three_group_data(), s, k = 3)
 
   # Not expect_s3_class("Scale"): the class is spelled "Scale" or
-  # "modelscales::Scale" depending on how the package was loaded.
+  # "multiscales::Scale" depending on how the package was loaded.
   expect_true(scale_is(cl))
   expect_identical(scale_frames(cl),
                    c("top", "cluster", "unit"))
@@ -91,7 +91,7 @@ test_that("labels = medoid names clusters after their representative", {
   expect_true(all(codes %in% scale_units(s)))
 })
 
-test_that("the cluster frame works with the rest of modelscales", {
+test_that("the cluster frame works with the rest of multiscales", {
   s <- three_group_scale()
   cl <- cluster_scale(three_group_data(), s, k = 3, method = "hclust")
 

@@ -73,13 +73,13 @@ test_that("SCALE_RULES lists the supported rules", {
 # Resolution ------------------------------------------------------------------
 
 test_that("a scalar rule applies to every column", {
-  r <- modelscales:::.rules_for(c("a", "b"), rule = "sum")
+  r <- multiscales:::.rules_for(c("a", "b"), rule = "sum")
   expect_identical(r$a$rule, "sum")
   expect_identical(r$b$rule, "sum")
 })
 
 test_that("a named rule vector selects per column", {
-  r <- modelscales:::.rules_for(
+  r <- multiscales:::.rules_for(
     c("a", "b"), rule = c(a = "sum", b = "mean"))
   expect_identical(r$a$rule, "sum")
   expect_identical(r$b$rule, "mean")
@@ -87,36 +87,36 @@ test_that("a named rule vector selects per column", {
 
 test_that("a named vector may not name unknown columns", {
   expect_error(
-    modelscales:::.rules_for(c("a"), rule = c(a = "sum", zz = "mean")),
+    multiscales:::.rules_for(c("a"), rule = c(a = "sum", zz = "mean")),
     "not value columns")
 })
 
 test_that("an unnamed multi-element rule is rejected", {
   expect_error(
-    modelscales:::.rules_for(c("a", "b"), rule = c("sum", "mean")),
+    multiscales:::.rules_for(c("a", "b"), rule = c("sum", "mean")),
     "NAMED vector")
 })
 
 test_that("a column with no rule anywhere is an error", {
   withr::defer(clear_scale_rules())
   clear_scale_rules()
-  expect_error(modelscales:::.rules_for("mystery"),
-               "no rule for value column")
+  expect_error(multiscales:::.rules_for("mystery"),
+               "no aggregation rule for value column")
 })
 
 test_that("an explicit rule beats the registry", {
   withr::defer(clear_scale_rules())
   register_scale_rule("cap", "sum")
-  r <- modelscales:::.rules_for("cap", rule = "mean")
+  r <- multiscales:::.rules_for("cap", rule = "mean")
   expect_identical(r$cap$rule, "mean")
 })
 
 test_that("the registry supplies the weight when the caller does not", {
   withr::defer(clear_scale_rules())
   register_scale_rule("eff", "weighted_mean", weight = "size")
-  r <- modelscales:::.rules_for("eff")
+  r <- multiscales:::.rules_for("eff")
   expect_identical(r$eff$weight, "size")
   # an explicit weight still wins
-  r2 <- modelscales:::.rules_for("eff", weight = "count")
+  r2 <- multiscales:::.rules_for("eff", weight = "count")
   expect_identical(r2$eff$weight, "count")
 })

@@ -2,13 +2,13 @@
 % Please edit documentation in R/scale-class.R
 \name{summary.Scale}
 \alias{summary.Scale}
-\alias{summary.modelscales::Scale}
+\alias{summary.multiscales::Scale}
 \alias{print.summary_Scale}
 \title{Summarize a Scale}
 \usage{
 \method{summary}{Scale}(object, ...)
 
-\method{summary}{`modelscales::Scale`}(object, ...)
+\method{summary}{`multiscales::Scale`}(object, ...)
 
 \method{print}{summary_Scale}(x, ...)
 }

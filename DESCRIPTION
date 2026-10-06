@@ -42,9 +42,10 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     tibble,
+    timescales,
     withr,
     yaml
-Remotes: optimal2050/geoscales
+Remotes: optimal2050/geoscales, optimal2050/timescales
 Config/testthat/edition: 3
 Config/Needs/website: pkgdown, rmarkdown, ggplot2
 VignetteBuilder: knitr

@@ -1,0 +1,12 @@
+
+home:
+  sidebar:
+    structure: [links, license, community, citation, dev]
+
+footer:
+  structure:
+    left: built_with
+    right: blank
+  components:
+    blank: ""
+

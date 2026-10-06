@@ -101,5 +101,7 @@ export(scale_units)
 export(scale_vocab)
 export(scale_weights)
 export(write_scale_dataset)
-importFrom(rlang,":=")
-importFrom(rlang,.data)
+importFrom(rlang,
+  ":=",
+  .data
+)

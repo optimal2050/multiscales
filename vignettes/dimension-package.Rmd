@@ -9,57 +9,120 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+has_ts <- requireNamespace("timescales", quietly = TRUE)
+has_gs <- requireNamespace("geoscales", quietly = TRUE)
 ```
 
-multiscales knows nothing about any particular dimension. A dimension --
-time, space, an industry classification, an income schedule -- lives in its
-own package, which defines a subclass of the multiscales `Scale` and adds what
-is specific to it: catalogs, data, plots, articles. Every multiscales verb
-then works on the new class unchanged, because the new class *is* a Scale.
+## What multiscales is for
 
-[timescales](https://github.com/optimal2050/timescales) (`Calendar`) and
-[geoscales](https://github.com/optimal2050/geoscales) (`Geoscale`) are built
-this way. This article walks through a small one: an industry classification.
+Models rarely use data at the resolution it arrives in. Demand comes by hour
+and the model runs on twelve representative days; statistics come by
+district and the model has five regions; accounts come by detailed industry
+and the model has six sectors. Each of these is a *scale*: a set of fine
+units, the **atoms**, grouped into coarser levels, the **frames**. Hours sit
+inside days inside months; districts inside provinces inside countries.
+
+multiscales stores such a hierarchy as a `Scale` and converts data along it:
+summing extensive quantities, averaging intensive ones with the right
+weights, splitting coarse values down to fine units, and attaching group
+labels to a dataset. The same functions work whatever the dimension is,
+because a scale is just a table of atoms with one column per frame.
 
 ```{r setup}
 library(multiscales)
 ```
 
-## The data
+## Dimension packages
 
-A dimension starts from a leaftable: one row per atom, one column per frame,
-coarsest first, plus any numeric weight columns.
+Some dimensions need more than a table. Time has calendars, leap years,
+fiscal years, and a mapping from clock time to the model's time slices.
+Space has maps, geometry and coordinate systems. These live in **dimension
+packages** built on multiscales:
+
+* **timescales** provides `Calendar`, a scale of time: a catalog of standard
+  calendars, conversion from datetimes, calendar plots.
+* **geoscales** provides `Geoscale`, a scale of space: region hierarchies
+  from data providers, geometry, maps.
+
+Both classes are subclasses of `Scale`, so each package adds what is special
+about its dimension and gets the conversion machinery from multiscales. A
+`Calendar` is a `Scale`:
+
+```{r, eval = has_ts}
+cal <- timescales::calendar("m12_h24")   # 12 months x 24 hours
+scale_is(cal)
+scale_frames(cal)
+head(scale_leaftable(cal), 3)
+```
+
+and so is a `Geoscale`:
+
+```{r, eval = has_gs}
+gs <- geoscales::geoscale_example()
+scale_is(gs)
+scale_frames(gs)
+head(scale_leaftable(gs), 3)
+```
+
+so the functions of this package work on either. Hourly load summed to
+months uses the same `recast_scale()` as any other scale:
+
+```{r, eval = has_ts}
+load <- data.frame(timeslice = scale_units(cal), mw = 1)
+head(recast_scale(load, cal, from = "timeslice", to = "MONTH", rule = "sum"), 3)
+```
+
+and the regions of country `N` come from the same navigation function as
+anything else:
+
+```{r, eval = has_gs}
+scale_children(gs, "country", "N")
+```
+
+The dimension packages wrap these in their own vocabulary --
+`timescales::recast_calendar()`, `geoscales::geoscale_children()` -- but the
+work underneath is shared.
+
+## Do you need a package?
+
+Often not. Any hierarchy that fits in a table can be used directly:
 
 ```{r}
-nace <- data.frame(
+sectors <- data.frame(
   section  = c("C", "C", "C", "D", "D"),
   division = c("C10", "C10", "C24", "D35", "D35"),
   activity = c("C10.1", "C10.5", "C24.1", "D35.1", "D35.2"),
   gva      = c(30, 20, 50, 80, 20)
 )
+nace <- scale_from_leaftable(sectors,
+                             frames = c("section", "division", "activity"),
+                             key = "activity", name = "nace")
+nace
 ```
 
-## The subclass
+Write a dimension package when the dimension has something of its own to
+offer: standard classifications to ship, its own way of building scales,
+extra data per atom, plots, or simply a vocabulary its users expect. The rest
+of this article builds a small one for industry classifications, and shows
+at each step how timescales and geoscales do the same thing.
 
-The class is an S7 class whose parent is `scale_class()`. The `Scale` class
-itself is not exported -- its name would mask `ggplot2::Scale` -- so this is
-the way to reach it.
+## Step 1: a subclass
 
-Two things are typical:
+A dimension class is an S7 class whose parent is `scale_class()`. (The
+`Scale` class itself is reached this way rather than exported, because its
+name would clash with `ggplot2::Scale`.)
 
-* an **alias property** that names the inherited `frames` in the dimension's
-  own words (`timeframes` for a Calendar, `geoframes` for a Geoscale, `levels`
-  here), built with `scale_alias_property()`;
-* a **constructor** that fixes what is fixed for the dimension -- the key
-  column, the weight columns -- and delegates the rest to
-  `scale_from_leaftable()`.
+Two parts are typical. A **constructor** fixes what is fixed for the
+dimension, such as the name of the key column and the weights, and passes
+the rest to `scale_from_leaftable()`. An **alias property** lets users call
+the frames by the dimension's own word; `scale_alias_property()` builds it.
 
-A subclass may also carry data per atom. This one keeps a title for each
-activity:
+The industry class calls its frames `levels`, and also keeps a title for
+each activity:
 
 ```{r}
 titles <- data.frame(
-  activity = nace$activity,
+  activity = sectors$activity,
   title = c("Meat processing", "Dairy products", "Basic iron and steel",
             "Electric power generation", "Gas distribution")
 )
@@ -83,37 +146,59 @@ Industry <- S7::new_class(
   }
 )
 
-ind <- Industry(nace, levels = c("section", "division", "activity"),
+ind <- Industry(sectors, levels = c("section", "division", "activity"),
                 titles = titles)
 ind@levels
 ```
 
-## Everything already works
+The two dimension packages follow the same pattern. A `Calendar` calls its
+frames `timeframes` and always keys its atoms by `timeslice`; a `Geoscale`
+calls them `geoframes`, keys them by `region`, and carries geometry:
 
-No method has been written yet, and the whole engine is available:
+```{r, eval = FALSE}
+# timescales
+Calendar <- S7::new_class(
+  "Calendar",
+  parent = multiscales::scale_class(),
+  properties = list(timeframes = multiscales::scale_alias_property("frames")),
+  ...
+)
+
+# geoscales
+Geoscale <- S7::new_class(
+  "Geoscale",
+  parent = multiscales::scale_class(),
+  properties = list(
+    geoframes = multiscales::scale_alias_property("frames"),
+    geometry  = S7::new_property(S7::class_any, default = NULL)
+  ),
+  ...
+)
+```
+
+## Step 2: the shared functions already work
+
+Nothing more is needed for the industry scale to convert data:
 
 ```{r}
-scale_is(ind)
-scale_units(ind, "division")
-
-jobs <- data.frame(activity = nace$activity, jobs = c(5, 3, 8, 2, 1))
+jobs <- data.frame(activity = sectors$activity, jobs = c(5, 3, 8, 2, 1))
 recast_scale(jobs, ind, from = "activity", to = "section",
              values = "jobs", rule = "sum")
 ```
 
-The bare `recast()` generic dispatches on the Scale method too:
+The same holds for `join_scale()`, `filter_scale()`, the navigation
+functions, `scale_product()`, clustering and the Arrow store. The generic
+`recast()` dispatches on the new class too:
 
 ```{r}
 recast(jobs, ind, to = "division", values = "jobs", rule = "sum")
 ```
 
-So do `join_scale()`, `filter_scale()`, the navigation verbs,
-`scale_product()`, clustering and the Arrow store.
+## Step 3: the dimension's vocabulary
 
-## Speaking the dimension's language
-
-The engine's messages are written once and filled in from `scale_vocab()`.
-Without a method an Industry is described in neutral words:
+Error messages from the shared functions are written once and filled in
+with words from `scale_vocab()`. Without a method, an industry scale is
+described in neutral words:
 
 ```{r, error = TRUE}
 recast_scale(jobs, ind, from = "activity", to = "group",
@@ -132,12 +217,25 @@ recast_scale(jobs, ind, from = "activity", to = "group",
              values = "jobs", rule = "sum")
 ```
 
-## Carrying data per atom
+This is why a calendar's errors talk about timeframes and a region
+hierarchy's about geoframes:
 
-When a verb keeps only some atoms -- `filter_scale()`, `prune_scale()`, `[` --
-the engine rebuilds the object from a copy, so the class and every extra
-property survive. It then calls `scale_payload_slice()` so the subclass can cut
-its own per-atom data down to match:
+```{r, eval = has_ts, error = TRUE}
+scale_vocab(cal)$frame
+recast_scale(load, cal, from = "timeslice", to = "WEEK", rule = "sum")
+```
+
+The vocabulary may also name the dimension package's own registration
+functions (`register_rule`, `register_map`), so that a message suggesting
+one points to, say, `register_geoscale_rule()` rather than the generic
+`register_scale_rule()`.
+
+## Step 4: data kept per atom
+
+When a function keeps only some atoms -- `filter_scale()`, `prune_scale()`,
+`x[frame, unit]` -- the result keeps its class and any extra properties.
+If those properties hold one entry per atom, a `scale_payload_slice()`
+method cuts them down to match:
 
 ```{r}
 S7::method(scale_payload_slice, Industry) <- function(x, i, ...) {
@@ -146,34 +244,45 @@ S7::method(scale_payload_slice, Industry) <- function(x, i, ...) {
   x
 }
 
-mfg <- filter_scale(ind, "section", "C")
-class(mfg)
-mfg@titles
-scale_coverage(mfg)
+manufacturing <- filter_scale(ind, "section", "C")
+class(manufacturing)
+manufacturing@titles
+scale_coverage(manufacturing)
 ```
 
-The engine validates the object once, after the hook has run, so the payload
-may be positional -- one element per leaftable row, as geoscales' geometry is
--- or keyed by atom code, as the titles are here.
+geoscales uses the same hook for its geometry, which has one shape per atom
+in leaftable order, so a filtered Geoscale keeps exactly the shapes of the
+regions it kept. The object is validated once the hook has run, so the data
+may be positional, like geometry, or keyed by atom code, like the titles
+here.
 
-## Frames that cross-cut
+## Atoms that are combinations of frames
 
-The industry frames nest: every activity sits in one division, every division
-in one section. Not every dimension is like that. A calendar's `YDAY` and
-`HOUR` cut across each other, and its atoms -- the 8760 timeslices -- are
-combinations of the two rather than codes of either. multiscales handles this
-when the key column holds the atoms: `scale_atom_level()` then returns the key
-instead of the finest frame, and the verbs route through it.
+In the industry scale every activity belongs to one division and every
+division to one section: the frames nest, and the finest frame lists the
+atoms. Time does not work that way. In `m12_h24` the frames are months and
+hours of the day; an hour of the day is not inside a month, and the atoms --
+288 time slices -- are combinations of the two. multiscales handles this by
+taking the atoms from the key column when no frame lists them.
+`scale_atom_level()` reports which case applies:
 
 ```{r}
 scale_atom_level(ind)
 ```
 
-## In a package
+```{r, eval = has_ts}
+scale_atom_level(cal)
+length(scale_units(cal))
+```
 
-A script can register methods directly, as above. A package registers them on
-the multiscales generics through S7's external-generic mechanism, so that they
-are found without multiscales importing the dimension package:
+A dimension whose atoms are combinations of other categories works the same
+way, with no extra code.
+
+## Turning it into a package
+
+Inside a script, methods can be registered directly, as above. A package
+registers them on the multiscales generics with S7's external generics, so
+that multiscales finds them without depending on the package:
 
 ```{r, eval = FALSE}
 # R/industry-class.R
@@ -184,22 +293,13 @@ S7::method(.scale_vocab_generic, Industry) <- function(x, ...) {
        unit = "industry", units = "industries", atoms = "activities")
 }
 
-# A dimension-specific recast method, if the dimension needs extra arguments
-# (timescales' takes `year`, for instance):
-.recast_generic <- S7::new_external_generic("multiscales", "recast",
-                                            c("x", "from"))
-S7::method(.recast_generic, list(S7::class_any, Industry)) <-
-  function(x, from, to, ...) {
-    recast_industry(x, from, to, ...)
-  }
-
 # R/zzz.R
 .onLoad <- function(libname, pkgname) {
   S7::methods_register()
 }
 ```
 
-and declares the dependency:
+The DESCRIPTION names multiscales and S7:
 
 ```
 Imports:
@@ -207,26 +307,38 @@ Imports:
     S7
 ```
 
-Re-exporting the generic, as timescales and geoscales do, lets
-`library(yourpackage)` alone provide `recast()`:
+Both dimension packages also give `recast()` a method of their own, because
+their conversions take extra arguments -- timescales needs a `year` to place
+a calendar on real dates -- and re-export the generic so that
+`library(timescales)` or `library(geoscales)` alone provides it:
 
 ```{r, eval = FALSE}
+.recast_generic <- S7::new_external_generic("multiscales", "recast",
+                                            c("x", "from"))
+S7::method(.recast_generic, list(S7::class_any, Industry)) <-
+  function(x, from, to, ...) {
+    recast_scale(x, from, to = to, ...)
+  }
+
 #' @importFrom multiscales recast
 #' @export
 multiscales::recast
 ```
 
+When a dimension's conversions cannot be read off one scale's table --
+timescales maps one calendar onto another through a grid of real dates --
+the package builds the correspondence itself and hands it to
+`recast_crosswalk()`, which applies the same rules as `recast_scale()`.
+
 ## Things to keep in mind
 
-* **Never test a class name by spelling.** An S7 class defined in a package is
-  `"yourpackage::Industry"` in `class()`, but plain `"Industry"` under
-  `pkgload::load_all()`. Use `scale_is()`, or `S7::S7_inherits()` against the
-  class object.
-* **Stored objects carry their class.** An object saved to `data/` or an `.rds`
-  records its class and its parent's. If either changes -- a rename, a new
-  parent -- the saved object no longer passes `scale_is()` and every verb
-  rejects it with "`x` must be a Scale object". Rebuild shipped datasets after
-  any class change.
-* **Keep the dimension in the dimension package.** multiscales depends on no
-  dimension package; nothing in it should need to know that calendars or
-  regions exist.
+* **Test class membership with `scale_is()`, not by name.** Inside an
+  installed package an S7 class is called `"yourpackage::Industry"`, but
+  under `pkgload::load_all()` it is plain `"Industry"`.
+* **Saved objects carry their class.** An object saved to `data/` or an
+  `.rds` file records its class and parent. If either changes, the saved
+  object stops being a `Scale` and the shared functions reject it with
+  "`x` must be a Scale object". Rebuild saved objects after changing a class.
+* **Keep dimension-specific code in the dimension package.** multiscales
+  depends on no dimension package, and nothing in it needs to know that
+  calendars or regions exist.

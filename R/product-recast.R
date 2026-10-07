@@ -47,27 +47,35 @@ NULL
   ax <- names(axes)
 
   spec_for <- function(v) {
-    if (is.null(rules)) return(stats::setNames(vector("list", length(ax)), ax))
+    if (is.null(rules)) {
+      return(stats::setNames(vector("list", length(ax)), ax))
+    }
     r <- if (is.list(rules)) {
       if (is.null(names(rules))) {
         .stop("`rules` must be a named list, one entry per value column")
       }
       unknown <- setdiff(names(rules), values)
       if (length(unknown) > 0L) {
-        .stop("`rules` names columns that are not value columns: %s",
-              .preview(unknown))
+        .stop(
+          "`rules` names columns that are not value columns: %s",
+          .preview(unknown)
+        )
       }
       rules[[v]]
     } else {
       rules
     }
-    if (is.null(r)) return(stats::setNames(vector("list", length(ax)), ax))
+    if (is.null(r)) {
+      return(stats::setNames(vector("list", length(ax)), ax))
+    }
     if (length(r) == 1L && is.null(names(r))) {
       return(stats::setNames(rep(list(unname(r)), length(ax)), ax))
     }
     if (is.null(names(r))) {
-      .stop(paste0("the rule for `%s` must be a single value or a vector ",
-                   "NAMED by axis (%s)"), v, paste(ax, collapse = ", "))
+      .stop(paste0(
+        "the rule for `%s` must be a single value or a vector ",
+        "NAMED by axis (%s)"
+      ), v, paste(ax, collapse = ", "))
     }
     bad <- setdiff(names(r), ax)
     if (length(bad) > 0L) {
@@ -79,7 +87,9 @@ NULL
   }
 
   wt_for <- function(a) {
-    if (is.null(weights)) return(NULL)
+    if (is.null(weights)) {
+      return(NULL)
+    }
     if (is.null(names(weights))) {
       if (length(weights) != 1L) {
         .stop("`weights` must be a single value or a vector NAMED by axis")
@@ -90,7 +100,9 @@ NULL
     if (length(bad) > 0L) {
       .stop("`weights` names unknown axes: %s", .preview(bad))
     }
-    if (!a %in% names(weights)) return(NULL)
+    if (!a %in% names(weights)) {
+      return(NULL)
+    }
     unname(weights[[a]])
   }
 
@@ -102,9 +114,11 @@ NULL
       if (is.null(r)) {
         entry <- get_scale_rule(v, scope = .scale_scope(axes[[a]]))
         if (is.null(entry)) {
-          .stop(paste0("no aggregation rule for value column `%s` on axis `%s`. Pass ",
-                       "`rules = list(%s = c(%s = \"...\"))` or register one ",
-                       "with `register_scale_rule()`."), v, a, v, a)
+          .stop(paste0(
+            "no aggregation rule for value column `%s` on axis `%s`. Pass ",
+            "`rules = list(%s = c(%s = \"...\"))` or register one ",
+            "with `register_scale_rule()`."
+          ), v, a, v, a)
         }
         r <- entry$rule
       }
@@ -125,19 +139,24 @@ NULL
     rr <- vapply(ax, function(a) spec[[a]]$rules[[v]], character(1))
     is_sd <- rr == "sd"
     if (any(is_sd) && !all(is_sd)) {
-      .stop(paste0(
-        "rule \"sd\" for `%s` is order-dependent across axes, so it has no ",
-        "single answer here: the sd of the `%s`-aggregated totals and the ",
-        "total of the per-`%s` sds are different quantities.\n",
-        "  * for one of those, recast the axes in two explicit calls;\n",
-        "  * for the pooled sd over all product atoms in a block, pass ",
-        "rules = list(%s = \"sd\")."),
-        v, ax[!is_sd][[1L]], ax[!is_sd][[1L]], v)
+      .stop(
+        paste0(
+          "rule \"sd\" for `%s` is order-dependent across axes, so it has no ",
+          "single answer here: the sd of the `%s`-aggregated totals and the ",
+          "total of the per-`%s` sds are different quantities.\n",
+          "  * for one of those, recast the axes in two explicit calls;\n",
+          "  * for the pooled sd over all product atoms in a block, pass ",
+          "rules = list(%s = \"sd\")."
+        ),
+        v, ax[!is_sd][[1L]], ax[!is_sd][[1L]], v
+      )
     }
     if (any(rr %in% .SHARE_RULES)) {
-      .stop(paste0("rule \"share\" changes which axis the output is keyed ",
-                   "by, so it is not defined across a product; recast the ",
-                   "one axis with `recast_scale()` on that axis's scale"))
+      .stop(paste0(
+        "rule \"share\" changes which axis the output is keyed ",
+        "by, so it is not defined across a product; recast the ",
+        "one axis with `recast_scale()` on that axis's scale"
+      ))
     }
     bad <- setdiff(rr, c(.SEPARABLE_RULES, "sd"))
     if (length(bad) > 0L) {
@@ -154,15 +173,23 @@ NULL
 #' frame is recognised.
 #' @noRd
 .resolve_axis_key <- function(s, declared, schema, axis) {
-  if (declared %in% names(schema)) return(declared)
+  if (declared %in% names(schema)) {
+    return(declared)
+  }
   hit <- intersect(S7::prop(s, "frames"), names(schema))
-  if (length(hit) == 1L) return(hit)
-  .stop(paste0("the data has no `%s` column for axis `%s`, and its frame ",
-               "columns present are %s. Data on a product carries one key ",
-               "column per axis (see `product_keys()`); pass `keys=` to name ",
-               "a different one."),
-        declared, axis,
-        if (length(hit) == 0L) "none" else .preview(hit))
+  if (length(hit) == 1L) {
+    return(hit)
+  }
+  .stop(
+    paste0(
+      "the data has no `%s` column for axis `%s`, and its frame ",
+      "columns present are %s. Data on a product carries one key ",
+      "column per axis (see `product_keys()`); pass `keys=` to name ",
+      "a different one."
+    ),
+    declared, axis,
+    if (length(hit) == 0L) "none" else .preview(hit)
+  )
 }
 
 #' Order the axis passes so the biggest reduction happens first
@@ -230,15 +257,18 @@ NULL
 #' p <- scale_product(a = scale_example(), b = scale_example2())
 #' d <- merge(
 #'   data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6")),
-#'   data.frame(period = c("p1", "p2", "p3", "p4")))
+#'   data.frame(period = c("p1", "p2", "p3", "p4"))
+#' )
 #' d$cap <- seq_len(nrow(d))
 #'
 #' # aggregate both axes at once
 #' recast_product(d, p, to = list(a = "sector", b = "era"), rules = "sum")
 #'
 #' # different rules per axis
-#' recast_product(d, p, to = list(a = "sector", b = "era"),
-#'                rules = list(cap = c(a = "sum", b = "weighted_mean")))
+#' recast_product(d, p,
+#'   to = list(a = "sector", b = "era"),
+#'   rules = list(cap = c(a = "sum", b = "weighted_mean"))
+#' )
 #' @export
 recast_product <- function(data, x, to,
                            values = NULL,
@@ -294,28 +324,40 @@ recast_product <- function(data, x, to,
 
   # -- the pooled-sd columns take the joint path -----------------------------
   sd_cols <- values[vapply(values, function(v) {
-    all(vapply(names(to), function(a) spec[[a]]$rules[[v]] == "sd",
-               logical(1)))
+    all(vapply(
+      names(to), function(a) spec[[a]]$rules[[v]] == "sd",
+      logical(1)
+    ))
   }, logical(1))]
   sep_cols <- setdiff(values, sd_cols)
 
   res <- NULL
   if (length(sep_cols) > 0L) {
     res <- .product_sequential(data, backend, x, to, sep_cols, spec,
-                               na_action, collect, keys = keys,
-                               all_values = values)
+      na_action, collect,
+      keys = keys,
+      all_values = values
+    )
   }
   if (length(sd_cols) > 0L) {
     joint <- .product_pooled_sd(data, backend, x, to, sd_cols, spec,
-                                na_action, collect, keys = keys,
-                                all_values = values)
-    res <- if (is.null(res)) joint else {
-      out_keys <- unname(vapply(names(to),
-                                function(a) .axis_target_name(to[[a]]),
-                                character(1)))
+      na_action, collect,
+      keys = keys,
+      all_values = values
+    )
+    res <- if (is.null(res)) {
+      joint
+    } else {
+      out_keys <- unname(vapply(
+        names(to),
+        function(a) .axis_target_name(to[[a]]),
+        character(1)
+      ))
       id_cols <- setdiff(names(res), c(out_keys, sep_cols))
-      dplyr::full_join(res, joint, by = c(id_cols, out_keys),
-                       na_matches = "na")
+      dplyr::full_join(res, joint,
+        by = c(id_cols, out_keys),
+        na_matches = "na"
+      )
     }
   }
   res
@@ -350,7 +392,8 @@ recast_product <- function(data, x, to,
       rule = rules_a,
       weight = spec[[a]]$weight,
       na_action = na_action,
-      collect = if (i == n) collect else NULL)
+      collect = if (i == n) collect else NULL
+    )
   }
   out
 }
@@ -375,10 +418,12 @@ recast_product <- function(data, x, to,
     for (b in names(axes)) {
       if (identical(a, b)) next
       if (tgt %in% S7::prop(axes[[b]], "frames")) {
-        .stop(paste0("axis `%s` converts to \"%s\", which is also a frame of ",
-                     "axis `%s` -- that column would be dropped when `%s` is ",
-                     "processed. Rename the frame, or convert the axes in ",
-                     "separate calls."), a, tgt, b, b)
+        .stop(paste0(
+          "axis `%s` converts to \"%s\", which is also a frame of ",
+          "axis `%s` -- that column would be dropped when `%s` is ",
+          "processed. Rename the frame, or convert the axes in ",
+          "separate calls."
+        ), a, tgt, b, b)
       }
     }
   }
@@ -399,15 +444,19 @@ recast_product <- function(data, x, to,
   # Identifiers are what is left once EVERY value column and key is removed --
   # the value columns handled by the separable path are not identifiers.
   id_cols <- setdiff(names(.ms_schema(data)), c(unname(keys), all_values))
-  q <- dplyr::select(.ms_lazy(data, backend),
-                     dplyr::all_of(c(id_cols, unname(keys[ax]), values)))
+  q <- dplyr::select(
+    .ms_lazy(data, backend),
+    dplyr::all_of(c(id_cols, unname(keys[ax]), values))
+  )
   n_syms <- character(0)
 
   for (a in ax) {
     s <- axes[[a]]
     if (S7::S7_inherits(to[[a]], Scale)) {
-      .stop(paste0("pooled \"sd\" across a product needs frame targets; ",
-                   "axis `%s` targets another scale"), a)
+      .stop(paste0(
+        "pooled \"sd\" across a product needs frame targets; ",
+        "axis `%s` targets another scale"
+      ), a)
     }
     from <- .infer_from(s, .ms_schema(data), keys[[a]])
     m <- scale_map(from, to[[a]], x = s, weight = spec[[a]]$weight)
@@ -421,8 +470,10 @@ recast_product <- function(data, x, to,
   }
 
   # n for a product atom is the product of the per-axis overlap counts
-  n_expr <- Reduce(function(l, r) rlang::expr(!!l * !!r),
-                   lapply(n_syms, rlang::sym))
+  n_expr <- Reduce(
+    function(l, r) rlang::expr(!!l * !!r),
+    lapply(n_syms, rlang::sym)
+  )
   q <- dplyr::mutate(q, .ms_n_overlap = !!n_expr)
 
   grp_to <- paste0(".ms_to_", ax)
@@ -434,8 +485,9 @@ recast_product <- function(data, x, to,
     rlang::expr(dplyr::if_else(
       sum(!!nn) > 1,
       sqrt((sum(!!nn * (!!sym)^2) - (sum(!!nn * (!!sym)))^2 / sum(!!nn)) /
-             (sum(!!nn) - 1)),
-      NA_real_))
+        (sum(!!nn) - 1)),
+      NA_real_
+    ))
   })
   names(exprs) <- values
 
@@ -447,12 +499,17 @@ recast_product <- function(data, x, to,
   tgts <- vapply(ax, function(a) .axis_target_name(to[[a]]), character(1))
   for (a in ax) {
     res <- dplyr::rename(
-      res, !!rlang::sym(tgts[[a]]) := !!rlang::sym(paste0(".ms_to_", a)))
+      res, !!rlang::sym(tgts[[a]]) := !!rlang::sym(paste0(".ms_to_", a))
+    )
   }
-  res <- dplyr::select(res,
-                       dplyr::all_of(c(unname(tgts), id_cols, values)))
+  res <- dplyr::select(
+    res,
+    dplyr::all_of(c(unname(tgts), id_cols, values))
+  )
 
-  if (.ms_is_lazy(backend) && !isTRUE(collect)) return(res)
+  if (.ms_is_lazy(backend) && !isTRUE(collect)) {
+    return(res)
+  }
   .ms_restore(res, backend, collect = collect)
 }
 

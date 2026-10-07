@@ -48,7 +48,8 @@
 #' s <- scale_example()
 #' d <- data.frame(
 #'   unit = rep(scale_units(s), each = 4),
-#'   t = rep(sprintf("t%d", 1:4), 7), v = as.numeric(seq_len(28)))
+#'   t = rep(sprintf("t%d", 1:4), 7), v = as.numeric(seq_len(28))
+#' )
 #' cl <- cluster_contiguous(d, s, k = 3)
 #' attr(cl, "clustering")
 #' @export
@@ -64,14 +65,18 @@ cluster_contiguous <- function(data, x, k, frame = NULL, key = NULL,
   .check_new_frame(x, new_frame)
 
   key <- key %||% .resolve_key(x, frame, names(as.data.frame(data)))
-  d <- scale_distance(data, x, frame = frame, key = key, value = value,
-                      method = distance, scale_units = scale_units)
+  d <- scale_distance(data, x,
+    frame = frame, key = key, value = value,
+    method = distance, scale_units = scale_units
+  )
 
   adj <- .adjacency_matrix(adjacency, units, circular)
   fit <- .agglomerate(as.matrix(d), adj, k = as.integer(k), linkage = linkage)
 
-  .attach_cluster_frame(x, frame, new_frame, units, fit$assignment,
-                        .medoids_from_dist(d, fit$assignment), labels)
+  .attach_cluster_frame(
+    x, frame, new_frame, units, fit$assignment,
+    .medoids_from_dist(d, fit$assignment), labels
+  )
 }
 
 #' Normalise the adjacency specification into a logical matrix
@@ -94,19 +99,23 @@ cluster_contiguous <- function(data, x, k, frame = NULL, key = NULL,
   }
 
   if (is.data.frame(adjacency) || is.matrix(adjacency) &&
-      ncol(adjacency) == 2L && !is.logical(adjacency) &&
-      !is.numeric(adjacency)) {
+    ncol(adjacency) == 2L && !is.logical(adjacency) &&
+    !is.numeric(adjacency)) {
     pairs <- as.data.frame(adjacency)
     if (ncol(pairs) < 2L) {
       .stop("`adjacency` must have two columns of unit codes")
     }
     from <- match(as.character(pairs[[1L]]), units)
-    to   <- match(as.character(pairs[[2L]]), units)
-    bad <- unique(c(as.character(pairs[[1L]])[is.na(from)],
-                    as.character(pairs[[2L]])[is.na(to)]))
+    to <- match(as.character(pairs[[2L]]), units)
+    bad <- unique(c(
+      as.character(pairs[[1L]])[is.na(from)],
+      as.character(pairs[[2L]])[is.na(to)]
+    ))
     if (length(bad) > 0L) {
-      .stop("`adjacency` names unit(s) that are not at this frame: %s",
-            .preview(bad))
+      .stop(
+        "`adjacency` names unit(s) that are not at this frame: %s",
+        .preview(bad)
+      )
     }
     ok <- !is.na(from) & !is.na(to)
     a[cbind(from[ok], to[ok])] <- TRUE
@@ -116,8 +125,10 @@ cluster_contiguous <- function(data, x, k, frame = NULL, key = NULL,
 
   if (is.matrix(adjacency)) {
     if (!identical(dim(adjacency), c(n, n))) {
-      .stop("`adjacency` is %s but this frame has %d units",
-            paste(dim(adjacency), collapse = " x "), n)
+      .stop(
+        "`adjacency` is %s but this frame has %d units",
+        paste(dim(adjacency), collapse = " x "), n
+      )
     }
     a[] <- adjacency != 0
     a <- a | t(a)
@@ -126,8 +137,10 @@ cluster_contiguous <- function(data, x, k, frame = NULL, key = NULL,
     return(a)
   }
 
-  .stop(paste0("`adjacency` must be \"order\", a two-column data frame of ",
-               "unit pairs, or a square matrix over the units"))
+  .stop(paste0(
+    "`adjacency` must be \"order\", a two-column data frame of ",
+    "unit pairs, or a square matrix over the units"
+  ))
 }
 
 #' Constrained agglomerative merging
@@ -142,7 +155,11 @@ cluster_contiguous <- function(data, x, k, frame = NULL, key = NULL,
   members <- as.list(seq_len(n))
   active <- rep(TRUE, n)
 
-  link <- switch(linkage, average = mean, complete = max, single = min)
+  link <- switch(linkage,
+    average = mean,
+    complete = max,
+    single = min
+  )
 
   repeat {
     live <- which(active)
@@ -152,8 +169,10 @@ cluster_contiguous <- function(data, x, k, frame = NULL, key = NULL,
     best_d <- Inf
     for (ii in seq_along(live)) {
       for (jj in seq_len(ii - 1L)) {
-        i <- live[[ii]]; j <- live[[jj]]
-        mi <- members[[i]]; mj <- members[[j]]
+        i <- live[[ii]]
+        j <- live[[jj]]
+        mi <- members[[i]]
+        mj <- members[[j]]
         if (!any(adj[mi, mj, drop = FALSE])) next
         dij <- link(dm[mi, mj, drop = FALSE])
         if (dij < best_d) {
@@ -164,11 +183,14 @@ cluster_contiguous <- function(data, x, k, frame = NULL, key = NULL,
     }
     if (is.null(best)) {
       comp <- length(live)
-      .stop(paste0("the constraint allows no further merges at %d cluster(s), ",
-                   "so k = %d is unreachable: the units fall into %d group(s) ",
-                   "that cannot be joined"), comp, k, comp)
+      .stop(paste0(
+        "the constraint allows no further merges at %d cluster(s), ",
+        "so k = %d is unreachable: the units fall into %d group(s) ",
+        "that cannot be joined"
+      ), comp, k, comp)
     }
-    i <- best[[1L]]; j <- best[[2L]]
+    i <- best[[1L]]
+    j <- best[[2L]]
     members[[i]] <- c(members[[i]], members[[j]])
     active[[j]] <- FALSE
   }
@@ -179,8 +201,10 @@ cluster_contiguous <- function(data, x, k, frame = NULL, key = NULL,
   }
   # number the clusters in the order their first member appears, so an
   # order-constrained result reads as a sequence
-  first <- vapply(sort(unique(assignment)),
-                  function(g) min(which(assignment == g)), integer(1))
+  first <- vapply(
+    sort(unique(assignment)),
+    function(g) min(which(assignment == g)), integer(1)
+  )
   assignment <- match(assignment, order(first))
   list(assignment = assignment)
 }

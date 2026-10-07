@@ -62,18 +62,23 @@ NULL
 #' @examples
 #' lf <- data.frame(
 #'   country = c("DE", "DE", "DE"),
-#'   unit    = c("DE1", "DE2", "DE_XR"),
-#'   pop     = c(40, 30, 0), stringsAsFactors = FALSE)
-#' s <- scale_from_leaftable(lf, frames = c("country", "unit"), key = "unit",
-#'                           weights = "pop", name = "geo",
-#'                           residuals = list(unit = "DE_XR"))
+#'   unit = c("DE1", "DE2", "DE_XR"),
+#'   pop = c(40, 30, 0), stringsAsFactors = FALSE
+#' )
+#' s <- scale_from_leaftable(lf,
+#'   frames = c("country", "unit"), key = "unit",
+#'   weights = "pop", name = "geo",
+#'   residuals = list(unit = "DE_XR")
+#' )
 #' fine <- data.frame(unit = c("DE1", "DE2", "DE_XR"), gdp = c(400, 300, 0))
 #' published <- data.frame(country = "DE", gdp = 750)
 #'
 #' scale_reconcile(fine, s, from = "unit", to = "country", published)
 #'
-#' scale_reconcile(fine, s, from = "unit", to = "country", published,
-#'                 balance = "residual")
+#' scale_reconcile(fine, s,
+#'   from = "unit", to = "country", published,
+#'   balance = "residual"
+#' )
 #' @export
 scale_reconcile <- function(data, x, from, to, totals,
                             key = NULL, values = NULL,
@@ -85,9 +90,11 @@ scale_reconcile <- function(data, x, from, to, totals,
   .check_frame(x, from, "from")
   .check_frame(x, to, "to")
   if (scale_rank(x, to) >= scale_rank(x, from)) {
-    .stop(paste0("`to` must be coarser than `from`; reconciliation compares ",
-                 "fine data with a parent total (got from = \"%s\", ",
-                 "to = \"%s\")"), from, to)
+    .stop(paste0(
+      "`to` must be coarser than `from`; reconciliation compares ",
+      "fine data with a parent total (got from = \"%s\", ",
+      "to = \"%s\")"
+    ), from, to)
   }
   if (!is.data.frame(data)) data <- as.data.frame(data)
   totals <- as.data.frame(totals)
@@ -105,33 +112,45 @@ scale_reconcile <- function(data, x, from, to, totals,
     num_t <- names(totals)[vapply(totals, is.numeric, logical(1))]
     values <- setdiff(intersect(num_d, num_t), c(key, to, scale_frames(x)))
     if (length(values) == 0L) {
-      .stop(paste0("no numeric column is common to the data and `totals`; ",
-                   "pass `values=`"))
+      .stop(paste0(
+        "no numeric column is common to the data and `totals`; ",
+        "pass `values=`"
+      ))
     }
   }
   missing_v <- setdiff(values, intersect(names(data), names(totals)))
   if (length(missing_v) > 0L) {
-    .stop("value column(s) missing from the data or `totals`: %s",
-          .preview(missing_v))
+    .stop(
+      "value column(s) missing from the data or `totals`: %s",
+      .preview(missing_v)
+    )
   }
 
   # Identifiers present on BOTH sides -- a per-year total matches per year.
   id_cols <- intersect(
     setdiff(names(data), c(key, values, scale_frames(x))),
-    setdiff(names(totals), c(to, values)))
+    setdiff(names(totals), c(to, values))
+  )
 
   agg <- as.data.frame(suppressWarnings(
-    recast_scale(data, x, from = from, to = to, key = key, values = values,
-                 rule = rule, weight = weight, diagnostics = "off")))
+    recast_scale(data, x,
+      from = from, to = to, key = key, values = values,
+      rule = rule, weight = weight, diagnostics = "off"
+    )
+  ))
 
   gap <- .reconcile_gap(agg, totals, to, id_cols, values, tolerance)
-  if (identical(balance, "none")) return(gap)
+  if (identical(balance, "none")) {
+    return(gap)
+  }
 
-  out <- switch(
-    balance,
+  out <- switch(balance,
     residual = .balance_residual(data, x, from, to, key, id_cols, gap, rule),
-    proportional = .balance_proportional(data, x, from, to, key, id_cols,
-                                         gap))
+    proportional = .balance_proportional(
+      data, x, from, to, key, id_cols,
+      gap
+    )
+  )
   attr(out, "reconciliation") <- gap
   out
 }
@@ -154,8 +173,10 @@ scale_reconcile <- function(data, x, from, to, totals,
   denom <- pmax(abs(out$target), abs(out$aggregated), na.rm = TRUE)
   out$rel_gap <- ifelse(denom > 0, out$gap / denom, 0)
   out$ok <- !is.na(out$rel_gap) & abs(out$rel_gap) <= tolerance
-  out <- out[, c(by, "value", "aggregated", "target", "gap", "rel_gap",
-                 "ok"), drop = FALSE]
+  out <- out[, c(
+    by, "value", "aggregated", "target", "gap", "rel_gap",
+    "ok"
+  ), drop = FALSE]
   out <- out[order(out$value, out[[to]]), , drop = FALSE]
   rownames(out) <- NULL
   out
@@ -179,16 +200,20 @@ scale_reconcile <- function(data, x, from, to, totals,
 #' @noRd
 .balance_residual <- function(data, x, from, to, key, id_cols, gap, rule) {
   if (!identical(rule, "sum")) {
-    .stop(paste0("`balance = \"residual\"` needs `rule = \"sum\"`: a gap ",
-                 "between weighted means is not an amount that can be parked ",
-                 "on a member"))
+    .stop(paste0(
+      "`balance = \"residual\"` needs `rule = \"sum\"`: a gap ",
+      "between weighted means is not an amount that can be parked ",
+      "on a member"
+    ))
   }
   res <- scale_residuals(x, from)
   if (length(res) == 0L) {
-    .stop(paste0("no residual is declared at `%s`, so the gap has nowhere to ",
-                 "go. Declare one when building the scale ",
-                 "(`residuals = list(%s = ...)`), or use ",
-                 "`balance = \"proportional\"`."), from, from)
+    .stop(paste0(
+      "no residual is declared at `%s`, so the gap has nowhere to ",
+      "go. Declare one when building the scale ",
+      "(`residuals = list(%s = ...)`), or use ",
+      "`balance = \"proportional\"`."
+    ), from, from)
   }
 
   # Exactly one residual per parent group, or the gap has no single home.
@@ -196,9 +221,13 @@ scale_reconcile <- function(data, x, from, to, totals,
   fam <- fam[fam$child %in% res, c("parent", "child"), drop = FALSE]
   dup <- unique(fam$parent[duplicated(fam$parent)])
   if (length(dup) > 0L) {
-    .stop(paste0("%s group(s) have more than one declared residual at `%s`, ",
-                 "so the gap has no single home: %s"), to, from,
-          .preview(dup))
+    .stop(
+      paste0(
+        "%s group(s) have more than one declared residual at `%s`, ",
+        "so the gap has no single home: %s"
+      ), to, from,
+      .preview(dup)
+    )
   }
 
   out <- data
@@ -210,8 +239,10 @@ scale_reconcile <- function(data, x, from, to, totals,
     }
     sel <- .gap_select(out, key, unit, id_cols, g)
     if (!any(sel)) {
-      .stop(paste0("the data has no row for residual `%s`, so the gap cannot ",
-                   "be written there; add a zero row for it"), unit)
+      .stop(paste0(
+        "the data has no row for residual `%s`, so the gap cannot ",
+        "be written there; add a zero row for it"
+      ), unit)
     }
     out[sel, g$value] <- out[sel, g$value] + g$gap
   }
@@ -226,10 +257,14 @@ scale_reconcile <- function(data, x, from, to, totals,
   for (i in .gap_rows(gap)) {
     g <- gap[i, ]
     if (is.na(g$aggregated) || g$aggregated == 0) {
-      .stop(paste0("%s `%s` aggregates to 0 for `%s`, so it cannot be scaled ",
-                   "to a target of %s. Park the gap on a residual instead, ",
-                   "or fix the data."), to, g[[to]], g$value,
-            format(g$target))
+      .stop(
+        paste0(
+          "%s `%s` aggregates to 0 for `%s`, so it cannot be scaled ",
+          "to a target of %s. Park the gap on a residual instead, ",
+          "or fix the data."
+        ), to, g[[to]], g$value,
+        format(g$target)
+      )
     }
     kids <- fam$child[fam$parent == g[[to]]]
     sel <- .gap_select(out, key, kids, id_cols, g)

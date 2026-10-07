@@ -21,18 +21,22 @@ NULL
   leaves <- S7::prop(x, "leaftable")
   totals <- meta$parent_totals
   if (is.null(totals)) {
-    totals <- vapply(wts, function(w) sum(leaves[[w]], na.rm = TRUE),
-                     numeric(1))
+    totals <- vapply(
+      wts, function(w) sum(leaves[[w]], na.rm = TRUE),
+      numeric(1)
+    )
     names(totals) <- wts
   }
-  cov <- vapply(wts, function(w) sum(kept[[w]], na.rm = TRUE) / totals[[w]],
-                numeric(1))
+  cov <- vapply(
+    wts, function(w) sum(kept[[w]], na.rm = TRUE) / totals[[w]],
+    numeric(1)
+  )
   names(cov) <- wts
   base <- meta$parent_name %||% meta$name
   meta$parent_totals <- totals
-  meta$coverage      <- cov
-  meta$parent_name   <- base
-  meta$name          <- paste0(base, tag)
+  meta$coverage <- cov
+  meta$parent_name <- base
+  meta$name <- paste0(base, tag)
   meta
 }
 
@@ -63,16 +67,20 @@ NULL
   } else {
     empty <- fr[vapply(members[fr], length, integer(1)) == 0L]
     if (length(empty) > 0L) {
-      .stop(paste0("frame(s) left with no codes: %s; pass ",
-                   "drop_empty_frames = TRUE"), .preview(empty))
+      .stop(paste0(
+        "frame(s) left with no codes: %s; pass ",
+        "drop_empty_frames = TRUE"
+      ), .preview(empty))
     }
   }
 
   # The core props are set unchecked: a subclass's per-atom payload still has
   # the old rows until the hook slices it, and validating in between would
   # reject a payload that is positional (one element per leaftable row).
-  out <- S7::set_props(x, leaftable = leaves, frames = fr, members = members,
-                       meta = meta, .check = FALSE)
+  out <- S7::set_props(x,
+    leaftable = leaves, frames = fr, members = members,
+    meta = meta, .check = FALSE
+  )
   out <- scale_payload_slice(out, keep)
   S7::validate(out)
   out
@@ -109,12 +117,14 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
   .check_scale(x)
   .check_frame(x, frame)
   leaves <- S7::prop(x, "leaftable")
-  fr     <- S7::prop(x, "frames")
+  fr <- S7::prop(x, "frames")
 
   unknown <- setdiff(unit, S7::prop(x, "members")[[frame]])
   if (length(unknown) > 0L) {
-    .stop("code(s) not found at %s `%s`: %s", scale_vocab(x)$frame, frame,
-          .preview(unknown))
+    .stop(
+      "code(s) not found at %s `%s`: %s", scale_vocab(x)$frame, frame,
+      .preview(unknown)
+    )
   }
 
   keep <- which(leaves[[frame]] %in% unit)
@@ -123,7 +133,7 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
   }
 
   meta <- S7::prop(x, "meta")
-  if (length(keep) < nrow(leaves)) {          # a real sample, not a no-op
+  if (length(keep) < nrow(leaves)) { # a real sample, not a no-op
     codes <- unique(as.character(leaves[[frame]][keep]))
     # the tag must IDENTIFY the sample, not just count it -- two different
     # single-unit samples may not share a name
@@ -132,8 +142,10 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
     } else {
       paste0(length(codes), "~", substr(rlang::hash(sort(codes)), 1, 8))
     }
-    meta <- .sample_meta(x, meta, kept = leaves[keep, , drop = FALSE],
-                         tag = sprintf("[%s:%s]", frame, id))
+    meta <- .sample_meta(x, meta,
+      kept = leaves[keep, , drop = FALSE],
+      tag = sprintf("[%s:%s]", frame, id)
+    )
   }
   .rebuild(x, keep, fr, drop_empty_frames, meta = meta)
 }
@@ -187,12 +199,14 @@ prune_scale <- function(x, frame) {
   .check_frame(x, frame)
   fr <- S7::prop(x, "frames")
   # The key as atom level is finer than every frame: nothing to prune.
-  if (!frame %in% fr) return(x)
+  if (!frame %in% fr) {
+    return(x)
+  }
   keep_fr <- fr[seq_len(match(frame, fr))]
 
   leaves0 <- S7::prop(x, "leaftable")
   covered <- !is.na(leaves0[[frame]])
-  leaves  <- leaves0[covered, , drop = FALSE]
+  leaves <- leaves0[covered, , drop = FALSE]
   if (nrow(leaves) == 0L) {
     .stop("no atoms have a code at %s `%s`", scale_vocab(x)$frame, frame)
   }
@@ -214,18 +228,21 @@ prune_scale <- function(x, frame) {
   # meta: preserve EVERYTHING, then adjust identity and coverage
   meta <- S7::prop(x, "meta")
   new_meta <- meta
-  if (!all(covered)) {                    # NA atoms dropped = coverage loss
+  if (!all(covered)) { # NA atoms dropped = coverage loss
     new_meta <- .sample_meta(x, new_meta, kept = leaves, tag = "")
   }
   new_meta$parent_name <- meta$name
   new_meta$name <- paste0(meta$name, "@", frame)
 
   s <- scale_from_leaftable(
-    out, frames = keep_fr, key = akey, weights = wts,
+    out,
+    frames = keep_fr, key = akey, weights = wts,
     default_weight = meta$default_weight,
-    name = new_meta$name, desc = meta$desc %||% "")
+    name = new_meta$name, desc = meta$desc %||% ""
+  )
   full_meta <- utils::modifyList(new_meta, S7::prop(s, "meta")[
-    c("weights", "default_weight")])
+    c("weights", "default_weight")
+  ])
   S7::prop(s, "meta") <- full_meta
   s
 }
@@ -255,9 +272,11 @@ scale_share <- function(x, frame, weight = NULL, within = NULL) {
   weight <- .resolve_weight(x, weight)
   leaves <- S7::prop(x, "leaftable")
 
-  d <- data.frame(unit = as.character(leaves[[frame]]),
-                  w = as.numeric(leaves[[weight]]),
-                  stringsAsFactors = FALSE)
+  d <- data.frame(
+    unit = as.character(leaves[[frame]]),
+    w = as.numeric(leaves[[weight]]),
+    stringsAsFactors = FALSE
+  )
   if (is.null(within)) {
     d$grp <- ""
   } else {

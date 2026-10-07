@@ -16,11 +16,15 @@
   # registers against that shim instead of base's print -- invisible to
   # dispatch from user code. Register the plain-S3 class explicitly.
   registerS3method("print", "summary_Scale", print.summary_Scale,
-                   envir = baseenv())
+    envir = baseenv()
+  )
   registerS3method("print", "summary_ScaleProduct",
-                   print.summary_ScaleProduct, envir = baseenv())
+    print.summary_ScaleProduct,
+    envir = baseenv()
+  )
   registerS3method("print", "scale_dataset", print.scale_dataset,
-                   envir = baseenv())
+    envir = baseenv()
+  )
 
   invisible()
 }

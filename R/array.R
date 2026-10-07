@@ -29,13 +29,19 @@ NULL
     if (!is.null(cols) && !(cand %in% cols) && scale_key(s) %in% cols) {
       cand <- scale_key(s)
     }
-    list(key = cand,
-         units = if (is.null(fr)) scale_units(s) else scale_units(s, fr))
+    list(
+      key = cand,
+      units = if (is.null(fr)) scale_units(s) else scale_units(s, fr)
+    )
   }
   if (S7::S7_inherits(x, ScaleProduct)) {
     ax <- names(S7::prop(x, "axes"))
-    out <- lapply(ax, function(a) one(scale_axes(x, a),
-                                      if (is.null(frames)) NULL else frames[[a]]))
+    out <- lapply(ax, function(a) {
+      one(
+        scale_axes(x, a),
+        if (is.null(frames)) NULL else frames[[a]]
+      )
+    })
     names(out) <- ax
     return(out)
   }
@@ -65,8 +71,10 @@ NULL
 #'
 #' @examples
 #' p <- scale_product(a = scale_example(), b = scale_example2())
-#' d <- merge(data.frame(unit = c("U1", "U2")),
-#'            data.frame(period = c("p1", "p2")))
+#' d <- merge(
+#'   data.frame(unit = c("U1", "U2")),
+#'   data.frame(period = c("p1", "p2"))
+#' )
 #' d$v <- 1:4
 #' as_scale_array(d, p, value = "v")
 #' @export
@@ -80,32 +88,46 @@ as_scale_array <- function(data, x, value = NULL, frames = NULL, fill = NA,
 
   n_cells <- prod(as.numeric(dims))
   if (n_cells > limit) {
-    .stop(paste0("a dense array of this shape needs %s cells (%s), above ",
-                 "`limit`. The long table is the form that stays workable at ",
-                 "this size."),
-          format(n_cells, big.mark = ",", scientific = FALSE),
-          paste(sprintf("%s: %d", names(dims), dims), collapse = " x "))
+    .stop(
+      paste0(
+        "a dense array of this shape needs %s cells (%s), above ",
+        "`limit`. The long table is the form that stays workable at ",
+        "this size."
+      ),
+      format(n_cells, big.mark = ",", scientific = FALSE),
+      paste(sprintf("%s: %d", names(dims), dims), collapse = " x ")
+    )
   }
 
   d <- as.data.frame(dplyr::collect(.ms_lazy(data, backend)))
 
   missing_keys <- setdiff(unname(keys), names(d))
   if (length(missing_keys) > 0L) {
-    .stop("the data has no column(s) %s (one key column per axis)",
-          .preview(missing_keys))
+    .stop(
+      "the data has no column(s) %s (one key column per axis)",
+      .preview(missing_keys)
+    )
   }
   if (is.null(value)) {
     cand <- setdiff(names(d), unname(keys))
     cand <- cand[vapply(d[cand], is.numeric, logical(1))]
     if (length(cand) != 1L) {
-      .stop(paste0("cannot infer the value column (found: %s); pass ",
-                   "`value=`"),
-            if (length(cand) == 0L) "none" else .preview(cand))
+      .stop(
+        paste0(
+          "cannot infer the value column (found: %s); pass ",
+          "`value=`"
+        ),
+        if (length(cand) == 0L) "none" else .preview(cand)
+      )
     }
     value <- cand
   }
-  if (!value %in% names(d)) .stop("`value` column `%s` is not in the data",
-                                  value)
+  if (!value %in% names(d)) {
+    .stop(
+      "`value` column `%s` is not in the data",
+      value
+    )
+  }
 
   # Every key must be a unit of its axis: an unrecognised code has no cell to
   # go in, and silently dropping it would lose data without saying so.
@@ -115,14 +137,18 @@ as_scale_array <- function(data, x, value = NULL, frames = NULL, fill = NA,
     pos <- match(codes, axes[[i]]$units)
     bad <- unique(codes[is.na(pos)])
     if (length(bad) > 0L) {
-      .stop("column `%s` holds code(s) that are not units of axis `%s`: %s",
-            keys[[i]], names(axes)[[i]], .preview(bad))
+      .stop(
+        "column `%s` holds code(s) that are not units of axis `%s`: %s",
+        keys[[i]], names(axes)[[i]], .preview(bad)
+      )
     }
     idx[[i]] <- pos
   }
 
-  a <- array(fill, dim = unname(dims),
-             dimnames = lapply(axes, function(z) z$units))
+  a <- array(fill,
+    dim = unname(dims),
+    dimnames = lapply(axes, function(z) z$units)
+  )
   a[do.call(cbind, idx)] <- d[[value]]
   a
 }
@@ -145,14 +171,19 @@ as_scale_table <- function(a, x, value = "value", frames = NULL,
   keys <- vapply(axes, function(z) z$key, character(1))
   dims <- vapply(axes, function(z) length(z$units), integer(1))
 
-  if (length(dim(a)) != length(axes) || !identical(unname(dim(a)),
-                                                   unname(dims))) {
-    .stop("the array is %s but this scale describes %s",
-          paste(dim(a), collapse = " x "), paste(dims, collapse = " x "))
+  if (length(dim(a)) != length(axes) || !identical(
+    unname(dim(a)),
+    unname(dims)
+  )) {
+    .stop(
+      "the array is %s but this scale describes %s",
+      paste(dim(a), collapse = " x "), paste(dims, collapse = " x ")
+    )
   }
 
   grid <- expand.grid(lapply(axes, function(z) z$units),
-                      stringsAsFactors = FALSE, KEEP.OUT.ATTRS = FALSE)
+    stringsAsFactors = FALSE, KEEP.OUT.ATTRS = FALSE
+  )
   names(grid) <- unname(keys)
   grid[[value]] <- as.vector(a)
   if (isTRUE(drop_na)) {

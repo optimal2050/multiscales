@@ -83,8 +83,10 @@ scale_from_leaftable <- function(leaftable,
   }
   leaftable[[key]] <- as.character(leaftable[[key]])
   if (anyNA(leaftable[[key]]) || any(!nzchar(leaftable[[key]]))) {
-    .stop(paste0("the atom key column \"%s\" has missing or empty values; ",
-                 "every atom needs an identifier"), key)
+    .stop(paste0(
+      "the atom key column \"%s\" has missing or empty values; ",
+      "every atom needs an identifier"
+    ), key)
   }
 
   # Weights -------------------------------------------------------------------
@@ -122,22 +124,31 @@ scale_from_leaftable <- function(leaftable,
   # each coarse code sitting inside one fine code -- means the list is
   # actually upside down.
   .nests_in <- function(fine, coarse) {
-    if (anyNA(leaftable[[fine]]) || anyNA(leaftable[[coarse]])) return(FALSE)
-    all(tapply(as.character(leaftable[[coarse]]),
-               as.character(leaftable[[fine]]),
-               function(z) length(unique(z))) == 1L)
+    if (anyNA(leaftable[[fine]]) || anyNA(leaftable[[coarse]])) {
+      return(FALSE)
+    }
+    all(tapply(
+      as.character(leaftable[[coarse]]),
+      as.character(leaftable[[fine]]),
+      function(z) length(unique(z))
+    ) == 1L)
   }
   if (length(frames) > 1L) {
     inverted <- character()
     for (i in seq_len(length(frames) - 1L)) {
-      a <- frames[i]; b <- frames[i + 1L]
+      a <- frames[i]
+      b <- frames[i + 1L]
       if (.nests_in(a, b) && !.nests_in(b, a)) inverted <- c(inverted, b)
     }
     if (length(inverted) > 0L) {
-      .warn(paste0("`frames` should be ordered coarsest first, but %s ",
-                   "CONTAINS the frame before it. Aggregation direction is ",
-                   "taken from this order."),
-            .preview(inverted))
+      .warn(
+        paste0(
+          "`frames` should be ordered coarsest first, but %s ",
+          "CONTAINS the frame before it. Aggregation direction is ",
+          "taken from this order."
+        ),
+        .preview(inverted)
+      )
     }
   }
 
@@ -175,14 +186,16 @@ scale_from_leaftable <- function(leaftable,
 #' @export
 scale_example2 <- function() {
   df <- data.frame(
-    era    = c("E1", "E1", "E2", "E2"),
+    era = c("E1", "E1", "E2", "E2"),
     period = c("p1", "p2", "p3", "p4"),
-    span   = c(1, 3, 2, 4),
+    span = c(1, 3, 2, 4),
     stringsAsFactors = FALSE
   )
   scale_from_leaftable(
-    df, frames = c("era", "period"), name = "example2",
-    desc = "Synthetic second dimension, for product examples")
+    df,
+    frames = c("era", "period"), name = "example2",
+    desc = "Synthetic second dimension, for product examples"
+  )
 }
 
 #' A small example Scale
@@ -201,7 +214,7 @@ scale_example2 <- function() {
 #' @examples
 #' s <- scale_example()
 #' s
-#' scale_nests(s, "class", "group")   # FALSE - they cross-cut
+#' scale_nests(s, "class", "group") # FALSE - they cross-cut
 #' @export
 scale_example <- function() {
   df <- data.frame(
@@ -216,8 +229,10 @@ scale_example <- function() {
   scale_from_leaftable(
     df,
     frames = c("sector", "class", "group", "unit"),
-    name   = "example",
-    desc   = paste("Synthetic example: reused code, non-nesting frame pair,",
-                   "and an unassigned atom")
+    name = "example",
+    desc = paste(
+      "Synthetic example: reused code, non-nesting frame pair,",
+      "and an unassigned atom"
+    )
   )
 }

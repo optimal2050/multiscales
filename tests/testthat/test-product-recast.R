@@ -10,10 +10,16 @@
 .pp <- function() scale_product(a = scale_example(), b = scale_example2())
 
 .pdata <- function() {
-  d <- merge(data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
-                        stringsAsFactors = FALSE),
-             data.frame(period = c("p1", "p2", "p3", "p4"),
-                        stringsAsFactors = FALSE))
+  d <- merge(
+    data.frame(
+      unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
+      stringsAsFactors = FALSE
+    ),
+    data.frame(
+      period = c("p1", "p2", "p3", "p4"),
+      stringsAsFactors = FALSE
+    )
+  )
   d$cap <- seq_len(nrow(d))
   d
 }
@@ -32,11 +38,15 @@
   step <- d
   for (ax in order_ax) {
     step <- if (ax == "a") {
-      recast_scale(step, scale_axes(s, "a"), from = "unit", to = "sector",
-                   key = "unit", values = "cap", rule = rule_a)
+      recast_scale(step, scale_axes(s, "a"),
+        from = "unit", to = "sector",
+        key = "unit", values = "cap", rule = rule_a
+      )
     } else {
-      recast_scale(step, scale_axes(s, "b"), from = "period", to = "era",
-                   key = "period", values = "cap", rule = rule_b)
+      recast_scale(step, scale_axes(s, "b"),
+        from = "period", to = "era",
+        key = "period", values = "cap", rule = rule_b
+      )
     }
   }
   step
@@ -51,19 +61,28 @@ test_that("a product recast equals either sequential order (commutation)", {
       dd <- if (ra == "copy" || rb == "copy") {
         # `copy` needs a value that IS constant within every target block
         transform(d, cap = 7)
-      } else d
+      } else {
+        d
+      }
 
       ab <- suppressWarnings(.by_hand(dd, c("a", "b"), ra, rb))
       ba <- suppressWarnings(.by_hand(dd, c("b", "a"), ra, rb))
       one <- suppressWarnings(
-        recast_product(dd, p, to = list(a = "sector", b = "era"),
-                       rules = list(cap = c(a = ra, b = rb))))
+        recast_product(dd, p,
+          to = list(a = "sector", b = "era"),
+          rules = list(cap = c(a = ra, b = rb))
+        )
+      )
 
       lab <- sprintf("a=%s, b=%s", ra, rb)
-      expect_equal(.norm(ab), .norm(ba), ignore_attr = TRUE,
-                   label = paste("order independence:", lab))
-      expect_equal(.norm(one), .norm(ab), ignore_attr = TRUE,
-                   label = paste("product == sequential:", lab))
+      expect_equal(.norm(ab), .norm(ba),
+        ignore_attr = TRUE,
+        label = paste("order independence:", lab)
+      )
+      expect_equal(.norm(one), .norm(ab),
+        ignore_attr = TRUE,
+        label = paste("product == sequential:", lab)
+      )
     }
   }
 })
@@ -72,15 +91,19 @@ test_that("sum over a product conserves the total", {
   p <- .pp()
   d <- .pdata()
   out <- suppressWarnings(
-    recast_product(d, p, to = list(a = "sector", b = "era"), rules = "sum"))
+    recast_product(d, p, to = list(a = "sector", b = "era"), rules = "sum")
+  )
   expect_equal(sum(out$cap, na.rm = TRUE), sum(d$cap))
 })
 
 test_that("the output is keyed by the target frames", {
   p <- .pp()
   out <- suppressWarnings(
-    recast_product(.pdata(), p, to = list(a = "sector", b = "era"),
-                   rules = "sum"))
+    recast_product(.pdata(), p,
+      to = list(a = "sector", b = "era"),
+      rules = "sum"
+    )
+  )
   expect_true(all(c("sector", "era", "cap") %in% names(out)))
   expect_false(any(c("unit", "period") %in% names(out)))
 })
@@ -88,7 +111,8 @@ test_that("the output is keyed by the target frames", {
 test_that("an axis left out of `to` passes through untouched", {
   p <- .pp()
   out <- suppressWarnings(
-    recast_product(.pdata(), p, to = list(a = "sector"), rules = "sum"))
+    recast_product(.pdata(), p, to = list(a = "sector"), rules = "sum")
+  )
   expect_true(all(c("sector", "period") %in% names(out)))
   expect_setequal(unique(out$period), c("p1", "p2", "p3", "p4"))
   expect_equal(sum(out$cap, na.rm = TRUE), sum(.pdata()$cap))
@@ -99,11 +123,18 @@ test_that("a scalar rule applies to every axis and column", {
   d <- .pdata()
   expect_equal(
     .norm(suppressWarnings(
-      recast_product(d, p, to = list(a = "sector", b = "era"),
-                     rules = "sum"))),
+      recast_product(d, p,
+        to = list(a = "sector", b = "era"),
+        rules = "sum"
+      )
+    )),
     .norm(suppressWarnings(
-      recast_product(d, p, to = list(a = "sector", b = "era"),
-                     rules = list(cap = c(a = "sum", b = "sum"))))))
+      recast_product(d, p,
+        to = list(a = "sector", b = "era"),
+        rules = list(cap = c(a = "sum", b = "sum"))
+      )
+    ))
+  )
 })
 
 test_that("the rule registry supplies per-axis defaults", {
@@ -114,10 +145,15 @@ test_that("the rule registry supplies per-axis defaults", {
   d <- .pdata()
   expect_equal(
     .norm(suppressWarnings(
-      recast_product(d, p, to = list(a = "sector", b = "era")))),
+      recast_product(d, p, to = list(a = "sector", b = "era"))
+    )),
     .norm(suppressWarnings(
-      recast_product(d, p, to = list(a = "sector", b = "era"),
-                     rules = "sum"))))
+      recast_product(d, p,
+        to = list(a = "sector", b = "era"),
+        rules = "sum"
+      )
+    ))
+  )
 })
 
 test_that("a column with no rule on some axis is an error", {
@@ -126,20 +162,27 @@ test_that("a column with no rule on some axis is an error", {
   p <- .pp()
   expect_error(
     recast_product(.pdata(), p, to = list(a = "sector", b = "era")),
-    "no aggregation rule for value column")
+    "no aggregation rule for value column"
+  )
 })
 
 test_that("per-axis weights are honoured", {
   p <- .pp()
   d <- .pdata()
   a <- suppressWarnings(
-    recast_product(d, p, to = list(a = "sector", b = "era"),
-                   rules = list(cap = c(a = "weighted_mean", b = "sum")),
-                   weights = c(a = "size")))
+    recast_product(d, p,
+      to = list(a = "sector", b = "era"),
+      rules = list(cap = c(a = "weighted_mean", b = "sum")),
+      weights = c(a = "size")
+    )
+  )
   b <- suppressWarnings(
-    recast_product(d, p, to = list(a = "sector", b = "era"),
-                   rules = list(cap = c(a = "weighted_mean", b = "sum")),
-                   weights = c(a = "count")))
+    recast_product(d, p,
+      to = list(a = "sector", b = "era"),
+      rules = list(cap = c(a = "weighted_mean", b = "sum")),
+      weights = c(a = "count")
+    )
+  )
   # different weights on axis `a` give different answers
   expect_false(isTRUE(all.equal(a$cap, b$cap)))
 })
@@ -149,29 +192,41 @@ test_that("per-axis weights are honoured", {
 test_that("a per-axis sd is refused, with both alternatives named", {
   p <- .pp()
   expect_error(
-    recast_product(.pdata(), p, to = list(a = "sector", b = "era"),
-                   rules = list(cap = c(a = "sd", b = "sum"))),
-    "order-dependent")
+    recast_product(.pdata(), p,
+      to = list(a = "sector", b = "era"),
+      rules = list(cap = c(a = "sd", b = "sum"))
+    ),
+    "order-dependent"
+  )
   expect_error(
-    recast_product(.pdata(), p, to = list(a = "sector", b = "era"),
-                   rules = list(cap = c(a = "sd", b = "sum"))),
-    "pooled sd")
+    recast_product(.pdata(), p,
+      to = list(a = "sector", b = "era"),
+      rules = list(cap = c(a = "sd", b = "sum"))
+    ),
+    "pooled sd"
+  )
 })
 
 test_that("share is refused across a product", {
   p <- .pp()
   expect_error(
-    recast_product(.pdata(), p, to = list(a = "sector", b = "era"),
-                   rules = "share"),
-    "not defined across a product")
+    recast_product(.pdata(), p,
+      to = list(a = "sector", b = "era"),
+      rules = "share"
+    ),
+    "not defined across a product"
+  )
 })
 
 test_that("pooled sd equals the direct sd over the product atoms", {
   p <- .pp()
   d <- .pdata()
   out <- suppressWarnings(
-    recast_product(d, p, to = list(a = "sector", b = "era"),
-                   rules = list(cap = "sd")))
+    recast_product(d, p,
+      to = list(a = "sector", b = "era"),
+      rules = list(cap = "sd")
+    )
+  )
 
   # the data is keyed at BOTH atom frames, so every row is one product atom
   # and the pooled sd is just the sd of the values in each block
@@ -189,12 +244,17 @@ test_that("pooled sd equals the direct sd over the product atoms", {
 test_that("pooled sd weights by the product atom counts", {
   p <- .pp()
   # keyed at a COARSER frame on axis a, so each row covers several atoms
-  d <- merge(data.frame(class = c("G1", "G2", "S1"), stringsAsFactors = FALSE),
-             data.frame(period = c("p1", "p2"), stringsAsFactors = FALSE))
+  d <- merge(
+    data.frame(class = c("G1", "G2", "S1"), stringsAsFactors = FALSE),
+    data.frame(period = c("p1", "p2"), stringsAsFactors = FALSE)
+  )
   d$v <- c(1, 2, 3, 4, 5, 6)
   out <- suppressWarnings(
-    recast_product(d, p, to = list(a = "sector", b = "era"),
-                   rules = list(v = "sd")))
+    recast_product(d, p,
+      to = list(a = "sector", b = "era"),
+      rules = list(v = "sd")
+    )
+  )
   # Block (P, E1) covers classes G1 and G2 across periods p1 and p2: four
   # rows, each standing for 2 atoms (G1 and G2 hold 2 units each; p1 and p2
   # are single atoms). The pooled sd weights each value by that atom count.
@@ -203,7 +263,8 @@ test_that("pooled sd weights by the product atom counts", {
   nn <- sum(n)
   expect_equal(
     out$v[out$sector == "P" & out$era == "E1"],
-    sqrt((sum(n * vals^2) - sum(n * vals)^2 / nn) / (nn - 1)))
+    sqrt((sum(n * vals^2) - sum(n * vals)^2 / nn) / (nn - 1))
+  )
 })
 
 test_that("a mixed call splits into the sequential and joint paths", {
@@ -211,8 +272,11 @@ test_that("a mixed call splits into the sequential and joint paths", {
   d <- .pdata()
   d$other <- d$cap * 2
   out <- suppressWarnings(
-    recast_product(d, p, to = list(a = "sector", b = "era"),
-                   rules = list(cap = "sum", other = "sd")))
+    recast_product(d, p,
+      to = list(a = "sector", b = "era"),
+      rules = list(cap = "sum", other = "sd")
+    )
+  )
   expect_true(all(c("sector", "era", "cap", "other") %in% names(out)))
   expect_equal(sum(out$cap, na.rm = TRUE), sum(d$cap))
   expect_false(anyNA(out$other))
@@ -222,37 +286,54 @@ test_that("a mixed call splits into the sequential and joint paths", {
 
 test_that("`to` must name known axes", {
   p <- .pp()
-  expect_error(recast_product(.pdata(), p, to = list(zz = "sector")),
-               "unknown axes")
-  expect_error(recast_product(.pdata(), p, to = list()),
-               "at least one axis")
-  expect_error(recast_product(.pdata(), p, to = list("sector")),
-               "must be named by axis")
-  expect_error(recast_product(.pdata(), p, to = list(a = "nope")),
-               "is not a frame")
+  expect_error(
+    recast_product(.pdata(), p, to = list(zz = "sector")),
+    "unknown axes"
+  )
+  expect_error(
+    recast_product(.pdata(), p, to = list()),
+    "at least one axis"
+  )
+  expect_error(
+    recast_product(.pdata(), p, to = list("sector")),
+    "must be named by axis"
+  )
+  expect_error(
+    recast_product(.pdata(), p, to = list(a = "nope")),
+    "is not a frame"
+  )
 })
 
 test_that("a missing key column is reported as such", {
   p <- .pp()
   d <- .pdata()
   d$period <- NULL
-  expect_error(recast_product(d, p, to = list(b = "era"), rules = "sum"),
-               "one key column per axis")
+  expect_error(
+    recast_product(d, p, to = list(b = "era"), rules = "sum"),
+    "one key column per axis"
+  )
 })
 
 test_that("a target colliding with another axis's frame is refused", {
   # `era` is a frame of axis b; make axis a able to target that name too
-  df <- data.frame(era = c("X", "X", "Y"), unit = c("u1", "u2", "u3"),
-                   w = c(1, 1, 1), stringsAsFactors = FALSE)
+  df <- data.frame(
+    era = c("X", "X", "Y"), unit = c("u1", "u2", "u3"),
+    w = c(1, 1, 1), stringsAsFactors = FALSE
+  )
   odd <- scale_from_leaftable(df, frames = c("era", "unit"), name = "odd")
   p <- scale_product(a = odd, b = scale_example2())
-  d <- merge(data.frame(unit = c("u1", "u2", "u3"),
-                        stringsAsFactors = FALSE),
-             data.frame(period = c("p1", "p2"), stringsAsFactors = FALSE))
+  d <- merge(
+    data.frame(
+      unit = c("u1", "u2", "u3"),
+      stringsAsFactors = FALSE
+    ),
+    data.frame(period = c("p1", "p2"), stringsAsFactors = FALSE)
+  )
   d$v <- 1
   expect_error(
     recast_product(d, p, to = list(a = "era"), rules = "sum"),
-    "would be dropped")
+    "would be dropped"
+  )
 })
 
 test_that("recast() dispatches on a product", {
@@ -260,8 +341,11 @@ test_that("recast() dispatches on a product", {
   d <- .pdata()
   expect_equal(
     suppressWarnings(recast(d, p, to = list(a = "sector"), rules = "sum")),
-    suppressWarnings(recast_product(d, p, to = list(a = "sector"),
-                                    rules = "sum")))
+    suppressWarnings(recast_product(d, p,
+      to = list(a = "sector"),
+      rules = "sum"
+    ))
+  )
 })
 
 # Backends ---------------------------------------------------------------------
@@ -272,11 +356,15 @@ test_that("a product recast honours the backend contract", {
     .pdata(),
     function(x, collect = NULL) {
       suppressWarnings(
-        recast_product(x, p, to = list(a = "sector", b = "era"),
-                       rules = "sum", collect = collect))
+        recast_product(x, p,
+          to = list(a = "sector", b = "era"),
+          rules = "sum", collect = collect
+        )
+      )
     },
     key_cols = c("sector", "era"),
-    value_cols = "cap")
+    value_cols = "cap"
+  )
 })
 
 test_that("the joint sd path also honours the backend contract", {
@@ -285,10 +373,14 @@ test_that("the joint sd path also honours the backend contract", {
     .pdata(),
     function(x, collect = NULL) {
       suppressWarnings(
-        recast_product(x, p, to = list(a = "sector", b = "era"),
-                       rules = list(cap = "sd"), collect = collect))
+        recast_product(x, p,
+          to = list(a = "sector", b = "era"),
+          rules = list(cap = "sd"), collect = collect
+        )
+      )
     },
-    key_cols = c("sector", "era"))
+    key_cols = c("sector", "era")
+  )
 })
 
 # Componentwise verbs ----------------------------------------------------------
@@ -305,8 +397,10 @@ test_that("filter_product() subsets one axis and keeps a product", {
 
 test_that("join_product() attaches every axis's labels", {
   p <- .pp()
-  d <- data.frame(unit = c("U1", "U3"), period = c("p1", "p2"),
-                  v = 1:2, stringsAsFactors = FALSE)
+  d <- data.frame(
+    unit = c("U1", "U3"), period = c("p1", "p2"),
+    v = 1:2, stringsAsFactors = FALSE
+  )
   out <- join_product(d, p, attach = TRUE)
   expect_true(all(c("example", "example2") %in% names(out)))
   expect_true("example.sector" %in% names(out))

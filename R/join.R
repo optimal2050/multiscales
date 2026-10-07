@@ -59,8 +59,8 @@ join_scale <- function(data, x, key = NULL, frame = NULL, attach = NULL,
   schema <- .ms_schema(data)
   v <- scale_vocab(x)
 
-  leaves  <- S7::prop(x, "leaftable")
-  fr_all  <- S7::prop(x, "frames")
+  leaves <- S7::prop(x, "leaftable")
+  fr_all <- S7::prop(x, "frames")
   members <- S7::prop(x, "members")
 
   # -- resolve the keyed frame and the key -----------------------------------
@@ -71,19 +71,30 @@ join_scale <- function(data, x, key = NULL, frame = NULL, attach = NULL,
     # than codes of one. Only fires where this previously errored.
     if (length(hit) == 0L) hit <- intersect(.atom_level(x), names(schema))
     if (length(hit) != 1L) {
-      .stop(paste0("cannot infer the code %s from the data's columns ",
-                   "(found: %s); pass `frame=`"),
-            v$frame, if (length(hit) == 0L) "none" else .preview(hit))
+      .stop(
+        paste0(
+          "cannot infer the code %s from the data's columns ",
+          "(found: %s); pass `frame=`"
+        ),
+        v$frame, if (length(hit) == 0L) "none" else .preview(hit)
+      )
     }
     frame <- hit
   }
   .check_frame(x, frame, "frame")
   if (is.null(key)) {
-    key <- if (nm %in% names(schema)) nm
-           else if (frame %in% names(schema)) frame
-           else if (scale_key(x) %in% names(schema)) scale_key(x)
-           else .stop(paste0("the data has no `%s`, `%s`, or `%s` column; ",
-                             "pass `key=`"), nm, frame, scale_key(x))
+    key <- if (nm %in% names(schema)) {
+      nm
+    } else if (frame %in% names(schema)) {
+      frame
+    } else if (scale_key(x) %in% names(schema)) {
+      scale_key(x)
+    } else {
+      .stop(paste0(
+        "the data has no `%s`, `%s`, or `%s` column; ",
+        "pass `key=`"
+      ), nm, frame, scale_key(x))
+    }
   }
   if (!key %in% names(schema)) {
     .stop("the data has no column named `%s`; pass `key=`", key)
@@ -97,22 +108,28 @@ join_scale <- function(data, x, key = NULL, frame = NULL, attach = NULL,
   if (!is.null(attach) && !isFALSE(attach)) {
     bad <- setdiff(attach, coarser)
     if (length(bad) > 0L) {
-      .stop("`attach` must be coarser than '%s'; not: %s", frame,
-            .preview(bad))
+      .stop(
+        "`attach` must be coarser than '%s'; not: %s", frame,
+        .preview(bad)
+      )
     }
   } else {
     attach <- character(0)
   }
-  new_cols <- c(if (key != nm) nm,
-                paste0(nm, ".", attach),
-                if (isTRUE(meta)) paste0(nm, c(".share", ".weight")))
+  new_cols <- c(
+    if (key != nm) nm,
+    paste0(nm, ".", attach),
+    if (isTRUE(meta)) paste0(nm, c(".share", ".weight"))
+  )
   clash <- intersect(new_cols, names(schema))
   if (length(clash) > 0L) {
-    .stop("attaching \"%s\" would overwrite existing column(s): %s",
-          nm, .preview(clash))
+    .stop(
+      "attaching \"%s\" would overwrite existing column(s): %s",
+      nm, .preview(clash)
+    )
   }
   if (length(new_cols) == 0L) {
-    return(data)   # label column already there, nothing else requested
+    return(data) # label column already there, nothing else requested
   }
 
   # -- validate the keys -----------------------------------------------------
@@ -125,20 +142,30 @@ join_scale <- function(data, x, key = NULL, frame = NULL, attach = NULL,
   if (.want_diagnostics(diagnostics, backend)) {
     ksym <- rlang::sym(key)
     any_match <- .ms_pull(
-      utils::head(dplyr::filter(.ms_lazy(data, backend), !!ksym %in% known),
-                  1L))
+      utils::head(
+        dplyr::filter(.ms_lazy(data, backend), !!ksym %in% known),
+        1L
+      )
+    )
     if (nrow(any_match) == 0L) {
-      .stop("no rows of the `%s` column match units at %s '%s'",
-            key, v$frame, frame)
+      .stop(
+        "no rows of the `%s` column match units at %s '%s'",
+        key, v$frame, frame
+      )
     }
     unknown <- .ms_pull(dplyr::distinct(dplyr::select(
-      dplyr::filter(.ms_lazy(data, backend),
-                    !is.na(!!ksym) & !(!!ksym %in% known)),
-      dplyr::all_of(key))))[[key]]
+      dplyr::filter(
+        .ms_lazy(data, backend),
+        !is.na(!!ksym) & !(!!ksym %in% known)
+      ),
+      dplyr::all_of(key)
+    )))[[key]]
     if (length(unknown) > 0L) {
-      .warn("%d code(s) in the `%s` column are not %s at %s '%s': %s",
-            length(unknown), key, v$units, v$frame, frame,
-            .preview(unique(as.character(unknown))))
+      .warn(
+        "%d code(s) in the `%s` column are not %s at %s '%s': %s",
+        length(unknown), key, v$units, v$frame, frame,
+        .preview(unique(as.character(unknown)))
+      )
     }
   }
 
@@ -149,13 +176,18 @@ join_scale <- function(data, x, key = NULL, frame = NULL, attach = NULL,
   # one parent are ambiguous -> NA + warning
   for (cl in attach) {
     pairs <- unique(leaves[!is.na(leaves[[frame]]), c(frame, cl),
-                           drop = FALSE])
+      drop = FALSE
+    ])
     n_par <- table(pairs[[frame]])
     multi <- names(n_par)[n_par > 1L]
     if (length(multi) > 0L) {
-      .warn(paste0("%s '%s' does not nest in '%s'; %d code(s) have multiple ",
-                   "parents and get NA (e.g. %s)"),
-            v$frame, frame, cl, length(multi), .preview(multi))
+      .warn(
+        paste0(
+          "%s '%s' does not nest in '%s'; %d code(s) have multiple ",
+          "parents and get NA (e.g. %s)"
+        ),
+        v$frame, frame, cl, length(multi), .preview(multi)
+      )
       pairs <- pairs[!pairs[[frame]] %in% multi, , drop = FALSE]
     }
     val <- as.character(pairs[[cl]])[match(known, pairs[[frame]])]
@@ -167,15 +199,18 @@ join_scale <- function(data, x, key = NULL, frame = NULL, attach = NULL,
   if (isTRUE(meta)) {
     wcol <- tryCatch(.resolve_weight(x, weight), error = function(e) NULL)
     if (is.null(wcol)) {
-      .warn(paste0("\"%s\" declares no weight columns; `meta = TRUE` ",
-                   "share/weight skipped"), nm)
+      .warn(paste0(
+        "\"%s\" declares no weight columns; `meta = TRUE` ",
+        "share/weight skipped"
+      ), nm)
     } else {
       w <- stats::aggregate(as.numeric(leaves[[wcol]]),
-                            by = list(code = as.character(leaves[[frame]])),
-                            FUN = sum, na.rm = TRUE)
+        by = list(code = as.character(leaves[[frame]])),
+        FUN = sum, na.rm = TRUE
+      )
       ww <- w$x[match(known, w$code)]
       attach_df[[paste0(nm, ".weight")]] <- ww
-      attach_df[[paste0(nm, ".share")]]  <- ww / sum(w$x)
+      attach_df[[paste0(nm, ".share")]] <- ww / sum(w$x)
     }
   }
 
@@ -184,8 +219,10 @@ join_scale <- function(data, x, key = NULL, frame = NULL, attach = NULL,
   names(lab_map)[names(lab_map) == ".ms_label"] <- key
   lab_map$.ms_label <- lab_map[[key]]
 
-  out <- dplyr::left_join(.ms_lazy(data, backend), lab_map, by = key,
-                          na_matches = "na")
+  out <- dplyr::left_join(.ms_lazy(data, backend), lab_map,
+    by = key,
+    na_matches = "na"
+  )
   if (key != nm) {
     out <- dplyr::rename(out, !!rlang::sym(nm) := !!rlang::sym(".ms_label"))
   } else {

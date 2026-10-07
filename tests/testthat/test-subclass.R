@@ -32,35 +32,53 @@ Widget <- S7::new_class(
 )
 
 .widget <- function(...) {
-  df <- data.frame(grp = c("A", "A", "B"),
-                   widget = c("w1", "w2", "w3"),
-                   w = c(1, 2, 3), stringsAsFactors = FALSE)
-  Widget(leaftable = df, frames = c("grp", "widget"),
-         members = list(grp = c("A", "B"), widget = c("w1", "w2", "w3")),
-         key = "widget", meta = list(name = "wx", weights = "w",
-                                     default_weight = "w"), ...)
+  df <- data.frame(
+    grp = c("A", "A", "B"),
+    widget = c("w1", "w2", "w3"),
+    w = c(1, 2, 3), stringsAsFactors = FALSE
+  )
+  Widget(
+    leaftable = df, frames = c("grp", "widget"),
+    members = list(grp = c("A", "B"), widget = c("w1", "w2", "w3")),
+    key = "widget", meta = list(
+      name = "wx", weights = "w",
+      default_weight = "w"
+    ), ...
+  )
 }
 
 test_that("a subclass inherits the parent validator", {
   # the PARENT's rule (members must match the leaftable) still bites
-  df <- data.frame(grp = c("A", "A"), widget = c("w1", "w2"),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "A"), widget = c("w1", "w2"),
+    stringsAsFactors = FALSE
+  )
   expect_error(
-    Widget(leaftable = df, frames = c("grp", "widget"),
-           members = list(grp = c("A", "GHOST"),
-                          widget = c("w1", "w2")),
-           key = "widget"),
-    "exactly the non-NA")
+    Widget(
+      leaftable = df, frames = c("grp", "widget"),
+      members = list(
+        grp = c("A", "GHOST"),
+        widget = c("w1", "w2")
+      ),
+      key = "widget"
+    ),
+    "exactly the non-NA"
+  )
 })
 
 test_that("a subclass adds its own invariants on top", {
-  df <- data.frame(grp = c("A", "A"), unit = c("w1", "w2"),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "A"), unit = c("w1", "w2"),
+    stringsAsFactors = FALSE
+  )
   expect_error(
-    Widget(leaftable = df, frames = c("grp", "unit"),
-           members = list(grp = "A", unit = c("w1", "w2")),
-           key = "unit"),
-    "must be \"widget\"")
+    Widget(
+      leaftable = df, frames = c("grp", "unit"),
+      members = list(grp = "A", unit = c("w1", "w2")),
+      key = "unit"
+    ),
+    "must be \"widget\""
+  )
 })
 
 test_that("class() puts the child first and Scale at the tail", {
@@ -89,7 +107,12 @@ test_that("an alias property reads and writes the inherited prop", {
   expect_identical(S7::prop(w, "frames"), c("grp", "widget"))
   # an invalid write is caught by the PARENT validator, which proves the
   # setter really writes `frames` rather than storing a private copy
-  expect_error({w@slots <- c("grp", "nope")}, "missing frame columns")
+  expect_error(
+    {
+      w@slots <- c("grp", "nope")
+    },
+    "missing frame columns"
+  )
 })
 
 test_that("an alias setter no-ops on NULL", {
@@ -121,8 +144,10 @@ test_that("a subclass carries its own extra property", {
 
 test_that("scale_vocab() can be overridden per dimension", {
   S7::method(scale_vocab, Widget) <- function(x, ...) {
-    list(object = "Widget", frame = "slot", frames = "slots",
-         unit = "widget", units = "widgets", atoms = "widgetbase")
+    list(
+      object = "Widget", frame = "slot", frames = "slots",
+      unit = "widget", units = "widgets", atoms = "widgetbase"
+    )
   }
   w <- .widget()
   expect_identical(scale_vocab(w)$frame, "slot")
@@ -131,23 +156,27 @@ test_that("scale_vocab() can be overridden per dimension", {
 })
 
 test_that("a positional per-atom payload survives a row subset", {
-  Shaped <- S7::new_class("Shaped", parent = scale_class(),
+  Shaped <- S7::new_class("Shaped",
+    parent = scale_class(),
     properties = list(shape = S7::class_character),
     validator = function(self) {
       if (length(self@shape) != nrow(self@leaftable)) {
         "`shape` needs one entry per leaftable row"
       }
-    })
+    }
+  )
   S7::method(scale_payload_slice, Shaped) <- function(x, i, ...) {
     x@shape <- x@shape[i]
     x
   }
   base <- scale_example()
   lt <- scale_leaftable(base)
-  s <- Shaped(leaftable = lt, frames = scale_frames(base),
-              members = S7::prop(base, "members"), key = scale_key(base),
-              meta = S7::prop(base, "meta"),
-              shape = paste0("shape_", lt$unit))
+  s <- Shaped(
+    leaftable = lt, frames = scale_frames(base),
+    members = S7::prop(base, "members"), key = scale_key(base),
+    meta = S7::prop(base, "meta"),
+    shape = paste0("shape_", lt$unit)
+  )
   p <- filter_scale(s, "sector", "P")
   expect_identical(p@shape, paste0("shape_", scale_leaftable(p)$unit))
   expect_true(S7::S7_inherits(p, Shaped))

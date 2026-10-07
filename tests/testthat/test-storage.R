@@ -5,8 +5,10 @@
 .sp <- function() scale_product(a = scale_example(), b = scale_example2())
 
 .sd <- function() {
-  d <- merge(data.frame(unit = c("U1", "U2", "U3"), stringsAsFactors = FALSE),
-             data.frame(period = c("p1", "p2"), stringsAsFactors = FALSE))
+  d <- merge(
+    data.frame(unit = c("U1", "U2", "U3"), stringsAsFactors = FALSE),
+    data.frame(period = c("p1", "p2"), stringsAsFactors = FALSE)
+  )
   d$v <- seq_len(nrow(d))
   d
 }
@@ -16,7 +18,7 @@
 test_that("as_scale_array() shapes the table by the axes", {
   p <- .sp()
   a <- as_scale_array(.sd(), p, value = "v")
-  expect_identical(dim(a), c(7L, 4L))          # 7 units x 4 periods
+  expect_identical(dim(a), c(7L, 4L)) # 7 units x 4 periods
   expect_identical(dimnames(a)[[1]], scale_units(scale_example()))
   expect_identical(dimnames(a)[[2]], scale_units(scale_example2()))
   # supplied cells carry their value, the rest are the fill
@@ -37,7 +39,8 @@ test_that("the array round-trips back to the long table", {
 test_that("as_scale_table() can keep the uncovered cells", {
   p <- .sp()
   full <- as_scale_table(as_scale_array(.sd(), p, value = "v"), p,
-                         value = "v", drop_na = FALSE)
+    value = "v", drop_na = FALSE
+  )
   expect_identical(nrow(full), 28L)
   expect_true(anyNA(full$v))
 })
@@ -59,8 +62,10 @@ test_that("a one-dimensional Scale also works", {
 
 test_that("an oversized array is refused rather than allocated", {
   p <- .sp()
-  expect_error(as_scale_array(.sd(), p, value = "v", limit = 10),
-               "above `limit`")
+  expect_error(
+    as_scale_array(.sd(), p, value = "v", limit = 10),
+    "above `limit`"
+  )
 })
 
 test_that("codes that are not units are an error, never silently dropped", {
@@ -87,8 +92,10 @@ test_that("a missing key column is named", {
 
 test_that("as_scale_table() checks the array's shape", {
   p <- .sp()
-  expect_error(as_scale_table(array(1, c(2, 2)), p),
-               "but this scale describes")
+  expect_error(
+    as_scale_table(array(1, c(2, 2)), p),
+    "but this scale describes"
+  )
 })
 
 # The store --------------------------------------------------------------------
@@ -123,14 +130,16 @@ test_that("the reopened scales are the same scales", {
 
   for (a in names(scale_axes(p))) {
     orig <- scale_axes(p, a)
-    got  <- scale_axes(back, a)
+    got <- scale_axes(back, a)
     expect_identical(scale_frames(got), scale_frames(orig), label = a)
     expect_identical(scale_key(got), scale_key(orig), label = a)
     expect_identical(scale_units(got), scale_units(orig), label = a)
     expect_identical(scale_weights(got), scale_weights(orig), label = a)
     expect_equal(as.data.frame(scale_leaftable(got)),
-                 as.data.frame(scale_leaftable(orig)), ignore_attr = TRUE,
-                 label = a)
+      as.data.frame(scale_leaftable(orig)),
+      ignore_attr = TRUE,
+      label = a
+    )
   }
 })
 
@@ -144,11 +153,17 @@ test_that("a stored dataset can be recast without re-declaring anything", {
   ds <- open_scale_dataset(file.path(dir, "s"))
 
   out <- suppressWarnings(
-    recast_product(ds$data, ds$scale, to = list(a = "sector"),
-                   values = "v", rules = "sum", collect = TRUE))
+    recast_product(ds$data, ds$scale,
+      to = list(a = "sector"),
+      values = "v", rules = "sum", collect = TRUE
+    )
+  )
   ref <- suppressWarnings(
-    recast_product(d, p, to = list(a = "sector"), values = "v",
-                   rules = "sum"))
+    recast_product(d, p,
+      to = list(a = "sector"), values = "v",
+      rules = "sum"
+    )
+  )
   key <- function(z) paste(as.data.frame(z)$sector, as.data.frame(z)$period)
   got <- as.data.frame(out)[order(key(out)), ]
   ref <- as.data.frame(ref)[order(key(ref)), ]
@@ -198,12 +213,16 @@ test_that("the store refuses to clobber and to write junk", {
 
   d <- .sd()
   d$period <- NULL
-  expect_error(write_scale_dataset(d, p, file.path(dir, "t")),
-               "one key column per axis")
+  expect_error(
+    write_scale_dataset(d, p, file.path(dir, "t")),
+    "one key column per axis"
+  )
   expect_error(
     write_scale_dataset(.sd(), p, file.path(dir, "u"),
-                        partitioning = "nope"),
-    "not in the data")
+      partitioning = "nope"
+    ),
+    "not in the data"
+  )
 })
 
 test_that("meta that cannot be written as YAML is refused up front", {
@@ -215,8 +234,10 @@ test_that("meta that cannot be written as YAML is refused up front", {
   S7::prop(s, "meta") <- meta
   d <- data.frame(unit = "U1", v = 1, stringsAsFactors = FALSE)
   dir <- withr::local_tempdir()
-  expect_error(write_scale_dataset(d, s, file.path(dir, "s")),
-               "cannot be written as YAML")
+  expect_error(
+    write_scale_dataset(d, s, file.path(dir, "s")),
+    "cannot be written as YAML"
+  )
   # and nothing was left behind
   expect_false(dir.exists(file.path(dir, "s", "data")))
 })

@@ -27,13 +27,17 @@
 NULL
 
 # Internal working columns; user columns may not collide with these
-.MS_COLS <- c(".ms_parent", ".ms_tot", ".ms_to", ".ms_f", ".ms_n_from",
-              ".ms_n_overlap", ".ms_w", ".ms_w_from", ".ms_nsrc",
-              ".ms_nexp")
+.MS_COLS <- c(
+  ".ms_parent", ".ms_tot", ".ms_to", ".ms_f", ".ms_n_from",
+  ".ms_n_overlap", ".ms_w", ".ms_w_from", ".ms_nsrc",
+  ".ms_nexp"
+)
 
-utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
-                         ".ms_w", ".ms_w_from", ".ms_parent", ".ms_nsrc",
-                         ".ms_nexp"))
+utils::globalVariables(c(
+  ".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
+  ".ms_w", ".ms_w_from", ".ms_parent", ".ms_nsrc",
+  ".ms_nexp"
+))
 
 # -----------------------------------------------------------------------------
 # shared internals
@@ -51,8 +55,10 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
     return(values)
   }
   if (!all(values %in% names(schema))) {
-    .stop("value column(s) not in `x`: %s",
-          .preview(setdiff(values, names(schema))))
+    .stop(
+      "value column(s) not in `x`: %s",
+      .preview(setdiff(values, names(schema)))
+    )
   }
   values
 }
@@ -81,25 +87,28 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
     # them side by side as `.ms_f_1`, `.ms_w_1`, ... so one join and one
     # summarise serve them all.
     sx <- if (is.null(sfx)) "" else sfx[[v]]
-    f  <- rlang::sym(paste0(".ms_f", sx))
+    f <- rlang::sym(paste0(".ms_f", sx))
     ww <- rlang::sym(paste0(".ms_w", sx))
     sym <- rlang::sym(v)
-    out[[v]] <- switch(
-      rules[[v]]$rule,
+    out[[v]] <- switch(rules[[v]]$rule,
       sum = rlang::expr(sum(!!sym * !!f)),
       mean = rlang::expr(sum(!!sym * !!nn) / sum(!!nn)),
       weighted_mean = rlang::expr(
         dplyr::if_else(sum(!!ww) > 0,
-                       sum(!!sym * !!ww) / sum(!!ww),
-                       sum(!!sym * !!nn) / sum(!!nn))),
-      copy = rlang::expr(mean(!!sym)),   # constancy pre-checked eagerly
+          sum(!!sym * !!ww) / sum(!!ww),
+          sum(!!sym * !!nn) / sum(!!nn)
+        )
+      ),
+      copy = rlang::expr(mean(!!sym)), # constancy pre-checked eagerly
       sd = rlang::expr(
         dplyr::if_else(
           sum(!!nn) > 1,
           sqrt((sum(!!nn * (!!sym)^2) -
-                  (sum(!!nn * (!!sym)))^2 / sum(!!nn)) /
-                 (sum(!!nn) - 1)),
-          NA_real_)),
+            (sum(!!nn * (!!sym)))^2 / sum(!!nn)) /
+            (sum(!!nn) - 1)),
+          NA_real_
+        )
+      ),
       .stop("Unknown rule: %s", rules[[v]]$rule)
     )
   }
@@ -124,12 +133,12 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
   for (v in values) {
     sym <- rlang::sym(v)
     if (!na_rm) {
-      exprs[[v]] <- switch(
-        rules[[v]]$rule,
+      exprs[[v]] <- switch(rules[[v]]$rule,
         sum = rlang::expr(sum(!!sym)),
         mean = rlang::expr(mean(!!sym)),
         weighted_mean = rlang::expr(dplyr::if_else(
-          sum(!!ww) > 0, sum(!!sym * !!ww) / sum(!!ww), mean(!!sym))),
+          sum(!!ww) > 0, sum(!!sym * !!ww) / sum(!!ww), mean(!!sym)
+        )),
         copy = rlang::expr(mean(!!sym)),
         sd = rlang::expr(stats::sd(!!sym)),
         .stop("Unknown rule: %s", rules[[v]]$rule)
@@ -138,21 +147,26 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
     }
     n_ok <- rlang::expr(sum(as.integer(!is.na(!!sym))))
     w_ok <- rlang::expr(sum(dplyr::if_else(is.na(!!sym), 0, !!ww)))
-    exprs[[v]] <- switch(
-      rules[[v]]$rule,
+    exprs[[v]] <- switch(rules[[v]]$rule,
       sum = rlang::expr(dplyr::if_else(
-        !!n_ok > 0, sum(!!sym, na.rm = TRUE), NA_real_)),
+        !!n_ok > 0, sum(!!sym, na.rm = TRUE), NA_real_
+      )),
       mean = rlang::expr(dplyr::if_else(
-        !!n_ok > 0, mean(!!sym, na.rm = TRUE), NA_real_)),
+        !!n_ok > 0, mean(!!sym, na.rm = TRUE), NA_real_
+      )),
       weighted_mean = rlang::expr(dplyr::if_else(
         !!n_ok == 0, NA_real_,
         dplyr::if_else(
           !!w_ok > 0,
           sum(dplyr::if_else(is.na(!!sym), 0, !!sym * !!ww),
-              na.rm = TRUE) / !!w_ok,
-          mean(!!sym, na.rm = TRUE)))),
+            na.rm = TRUE
+          ) / !!w_ok,
+          mean(!!sym, na.rm = TRUE)
+        )
+      )),
       copy = rlang::expr(dplyr::if_else(
-        !!n_ok > 0, mean(!!sym, na.rm = TRUE), NA_real_)),
+        !!n_ok > 0, mean(!!sym, na.rm = TRUE), NA_real_
+      )),
       sd = rlang::expr(stats::sd(!!sym, na.rm = TRUE)),
       .stop("Unknown rule: %s", rules[[v]]$rule)
     )
@@ -173,17 +187,24 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
 #' inconsistent.
 #' @noRd
 .check_copy_result <- function(res, copy_cols, backend, unit = "unit") {
-  if (length(copy_cols) == 0L) return(invisible(NULL))
-  cols <- c(paste0(".ms_mx_", copy_cols), paste0(".ms_mn_", copy_cols),
-            copy_cols)
+  if (length(copy_cols) == 0L) {
+    return(invisible(NULL))
+  }
+  cols <- c(
+    paste0(".ms_mx_", copy_cols), paste0(".ms_mn_", copy_cols),
+    copy_cols
+  )
   chk <- .ms_pull(dplyr::select(res, dplyr::all_of(cols)))
   for (v in copy_cols) {
     rng <- chk[[paste0(".ms_mx_", v)]] - chk[[paste0(".ms_mn_", v)]]
     ok <- !is.na(rng) & !is.na(chk[[v]])
     if (any(ok & rng > 1e-9)) {
       stop(sprintf(
-        paste0("rule \"copy\" for `%s`: values are not constant within a ",
-               "target %s"), v, unit), call. = FALSE)
+        paste0(
+          "rule \"copy\" for `%s`: values are not constant within a ",
+          "target %s"
+        ), v, unit
+      ), call. = FALSE)
     }
   }
   invisible(NULL)
@@ -208,12 +229,18 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
 .infer_from <- function(x, schema, key) {
   fr <- S7::prop(x, "frames")
   v <- scale_vocab(x)
-  if (!is.null(key) && key %in% fr) return(key)
+  if (!is.null(key) && key %in% fr) {
+    return(key)
+  }
   hit <- intersect(fr, names(schema))
   if (length(hit) != 1L) {
-    .stop(paste0("cannot infer the source %s from the data's columns ",
-                 "(found: %s); pass `from=`"),
-          v$frame, if (length(hit) == 0L) "none" else .preview(hit))
+    .stop(
+      paste0(
+        "cannot infer the source %s from the data's columns ",
+        "(found: %s); pass `from=`"
+      ),
+      v$frame, if (length(hit) == 0L) "none" else .preview(hit)
+    )
   }
   hit
 }
@@ -233,7 +260,8 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
     auto = !.ms_is_lazy(backend),
     on   = TRUE,
     off  = FALSE,
-    .stop("`diagnostics` must be \"auto\", \"on\" or \"off\""))
+    .stop("`diagnostics` must be \"auto\", \"on\" or \"off\"")
+  )
 }
 
 #' rule "share" is only meaningful in recast_scale(), whose output key it
@@ -241,8 +269,10 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
 #' @noRd
 .no_share <- function(rules, where) {
   if (any(vapply(rules, function(r) r$rule %in% .SHARE_RULES, logical(1)))) {
-    .stop(paste0("rule \"share\" is not supported by %s(); use ",
-                 "recast_scale() with a parent frame"), where)
+    .stop(paste0(
+      "rule \"share\" is not supported by %s(); use ",
+      "recast_scale() with a parent frame"
+    ), where)
   }
 }
 
@@ -349,14 +379,18 @@ utils::globalVariables(c(".ms_to", ".ms_f", ".ms_n_from", ".ms_n_overlap",
 #' s <- scale_example()
 #'
 #' # Extensive quantity, fine -> coarse: totals are preserved
-#' d <- data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
-#'                 capacity = c(1, 2, 3, 4, 5, 6))
+#' d <- data.frame(
+#'   unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
+#'   capacity = c(1, 2, 3, 4, 5, 6)
+#' )
 #' recast_scale(d, s, from = "unit", to = "sector", rule = "sum")
 #'
 #' # Coarse -> fine: split proportionally to size
 #' y <- data.frame(sector = c("P", "S"), capacity = c(10, 20))
-#' recast_scale(y, s, from = "sector", to = "class",
-#'              rule = "sum", weight = "size")
+#' recast_scale(y, s,
+#'   from = "sector", to = "class",
+#'   rule = "sum", weight = "size"
+#' )
 #'
 #' # Share within parent: result stays at the atoms, sums to 1 per sector
 #' recast_scale(d, s, from = "unit", to = "sector", rule = "share")
@@ -393,14 +427,20 @@ recast_scale <- function(data, x, from = NULL, to,
   # -- cross-object route: `to` is another Scale ------------------------------
   if (S7::S7_inherits(to, Scale)) {
     if (any(rule %in% .SHARE_RULES)) {
-      .stop(paste0("rule \"share\" needs a parent frame of the same scale; ",
-                   "it cannot recast across objects"))
+      .stop(paste0(
+        "rule \"share\" needs a parent frame of the same scale; ",
+        "it cannot recast across objects"
+      ))
     }
-    g <- recast_to_atoms(data, x, from = from, key = key, values = values,
-                         rule = rule, weight = weight, collect = collect)
-    return(recast_from_atoms(g, to, to = .atom_level(to),
-                             values = values, rule = rule,
-                             na_action = na_action, collect = collect))
+    g <- recast_to_atoms(data, x,
+      from = from, key = key, values = values,
+      rule = rule, weight = weight, collect = collect
+    )
+    return(recast_from_atoms(g, to,
+      to = .atom_level(to),
+      values = values, rule = rule,
+      na_action = na_action, collect = collect
+    ))
   }
   .check_frame(x, to, "to")
 
@@ -408,7 +448,8 @@ recast_scale <- function(data, x, from = NULL, to,
   values <- .values_for(schema, key, frames_all, values)
   id_cols <- setdiff(names(schema), c(key, values, frames_all))
   rules <- .rules_for(values, rule, weight,
-                      scope = .scale_scope(x), hint = .rule_hint(x))
+    scope = .scale_scope(x), hint = .rule_hint(x)
+  )
 
   # -- batching ---------------------------------------------------------------
   # Chunk by IDENTIFIER. That axis partitions the aggregation groups exactly,
@@ -419,26 +460,37 @@ recast_scale <- function(data, x, from = NULL, to,
   # change numbers.
   if (!is.null(batch)) {
     if (.ms_is_lazy(backend) && !isTRUE(collect)) {
-      .stop(paste0("`batch` applies when materialising; this call returns a ",
-                   "query. Pass `collect = TRUE` to batch it."))
+      .stop(paste0(
+        "`batch` applies when materialising; this call returns a ",
+        "query. Pass `collect = TRUE` to batch it."
+      ))
     }
     if (length(id_cols) == 0L) {
-      .stop(paste0("`batch` needs an identifier column to chunk by, and this ",
-                   "data has none (every column is the key or a value)"))
+      .stop(paste0(
+        "`batch` needs an identifier column to chunk by, and this ",
+        "data has none (every column is the key or a value)"
+      ))
     }
     if (is.null(batch_by)) batch_by <- id_cols[[1L]]
     if (!batch_by %in% id_cols) {
-      .stop(paste0("`batch_by` must be an identifier column of the data ",
-                   "(one of: %s); `%s` is not one, and chunking on it would ",
-                   "split aggregation groups and change the numbers"),
-            paste(id_cols, collapse = ", "), batch_by)
+      .stop(
+        paste0(
+          "`batch_by` must be an identifier column of the data ",
+          "(one of: %s); `%s` is not one, and chunking on it would ",
+          "split aggregation groups and change the numbers"
+        ),
+        paste(id_cols, collapse = ", "), batch_by
+      )
     }
     return(.recast_batched(
       data, backend, batch, batch_by,
-      args = list(x = x, from = from, to = to, key = key, values = values,
-                  rule = rule, weight = weight, na_action = na_action,
-                  parent = parent, diagnostics = diagnostics,
-                  missing_sources = missing_sources, ...)))
+      args = list(
+        x = x, from = from, to = to, key = key, values = values,
+        rule = rule, weight = weight, na_action = na_action,
+        parent = parent, diagnostics = diagnostics,
+        missing_sources = missing_sources, ...
+      )
+    ))
   }
 
   leaves <- S7::prop(x, "leaftable")
@@ -450,19 +502,28 @@ recast_scale <- function(data, x, from = NULL, to,
   src_keys <- NULL
   if (do_diag) {
     src_keys <- .ms_pull(
-      dplyr::distinct(dplyr::select(.ms_lazy(data, backend),
-                                    dplyr::all_of(key))))[[key]]
+      dplyr::distinct(dplyr::select(
+        .ms_lazy(data, backend),
+        dplyr::all_of(key)
+      ))
+    )[[key]]
     src_keys <- unique(stats::na.omit(as.character(src_keys)))
     known <- unique(stats::na.omit(as.character(leaves[[from]])))
     unknown <- setdiff(src_keys, known)
     if (length(unknown) > 0L) {
-      .warn(paste0("%d code(s) in the `%s` column are not present at %s `%s` ",
-                   "and were dropped: %s"),
-            length(unknown), key, v$frame, from, .preview(unknown))
+      .warn(
+        paste0(
+          "%d code(s) in the `%s` column are not present at %s `%s` ",
+          "and were dropped: %s"
+        ),
+        length(unknown), key, v$frame, from, .preview(unknown)
+      )
     }
     if (length(intersect(src_keys, known)) == 0L) {
-      .stop(paste0("no rows matched %s `%s`; check `from=` and the `%s` ",
-                   "column"), v$frame, from, key)
+      .stop(paste0(
+        "no rows matched %s `%s`; check `from=` and the `%s` ",
+        "column"
+      ), v$frame, from, key)
     }
   }
 
@@ -470,15 +531,19 @@ recast_scale <- function(data, x, from = NULL, to,
   is_share <- vapply(rules, function(r) r$rule %in% .SHARE_RULES, logical(1))
   if (any(is_share)) {
     if (!all(is_share)) {
-      .stop(paste0("rule \"share\" changes the output key to `from` and ",
-                   "cannot be mixed with other rules in one call; recast the ",
-                   "columns separately"))
+      .stop(paste0(
+        "rule \"share\" changes the output key to `from` and ",
+        "cannot be mixed with other rules in one call; recast the ",
+        "columns separately"
+      ))
     }
     if (!is.null(weight)) {
       .warn("`weight` is ignored by rule \"share\": the values are the weights")
     }
-    return(.recast_share(data, backend, x, from, to, key, values, id_cols,
-                         parent, na_action, collect))
+    return(.recast_share(
+      data, backend, x, from, to, key, values, id_cols,
+      parent, na_action, collect
+    ))
   }
   if (!is.null(parent)) {
     .stop("`parent` applies to rule \"share\" only")
@@ -487,22 +552,29 @@ recast_scale <- function(data, x, from = NULL, to,
   if (na_action == "error") {
     n_bad <- sum(is.na(leaves[[from]]) | is.na(leaves[[to]]))
     if (n_bad > 0L) {
-      .stop(paste0("%d atom(s) have no code at %s `%s` or `%s`; use ",
-                   "na_action = \"drop\" or \"keep\""),
-            n_bad, v$frame, from, to)
+      .stop(
+        paste0(
+          "%d atom(s) have no code at %s `%s` or `%s`; use ",
+          "na_action = \"drop\" or \"keep\""
+        ),
+        n_bad, v$frame, from, to
+      )
     }
   }
 
   # One crosswalk per distinct weight (per-column weights may differ)
   wt_of <- vapply(rules, function(r) r$weight %||% "", character(1))
   no_declared <- length(scale_weights(x)) == 0L
-  need_split <- vapply(rules, function(r)
-    r$rule %in% c("sum", "weighted_mean"), logical(1))
+  need_split <- vapply(rules, function(r) {
+    r$rule %in% c("sum", "weighted_mean")
+  }, logical(1))
   if (no_declared && is.null(weight) && any(need_split) &&
-      scale_rank(x, to) > scale_rank(x, from)) {
-    .warn(paste0("no weight column declared; splitting `%s` equally across ",
-                 "the atoms of each `%s`. Declare a weight for a ",
-                 "size-proportional split."), to, from)
+    scale_rank(x, to) > scale_rank(x, from)) {
+    .warn(paste0(
+      "no weight column declared; splitting `%s` equally across ",
+      "the atoms of each `%s`. Declare a weight for a ",
+      "size-proportional split."
+    ), to, from)
   }
 
   # One crosswalk per distinct weight, folded into a single table: the
@@ -514,8 +586,10 @@ recast_scale <- function(data, x, from = NULL, to,
     scale_map(from, to, x = x, weight = if (nzchar(wt)) wt else NULL, ...)
   })
   names(maps) <- wts
-  map_by <- setdiff(names(maps[[1L]]),
-                    c(from, to, "n_from", "n_overlap", "w", "w_from"))
+  map_by <- setdiff(
+    names(maps[[1L]]),
+    c(from, to, "n_from", "n_overlap", "w", "w_from")
+  )
 
   # Coverage is a property of the atoms, so it is the same in every one of
   # these crosswalks; decide it once and apply it to all of them.
@@ -527,11 +601,15 @@ recast_scale <- function(data, x, from = NULL, to,
     if (do_diag) {
       affected <- intersect(unique(maps[[1L]][[from]][uncovered]), src_keys)
       if (length(affected) > 0L) {
-        .warn(paste0("%d atom(s) have no code at %s `%s`; the share of %d ",
-                     "source unit(s) falling in them is dropped (%s). Use ",
-                     "na_action = \"keep\" to conserve totals."),
-              sum(maps[[1L]]$n_overlap[uncovered]), v$frame, to,
-              length(affected), .preview(affected))
+        .warn(
+          paste0(
+            "%d atom(s) have no code at %s `%s`; the share of %d ",
+            "source unit(s) falling in them is dropped (%s). Use ",
+            "na_action = \"keep\" to conserve totals."
+          ),
+          sum(maps[[1L]]$n_overlap[uncovered]), v$frame, to,
+          length(affected), .preview(affected)
+        )
       }
     }
     maps <- lapply(maps, function(m) m[!uncovered, , drop = FALSE])
@@ -548,8 +626,9 @@ recast_scale <- function(data, x, from = NULL, to,
   }
   wide <- .widen_maps(maps, from, to, key, wt_of, res_targets)
   res <- .recast_pipeline(data, backend, wide$jmap, key, values, rules,
-                          id_cols, map_by, missing_sources, wide$sfx,
-                          unit = v$unit)
+    id_cols, map_by, missing_sources, wide$sfx,
+    unit = v$unit
+  )
 
   if (!identical(key, to)) {
     res <- dplyr::rename(res, !!rlang::sym(to) := !!rlang::sym(key))
@@ -569,25 +648,37 @@ recast_scale <- function(data, x, from = NULL, to,
   if (do_diag) {
     all_missing <- if (length(id_cols) > 0L) {
       keysets <- .ms_pull(dplyr::distinct(
-        dplyr::select(.ms_lazy(data, backend),
-                      dplyr::all_of(c(id_cols, key)))))
+        dplyr::select(
+          .ms_lazy(data, backend),
+          dplyr::all_of(c(id_cols, key))
+        )
+      ))
       gk <- do.call(paste, c(lapply(keysets[id_cols], as.character),
-                             sep = "\r"))
-      unique(unlist(lapply(split(keysets[[key]], gk),
-        function(kk) setdiff(retained_from, as.character(kk)))))
+        sep = "\r"
+      ))
+      unique(unlist(lapply(
+        split(keysets[[key]], gk),
+        function(kk) setdiff(retained_from, as.character(kk))
+      )))
     } else {
       setdiff(retained_from, src_keys)
     }
     if (length(all_missing) > 0L) {
-      .warn(paste0("%d source unit(s) present in the scale but missing from ",
-                   "the data (e.g. %s); produced NAs"),
-            length(all_missing), .preview(all_missing))
+      .warn(
+        paste0(
+          "%d source unit(s) present in the scale but missing from ",
+          "the data (e.g. %s); produced NAs"
+        ),
+        length(all_missing), .preview(all_missing)
+      )
     }
   }
 
   idc <- if (length(id_cols) > 0L) {
-    .ms_pull(dplyr::distinct(dplyr::select(.ms_lazy(data, backend),
-                                           dplyr::all_of(id_cols))))
+    .ms_pull(dplyr::distinct(dplyr::select(
+      .ms_lazy(data, backend),
+      dplyr::all_of(id_cols)
+    )))
   } else {
     data.frame()
   }
@@ -609,7 +700,8 @@ recast_scale <- function(data, x, from = NULL, to,
 #' @noRd
 .recast_batched <- function(data, backend, batch, batch_by, args) {
   vals <- .ms_pull(dplyr::distinct(dplyr::select(
-    .ms_lazy(data, backend), dplyr::all_of(batch_by))))[[batch_by]]
+    .ms_lazy(data, backend), dplyr::all_of(batch_by)
+  )))[[batch_by]]
   vals <- unique(vals)
   chunks <- .ms_chunks(vals, batch)
 
@@ -641,8 +733,10 @@ recast_scale <- function(data, x, from = NULL, to,
   if (!is.null(parent)) {
     .check_frame(x, parent, "parent")
     if (!identical(to, from) && !identical(to, parent)) {
-      .stop(paste0("conflicting parents: `to = \"%s\"` vs `parent = \"%s\"`; ",
-                   "for rule \"share\" pass the parent once"), to, parent)
+      .stop(paste0(
+        "conflicting parents: `to = \"%s\"` vs `parent = \"%s\"`; ",
+        "for rule \"share\" pass the parent once"
+      ), to, parent)
     }
   } else if (!identical(to, from)) {
     parent <- to
@@ -655,8 +749,10 @@ recast_scale <- function(data, x, from = NULL, to,
     parent <- fr[[i - 1L]]
   }
   if (scale_rank(x, parent) >= scale_rank(x, from)) {
-    .stop(paste0("rule \"share\": parent `%s` must be coarser than ",
-                 "`from = \"%s\"`"), parent, from)
+    .stop(paste0(
+      "rule \"share\": parent `%s` must be coarser than ",
+      "`from = \"%s\"`"
+    ), parent, from)
   }
   parent
 }
@@ -676,23 +772,35 @@ recast_scale <- function(data, x, from = NULL, to,
   n_par <- table(mem[[from]][!is.na(mem[[parent]])])
   split_codes <- names(n_par)[n_par > 1L]
   if (length(split_codes) > 0L) {
-    .stop(paste0("rule \"share\": %d unit(s) of `%s` straddle more than one ",
-                 "`%s` (%s); `from` must nest within the parent"),
-          length(split_codes), from, parent, .preview(split_codes))
+    .stop(
+      paste0(
+        "rule \"share\": %d unit(s) of `%s` straddle more than one ",
+        "`%s` (%s); `from` must nest within the parent"
+      ),
+      length(split_codes), from, parent, .preview(split_codes)
+    )
   }
 
   orphan <- is.na(mem[[parent]])
   if (any(orphan)) {
     if (na_action == "error") {
-      .stop(paste0("%d unit(s) of `%s` have no code at parent `%s`; use ",
-                   "na_action = \"drop\" or \"keep\""),
-            sum(orphan), from, parent)
+      .stop(
+        paste0(
+          "%d unit(s) of `%s` have no code at parent `%s`; use ",
+          "na_action = \"drop\" or \"keep\""
+        ),
+        sum(orphan), from, parent
+      )
     }
     if (na_action == "drop") {
-      .warn(paste0("%d unit(s) of `%s` have no code at parent `%s` and get ",
-                   "NA shares (%s). Use na_action = \"keep\" to treat them ",
-                   "as one group."),
-            sum(orphan), from, parent, .preview(mem[[from]][orphan]))
+      .warn(
+        paste0(
+          "%d unit(s) of `%s` have no code at parent `%s` and get ",
+          "NA shares (%s). Use na_action = \"keep\" to treat them ",
+          "as one group."
+        ),
+        sum(orphan), from, parent, .preview(mem[[from]][orphan])
+      )
       mem <- mem[!orphan, , drop = FALSE]
     }
   }
@@ -700,8 +808,10 @@ recast_scale <- function(data, x, from = NULL, to,
   jmem <- mem
   names(jmem) <- c(key, ".ms_parent")
 
-  xq <- dplyr::select(.ms_lazy(data, backend),
-                      dplyr::all_of(c(id_cols, key, values)))
+  xq <- dplyr::select(
+    .ms_lazy(data, backend),
+    dplyr::all_of(c(id_cols, key, values))
+  )
   joined <- dplyr::inner_join(xq, jmem, by = key)
 
   tot_nms <- paste0(".ms_tot_", seq_along(values))
@@ -731,8 +841,10 @@ recast_scale <- function(data, x, from = NULL, to,
   }
 
   idc <- if (length(id_cols) > 0L) {
-    .ms_pull(dplyr::distinct(dplyr::select(.ms_lazy(data, backend),
-                                           dplyr::all_of(id_cols))))
+    .ms_pull(dplyr::distinct(dplyr::select(
+      .ms_lazy(data, backend),
+      dplyr::all_of(id_cols)
+    )))
   } else {
     data.frame()
   }
@@ -758,16 +870,18 @@ recast_scale <- function(data, x, from = NULL, to,
   shared <- setdiff(names(base), c("w", "w_from"))
   for (m in maps[-1L]) {
     if (!identical(m[shared], base[shared])) {
-      .stop(paste0("the crosswalks for different weights disagree on their ",
-                   "structure; this should be impossible for derived maps, ",
-                   "so a registered map is likely malformed"))
+      .stop(paste0(
+        "the crosswalks for different weights disagree on their ",
+        "structure; this should be impossible for derived maps, ",
+        "so a registered map is likely malformed"
+      ))
     }
   }
 
   jmap <- base[shared]
   names(jmap)[names(jmap) == from] <- key
-  names(jmap)[names(jmap) == to]   <- ".ms_to"
-  names(jmap)[names(jmap) == "n_from"]    <- ".ms_n_from"
+  names(jmap)[names(jmap) == to] <- ".ms_to"
+  names(jmap)[names(jmap) == "n_from"] <- ".ms_n_from"
   names(jmap)[names(jmap) == "n_overlap"] <- ".ms_n_overlap"
 
   # A declared residual is not a destination for allocation, so the split
@@ -779,7 +893,7 @@ recast_scale <- function(data, x, from = NULL, to,
 
   sfx <- stats::setNames(rep("", length(wt_of)), names(wt_of))
   for (i in seq_along(wts)) {
-    m  <- maps[[i]]
+    m <- maps[[i]]
     sx <- if (length(wts) == 1L) "" else paste0("_", i)
     jmap[[paste0(".ms_w", sx)]] <- m$w
 
@@ -790,14 +904,19 @@ recast_scale <- function(data, x, from = NULL, to,
       n_tot <- as.numeric(tapply(n_ok, grp, sum)[as.character(grp)])
       dead <- w_tot <= 0 & n_tot <= 0
       if (any(dead)) {
-        .stop(paste0("every target of `%s` is a declared residual, so a ",
-                     "figure at `%s` has nowhere allocable to go: %s"),
-              from, from, .preview(unique(grp[dead])))
+        .stop(
+          paste0(
+            "every target of `%s` is a declared residual, so a ",
+            "figure at `%s` has nowhere allocable to go: %s"
+          ),
+          from, from, .preview(unique(grp[dead]))
+        )
       }
       f <- ifelse(is_res, 0, ifelse(w_tot > 0, w_ok / w_tot, n_ok / n_tot))
     } else {
       f <- ifelse(m$w_from > 0, m$w / m$w_from,
-                  jmap$.ms_n_overlap / jmap$.ms_n_from)
+        jmap$.ms_n_overlap / jmap$.ms_n_from
+      )
     }
     jmap[[paste0(".ms_f", sx)]] <- f
     sfx[wt_of == wts[[i]]] <- sx
@@ -824,8 +943,10 @@ recast_scale <- function(data, x, from = NULL, to,
   # in-memory frame the size of the source data; that grid existed only to
   # inject NA rows for absent (identifier, source) pairs, and the counting
   # repair below reproduces its effect from the aggregate instead.
-  xq <- dplyr::select(.ms_lazy(data, backend),
-                      dplyr::all_of(c(id_cols, key, values)))
+  xq <- dplyr::select(
+    .ms_lazy(data, backend),
+    dplyr::all_of(c(id_cols, key, values))
+  )
   joined <- dplyr::inner_join(xq, jmap, by = c(shared_ids, key))
 
   grp_cols <- c(id_cols, ".ms_to")
@@ -846,7 +967,8 @@ recast_scale <- function(data, x, from = NULL, to,
     # How many distinct sources did this group actually see? Rides the
     # summarise that was happening anyway -- no extra pass over the data.
     exprs[[".ms_nsrc"]] <- rlang::expr(
-      dplyr::n_distinct(!!rlang::sym(key)))
+      dplyr::n_distinct(!!rlang::sym(key))
+    )
   }
 
   res <- joined |>
@@ -860,25 +982,33 @@ recast_scale <- function(data, x, from = NULL, to,
   if (identical(missing_sources, "na")) {
     expected <- jmap |>
       dplyr::distinct(dplyr::across(
-        dplyr::all_of(c(shared_ids, ".ms_to", key)))) |>
+        dplyr::all_of(c(shared_ids, ".ms_to", key))
+      )) |>
       dplyr::count(dplyr::across(dplyr::all_of(c(shared_ids, ".ms_to"))),
-                   name = ".ms_nexp")
+        name = ".ms_nexp"
+      )
     res <- res |>
-      dplyr::left_join(expected, by = c(shared_ids, ".ms_to"),
-                       na_matches = "na") |>
+      dplyr::left_join(expected,
+        by = c(shared_ids, ".ms_to"),
+        na_matches = "na"
+      ) |>
       dplyr::mutate(dplyr::across(
         dplyr::all_of(values),
-        ~ dplyr::if_else(.ms_nsrc < .ms_nexp, NA_real_, .x)))
+        ~ dplyr::if_else(.ms_nsrc < .ms_nexp, NA_real_, .x)
+      ))
   }
 
   if (length(copy_cols) > 0L) {
     .check_copy_result(res, copy_cols, backend, unit)
   }
 
-  drop_cols <- c(if (identical(missing_sources, "na"))
-                   c(".ms_nsrc", ".ms_nexp"),
-                 paste0(".ms_mx_", copy_cols),
-                 paste0(".ms_mn_", copy_cols))
+  drop_cols <- c(
+    if (identical(missing_sources, "na")) {
+      c(".ms_nsrc", ".ms_nexp")
+    },
+    paste0(".ms_mx_", copy_cols),
+    paste0(".ms_mn_", copy_cols)
+  )
   res |>
     dplyr::select(-dplyr::any_of(drop_cols)) |>
     dplyr::rename(!!rlang::sym(key) := !!rlang::sym(".ms_to"))
@@ -940,12 +1070,18 @@ recast_scale <- function(data, x, from = NULL, to,
 #'
 #' @examples
 #' # Two months onto one quarter, with the months' day counts as atoms
-#' map <- data.frame(month = c("m01", "m02"), quarter = "Q1",
-#'                   n_from = c(31, 28), n_overlap = c(31, 28))
-#' d <- data.frame(month = c("m01", "m02"), energy = c(310, 280),
-#'                 price = c(10, 20))
-#' recast_crosswalk(d, map, from = "month", to = "quarter",
-#'                  rule = c(energy = "sum", price = "weighted_mean"))
+#' map <- data.frame(
+#'   month = c("m01", "m02"), quarter = "Q1",
+#'   n_from = c(31, 28), n_overlap = c(31, 28)
+#' )
+#' d <- data.frame(
+#'   month = c("m01", "m02"), energy = c(310, 280),
+#'   price = c(10, 20)
+#' )
+#' recast_crosswalk(d, map,
+#'   from = "month", to = "quarter",
+#'   rule = c(energy = "sum", price = "weighted_mean")
+#' )
 #' @export
 recast_crosswalk <- function(data, map, from, to, key = from,
                              values = NULL, rule = NULL, ids = NULL,
@@ -970,8 +1106,10 @@ recast_crosswalk <- function(data, map, from, to, key = from,
   if (is.null(ids)) ids <- setdiff(names(schema), c(key, values))
   bad_by <- setdiff(by, ids)
   if (length(bad_by) > 0L) {
-    .stop("`by` column(s) are not identifier columns of the data: %s",
-          .preview(bad_by))
+    .stop(
+      "`by` column(s) are not identifier columns of the data: %s",
+      .preview(bad_by)
+    )
   }
   rules <- .rules_for(values, rule)
   .no_share(rules, "recast_crosswalk")
@@ -987,8 +1125,9 @@ recast_crosswalk <- function(data, map, from, to, key = from,
   }
 
   res <- .recast_pipeline(data, backend, jmap, key, values, rules, ids,
-                          map_by = by, missing_sources = missing_sources,
-                          unit = unit)
+    map_by = by, missing_sources = missing_sources,
+    unit = unit
+  )
   if (!identical(key, to)) {
     res <- dplyr::rename(res, !!rlang::sym(to) := !!rlang::sym(key))
   }
@@ -1001,8 +1140,10 @@ recast_crosswalk <- function(data, map, from, to, key = from,
     res[, c(to, ids, values), drop = FALSE]
   } else {
     idc <- if (length(ids) > 0L) {
-      .ms_pull(dplyr::distinct(dplyr::select(.ms_lazy(data, backend),
-                                             dplyr::all_of(ids))))
+      .ms_pull(dplyr::distinct(dplyr::select(
+        .ms_lazy(data, backend),
+        dplyr::all_of(ids)
+      )))
     } else {
       data.frame()
     }
@@ -1057,8 +1198,10 @@ recast_crosswalk <- function(data, map, from, to, key = from,
 #' @examples
 #' s <- scale_example()
 #' d <- data.frame(sector = c("P", "S"), capacity = c(10, 20))
-#' atoms <- recast_to_atoms(d, s, from = "sector", rule = "sum",
-#'                          weight = "size")
+#' atoms <- recast_to_atoms(d, s,
+#'   from = "sector", rule = "sum",
+#'   weight = "size"
+#' )
 #' head(atoms)
 #' recast_from_atoms(atoms, s, to = "class", rule = "sum")
 #' @export
@@ -1080,8 +1223,10 @@ recast_to_atoms <- function(data, x, from = NULL, key = NULL, values = NULL,
   frames_all <- S7::prop(x, "frames")
   values <- .values_for(schema, key, frames_all, values)
   id_cols <- setdiff(names(schema), c(key, values, frames_all))
-  rules <- .rules_for(values, rule, weight, scope = .scale_scope(x),
-                      hint = .rule_hint(x))
+  rules <- .rules_for(values, rule, weight,
+    scope = .scale_scope(x),
+    hint = .rule_hint(x)
+  )
   .no_share(rules, "recast_to_atoms")
 
   akey <- scale_key(x)
@@ -1091,19 +1236,22 @@ recast_to_atoms <- function(data, x, from = NULL, key = NULL, values = NULL,
   atoms <- data.frame(
     .from = as.character(leaves[[from]]),
     .atom = as.character(leaves[[akey]]),
-    .w    = if (is.null(wcol)) 1 else as.numeric(leaves[[wcol]]),
+    .w = if (is.null(wcol)) 1 else as.numeric(leaves[[wcol]]),
     stringsAsFactors = FALSE
   )
   atoms <- atoms[!is.na(atoms$.from), , drop = FALSE]
   atoms$.w[is.na(atoms$.w)] <- 0
   tot <- stats::aggregate(list(.w_from = atoms$.w),
-                          by = list(.from = atoms$.from), FUN = sum)
+    by = list(.from = atoms$.from), FUN = sum
+  )
   atoms <- merge(atoms, tot, by = ".from", all.x = TRUE)
   n <- stats::aggregate(list(.n = rep(1L, nrow(atoms))),
-                        by = list(.from = atoms$.from), FUN = sum)
+    by = list(.from = atoms$.from), FUN = sum
+  )
   atoms <- merge(atoms, n, by = ".from", all.x = TRUE)
   atoms$.f <- ifelse(atoms$.w_from > 0, atoms$.w / atoms$.w_from,
-                     1 / atoms$.n)
+    1 / atoms$.n
+  )
 
   jmap <- atoms[, c(".from", ".atom", ".w", ".f")]
   names(jmap) <- c(key, akey, "weight", ".ms_f")
@@ -1119,16 +1267,22 @@ recast_to_atoms <- function(data, x, from = NULL, key = NULL, values = NULL,
   })
   names(down_exprs) <- values
 
-  xq <- dplyr::select(.ms_lazy(data, backend),
-                      dplyr::all_of(c(id_cols, key, values)))
+  xq <- dplyr::select(
+    .ms_lazy(data, backend),
+    dplyr::all_of(c(id_cols, key, values))
+  )
   out <- dplyr::inner_join(
-      xq, jmap,
-      by = stats::setNames(names(jmap)[1L], key)) |>
+    xq, jmap,
+    by = stats::setNames(names(jmap)[1L], key)
+  ) |>
     dplyr::mutate(!!!down_exprs) |>
     dplyr::select(dplyr::all_of(
-      c(akey, id_cols, values, if (attach_weight) "weight")))
+      c(akey, id_cols, values, if (attach_weight) "weight")
+    ))
 
-  if (.ms_is_lazy(backend) && !isTRUE(collect)) return(out)
+  if (.ms_is_lazy(backend) && !isTRUE(collect)) {
+    return(out)
+  }
   .ms_restore(out, backend, collect = collect)
 }
 
@@ -1162,10 +1316,14 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
 
   frames_all <- S7::prop(x, "frames")
   values <- .values_for(schema, key, c(frames_all, "weight", wt_col), values)
-  id_cols <- setdiff(names(schema),
-                     c(key, values, frames_all, "weight", wt_col))
-  rules <- .rules_for(values, rule, weight = NULL, scope = .scale_scope(x),
-                      hint = .rule_hint(x))
+  id_cols <- setdiff(
+    names(schema),
+    c(key, values, frames_all, "weight", wt_col)
+  )
+  rules <- .rules_for(values, rule,
+    weight = NULL, scope = .scale_scope(x),
+    hint = .rule_hint(x)
+  )
   .no_share(rules, "recast_from_atoms")
 
   leaves <- S7::prop(x, "leaftable")
@@ -1177,26 +1335,35 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
   uncovered_any <- any(is.na(jmem$t))
   if (uncovered_any) {
     if (na_action == "error") {
-      .stop("%d atom(s) have no code at `%s`; use na_action = \"drop\" or \"keep\"",
-            sum(is.na(jmem$t)), to)
+      .stop(
+        "%d atom(s) have no code at `%s`; use na_action = \"drop\" or \"keep\"",
+        sum(is.na(jmem$t)), to
+      )
     }
     if (na_action == "drop") {
-      .warn("%d atom(s) have no code at `%s` and were dropped",
-            sum(is.na(jmem$t)), to)
+      .warn(
+        "%d atom(s) have no code at `%s` and were dropped",
+        sum(is.na(jmem$t)), to
+      )
       jmem <- jmem[!is.na(jmem$t), , drop = FALSE]
     }
   }
   names(jmem) <- c(key, ".ms_to")
 
-  xq <- dplyr::select(.ms_lazy(data, backend),
-                      dplyr::all_of(c(id_cols, key, values,
-                                      if (!is.null(wt_col)) wt_col)))
+  xq <- dplyr::select(
+    .ms_lazy(data, backend),
+    dplyr::all_of(c(
+      id_cols, key, values,
+      if (!is.null(wt_col)) wt_col
+    ))
+  )
   if (is.null(wt_col)) {
     wcol <- .map_weight(x, NULL)
     aw <- data.frame(
       k = as.character(leaves[[akey]]),
       .ms_w = if (is.null(wcol)) 1 else as.numeric(leaves[[wcol]]),
-      stringsAsFactors = FALSE)
+      stringsAsFactors = FALSE
+    )
     names(aw)[1L] <- key
     xq <- dplyr::left_join(xq, aw, by = key)
     wt_col <- ".ms_w"
@@ -1222,7 +1389,8 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
   if (length(copy_cols) > 0L) {
     .check_copy_result(res, copy_cols, backend, scale_vocab(x)$unit)
     res <- dplyr::select(res, -dplyr::any_of(
-      c(paste0(".ms_mx_", copy_cols), paste0(".ms_mn_", copy_cols))))
+      c(paste0(".ms_mx_", copy_cols), paste0(".ms_mn_", copy_cols))
+    ))
   }
   res <- dplyr::rename(res, !!rlang::sym(to) := !!rlang::sym(".ms_to"))
 
@@ -1231,14 +1399,18 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
   }
 
   idc <- if (length(id_cols) > 0L) {
-    .ms_pull(dplyr::distinct(dplyr::select(.ms_lazy(data, backend),
-                                           dplyr::all_of(id_cols))))
+    .ms_pull(dplyr::distinct(dplyr::select(
+      .ms_lazy(data, backend),
+      dplyr::all_of(id_cols)
+    )))
   } else {
     data.frame()
   }
   res <- as.data.frame(dplyr::collect(res))
-  out_keys <- c(S7::prop(x, "members")[[to]],
-                if (na_action == "keep" && uncovered_any) NA_character_)
+  out_keys <- c(
+    S7::prop(x, "members")[[to]],
+    if (na_action == "keep" && uncovered_any) NA_character_
+  )
   out <- .recast_complete(res, idc, out_keys, to, id_cols, values)
   .ms_restore(out, backend, collect = collect)
 }
@@ -1270,8 +1442,10 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
 #'
 #' @examples
 #' s <- scale_example()
-#' d <- data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
-#'                 capacity = c(1, 2, 3, 4, 5, 6))
+#' d <- data.frame(
+#'   unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
+#'   capacity = c(1, 2, 3, 4, 5, 6)
+#' )
 #' recast(d, s, to = "sector", rule = "sum")
 #' @export
 recast <- S7::new_generic("recast", dispatch_args = c("x", "from"))

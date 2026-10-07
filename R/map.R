@@ -53,8 +53,8 @@ S7::method(scale_atom_pairs, Scale) <- function(x, from, to, weight = NULL,
   wcol <- .map_weight(x, weight)
   data.frame(
     from = as.character(leaves[[from]]),
-    to   = as.character(leaves[[to]]),
-    w    = if (is.null(wcol)) 1 else as.numeric(leaves[[wcol]]),
+    to = as.character(leaves[[to]]),
+    w = if (is.null(wcol)) 1 else as.numeric(leaves[[wcol]]),
     stringsAsFactors = FALSE
   )
 }
@@ -105,16 +105,20 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
     return(.scale_map_cross(from, to, weight))
   }
   if (is.null(x)) {
-    .stop(paste0("`x` is required when `from`/`to` are frame names; pass ",
-                 "Scale objects for a cross-object map"))
+    .stop(paste0(
+      "`x` is required when `from`/`to` are frame names; pass ",
+      "Scale objects for a cross-object map"
+    ))
   }
   .check_scale(x, "x")
   .check_frame(x, from, "from")
   .check_frame(x, to, "to")
   if (identical(from, to)) {
     v <- scale_vocab(x)
-    .stop(paste0("`from` and `to` are the same %s (\"%s\"); the map's ",
-                 "label columns are named by the %s"), v$frame, from, v$frames)
+    .stop(paste0(
+      "`from` and `to` are the same %s (\"%s\"); the map's ",
+      "label columns are named by the %s"
+    ), v$frame, from, v$frames)
   }
 
   reg <- .get_scale_map(from, to, .scale_name(x, require = FALSE))
@@ -130,11 +134,15 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
 #' @noRd
 .scale_map_cross <- function(from, to, weight) {
   from_nm <- .scale_name(from, arg = "from")
-  to_nm   <- .scale_name(to, arg = "to")
+  to_nm <- .scale_name(to, arg = "to")
   if (identical(from_nm, to_nm)) {
-    .stop(paste0("`from` and `to` have the same name (\"%s\"); the map's ",
-                 "label columns are named by the scales -- rename one"),
-          from_nm)
+    .stop(
+      paste0(
+        "`from` and `to` have the same name (\"%s\"); the map's ",
+        "label columns are named by the scales -- rename one"
+      ),
+      from_nm
+    )
   }
   reg <- .get_scale_map(from_nm, to_nm)
   if (!is.null(reg)) {
@@ -149,20 +157,26 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
   if (length(shared) == 0L) {
     keys <- if (identical(kf, kt)) sprintf("`%s` keys", kf) else "keys"
     hint <- scale_vocab(from)$register_map %||% "register_scale_map()"
-    .stop(paste0("the atom layers of \"%s\" and \"%s\" share no %s; ",
-                 "register an explicit crosswalk with %s"),
-          from_nm, to_nm, keys, hint)
+    .stop(
+      paste0(
+        "the atom layers of \"%s\" and \"%s\" share no %s; ",
+        "register an explicit crosswalk with %s"
+      ),
+      from_nm, to_nm, keys, hint
+    )
   }
   n_miss <- sum(!lf[[kf]] %in% shared)
   if (n_miss > 0L) {
-    .warn(paste0("%d atom(s) of \"%s\" have no counterpart in \"%s\"; their ",
-                 "share is uncovered (NA target)"), n_miss, from_nm, to_nm)
+    .warn(paste0(
+      "%d atom(s) of \"%s\" have no counterpart in \"%s\"; their ",
+      "share is uncovered (NA target)"
+    ), n_miss, from_nm, to_nm)
   }
   wcol <- .map_weight(from, weight)
   d <- data.frame(
     from = lf[[kf]],
-    to   = ifelse(lf[[kf]] %in% shared, lf[[kf]], NA_character_),
-    w    = if (is.null(wcol)) 1 else as.numeric(lf[[wcol]]),
+    to = ifelse(lf[[kf]] %in% shared, lf[[kf]], NA_character_),
+    w = if (is.null(wcol)) 1 else as.numeric(lf[[wcol]]),
     stringsAsFactors = FALSE
   )
   .finish_map(d, from_nm, to_nm)
@@ -193,18 +207,23 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
   grp <- c(by, "from", "to")
   map <- d |>
     dplyr::group_by(dplyr::across(dplyr::all_of(grp))) |>
-    dplyr::summarise(n_overlap = dplyr::n(), w = sum(.data$w),
-                     .groups = "drop_last") |>
-    dplyr::mutate(n_from = sum(.data$n_overlap),
-                  w_from = sum(.data$w)) |>
+    dplyr::summarise(
+      n_overlap = dplyr::n(), w = sum(.data$w),
+      .groups = "drop_last"
+    ) |>
+    dplyr::mutate(
+      n_from = sum(.data$n_overlap),
+      w_from = sum(.data$w)
+    ) |>
     dplyr::ungroup() |>
     as.data.frame()
   ord <- do.call(order, c(map[c(by, "from", "to")], list(na.last = TRUE)))
   map <- map[ord, c(by, "from", "to", "n_from", "n_overlap", "w", "w_from"),
-             drop = FALSE]
+    drop = FALSE
+  ]
   rownames(map) <- NULL
   names(map)[names(map) == "from"] <- from_lab
-  names(map)[names(map) == "to"]   <- to_lab
+  names(map)[names(map) == "to"] <- to_lab
   map
 }
 
@@ -232,18 +251,20 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
 #'
 #' @examples
 #' s <- scale_example()
-#' fake <- data.frame(class = "G1", group = "GC", n_from = 1L,
-#'                    n_overlap = 1L, w = 1, w_from = 1)
+#' fake <- data.frame(
+#'   class = "G1", group = "GC", n_from = 1L,
+#'   n_overlap = 1L, w = 1, w_from = 1
+#' )
 #' register_scale_map("class", "group", fake, x = s)
 #' list_scale_maps()
 #' get_scale_map("class", "group", x = s)
-#' register_scale_map("class", "group", NULL, x = s)  # remove
+#' register_scale_map("class", "group", NULL, x = s) # remove
 #' clear_scale_maps()
 #' @export
 register_scale_map <- function(from, to, map, x = NULL) {
   from_nm <- .map_name_of(from, "from")
-  to_nm   <- .map_name_of(to, "to")
-  scope   <- if (is.null(x)) "" else .map_name_of(x, "x")
+  to_nm <- .map_name_of(to, "to")
+  scope <- if (is.null(x)) "" else .map_name_of(x, "x")
   key <- paste0(scope, if (nzchar(scope)) ":", from_nm, "->", to_nm)
   if (is.null(map)) {
     if (exists(key, envir = .MAP_REGISTRY, inherits = FALSE)) {
@@ -265,7 +286,9 @@ register_scale_map <- function(from, to, map, x = NULL) {
 
 #' @noRd
 .map_name_of <- function(z, arg) {
-  if (is.character(z) && length(z) == 1L && nzchar(z)) return(z)
+  if (is.character(z) && length(z) == 1L && nzchar(z)) {
+    return(z)
+  }
   .check_scale(z, arg)
   .scale_name(z, arg = arg)
 }
@@ -287,7 +310,8 @@ register_scale_map <- function(from, to, map, x = NULL) {
 #' @export
 get_scale_map <- function(from, to, x = NULL) {
   .get_scale_map(.map_name_of(from, "from"), .map_name_of(to, "to"),
-                 scope = if (is.null(x)) "" else .map_name_of(x, "x"))
+    scope = if (is.null(x)) "" else .map_name_of(x, "x")
+  )
 }
 
 #' @rdname register_scale_map

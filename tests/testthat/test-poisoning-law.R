@@ -25,13 +25,19 @@ test_that("a partially-supplied target is NA for every rule", {
   s <- scale_example()
   for (r in c("sum", "mean", "weighted_mean", "copy", "sd")) {
     out <- suppressWarnings(
-      recast_scale(.partial(), s, from = "unit", to = "class", rule = r,
-                   weight = if (r == "weighted_mean") "size" else NULL))
+      recast_scale(.partial(), s,
+        from = "unit", to = "class", rule = r,
+        weight = if (r == "weighted_mean") "size" else NULL
+      )
+    )
     got <- out$value[out$class == "G1"]
     expect_identical(length(got), 1L, label = sprintf("one G1 row (%s)", r))
     expect_true(is.na(got),
-                label = sprintf("G1 is NA under rule \"%s\" (partial source)",
-                                r))
+      label = sprintf(
+        "G1 is NA under rule \"%s\" (partial source)",
+        r
+      )
+    )
   }
 })
 
@@ -41,15 +47,22 @@ test_that("the poisoning is partiality, not absence", {
   # under test: G1 is poisoned by its missing sibling U2, while G2 is simply
   # absent and gets its NA from vocabulary completion.
   out <- suppressWarnings(
-    recast_scale(.partial(), s, from = "unit", to = "class", rule = "sum"))
+    recast_scale(.partial(), s, from = "unit", to = "class", rule = "sum")
+  )
   expect_true(is.na(out$value[out$class == "G1"]))
   expect_true(is.na(out$value[out$class == "G2"]))
   # supplying BOTH of G1's sources gives a real answer -- so the NA above is
   # caused by the missing source, not by anything about G1 itself
   both <- suppressWarnings(
-    recast_scale(data.frame(unit = c("U1", "U2"), value = c(1, 2),
-                            stringsAsFactors = FALSE),
-                 s, from = "unit", to = "class", rule = "sum"))
+    recast_scale(
+      data.frame(
+        unit = c("U1", "U2"), value = c(1, 2),
+        stringsAsFactors = FALSE
+      ),
+      s,
+      from = "unit", to = "class", rule = "sum"
+    )
+  )
   expect_equal(both$value[both$class == "G1"], 3)
 })
 
@@ -58,13 +71,17 @@ test_that("poisoning is per identifier group, not global", {
   # 2020 has both of G1's sources; 2021 has only one. The complete year must
   # keep its answer -- a poisoned group may not spread across groups.
   d <- data.frame(
-    unit  = c("U1", "U2", "U1"),
-    year  = c(2020, 2020, 2021),
+    unit = c("U1", "U2", "U1"),
+    year = c(2020, 2020, 2021),
     value = c(1, 2, 5),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
   out <- suppressWarnings(
-    recast_scale(d, s, from = "unit", to = "class", rule = "sum",
-                 values = "value"))
+    recast_scale(d, s,
+      from = "unit", to = "class", rule = "sum",
+      values = "value"
+    )
+  )
   expect_equal(out$value[out$class == "G1" & out$year == 2020], 3)
   expect_true(is.na(out$value[out$class == "G1" & out$year == 2021]))
 })
@@ -72,7 +89,8 @@ test_that("poisoning is per identifier group, not global", {
 test_that("a partial source poisons through the atom halves too", {
   s <- scale_example()
   up <- suppressWarnings(
-    recast_from_atoms(.partial(), s, to = "class", rule = "sum"))
+    recast_from_atoms(.partial(), s, to = "class", rule = "sum")
+  )
   # recast_from_atoms joins the data to the members, so a missing atom simply
   # does not contribute; this half does NOT poison, and that asymmetry is
   # deliberate -- pin it so a "consistency" refactor cannot quietly change it
@@ -84,11 +102,15 @@ test_that("poisoning survives on every backend", {
   for (bk in test_backends()) {
     x <- as_backend(.partial(), bk)
     out <- suppressWarnings(
-      recast_scale(x, s, from = "unit", to = "class", rule = "sum",
-                   collect = TRUE))
+      recast_scale(x, s,
+        from = "unit", to = "class", rule = "sum",
+        collect = TRUE
+      )
+    )
     out <- as.data.frame(out)
     expect_true(is.na(out$value[out$class == "G1"]),
-                label = sprintf("[%s] partial source poisons", bk))
+      label = sprintf("[%s] partial source poisons", bk)
+    )
   }
 })
 
@@ -98,10 +120,13 @@ test_that("the crosswalk is what defines the expected source set", {
   # Registering a crosswalk in which G1 has ONLY U1 makes the same data
   # complete -- so the law is "every source the CROSSWALK expects", not
   # "every unit that happens to exist".
-  one <- data.frame(unit = "U1", class = "G1", n_from = 1L, n_overlap = 1L,
-                    w = 1, w_from = 1, stringsAsFactors = FALSE)
+  one <- data.frame(
+    unit = "U1", class = "G1", n_from = 1L, n_overlap = 1L,
+    w = 1, w_from = 1, stringsAsFactors = FALSE
+  )
   register_scale_map("unit", "class", one, x = s)
   out <- suppressWarnings(
-    recast_scale(.partial(), s, from = "unit", to = "class", rule = "sum"))
+    recast_scale(.partial(), s, from = "unit", to = "class", rule = "sum")
+  )
   expect_equal(out$value[out$class == "G1"], 1)
 })

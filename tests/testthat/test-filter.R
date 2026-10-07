@@ -34,8 +34,10 @@ test_that("a sample is renamed so it cannot impersonate its parent", {
   expect_identical(S7::prop(p, "meta")$name, "example[sector:P]")
   # two different single-unit samples get different names
   q <- filter_scale(s, "sector", "S")
-  expect_false(identical(S7::prop(p, "meta")$name,
-                         S7::prop(q, "meta")$name))
+  expect_false(identical(
+    S7::prop(p, "meta")$name,
+    S7::prop(q, "meta")$name
+  ))
 })
 
 test_that("a filter that keeps everything is a true no-op", {
@@ -57,8 +59,10 @@ test_that("filter_scale() validates its codes", {
 
 test_that("a frame left empty errors unless dropping is requested", {
   # a scale whose unassigned atom carries positive weight
-  df <- data.frame(grp = c("A", "A", NA), unit = c("u1", "u2", "oth"),
-                   w = c(1, 2, 3), stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "A", NA), unit = c("u1", "u2", "oth"),
+    w = c(1, 2, 3), stringsAsFactors = FALSE
+  )
   s <- scale_from_leaftable(df, frames = c("grp", "unit"), name = "part")
   expect_error(filter_scale(s, "unit", "oth"), "left with no codes")
   dropped <- filter_scale(s, "unit", "oth", drop_empty_frames = TRUE)
@@ -71,8 +75,10 @@ test_that("a subset whose weights all vanish is rejected, not silently kept", {
   # weight column that sums to zero -- a scale that cannot weight anything.
   # The validator refuses rather than handing back a degenerate object.
   s <- scale_example()
-  expect_error(filter_scale(s, "unit", "OTH", drop_empty_frames = TRUE),
-               "sums to zero")
+  expect_error(
+    filter_scale(s, "unit", "OTH", drop_empty_frames = TRUE),
+    "sums to zero"
+  )
 })
 
 test_that("`[` subsets a scale", {
@@ -130,8 +136,10 @@ test_that("children and parents step one frame by default", {
   s <- scale_example()
   expect_identical(scale_children(s, "sector", "P"), c("G1", "G2"))
   expect_identical(scale_parents(s, "class", "G1"), "P")
-  expect_identical(scale_children(s, "sector", "P", to = "unit"),
-                   c("U1", "U2", "U3", "U4"))
+  expect_identical(
+    scale_children(s, "sector", "P", to = "unit"),
+    c("U1", "U2", "U3", "U4")
+  )
 })
 
 test_that("the ends of the hierarchy have no children or parents", {

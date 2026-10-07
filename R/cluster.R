@@ -55,7 +55,8 @@
 #' d <- data.frame(
 #'   unit = rep(scale_units(s), each = 4),
 #'   t = rep(sprintf("t%d", 1:4), 7),
-#'   v = as.numeric(seq_len(28)))
+#'   v = as.numeric(seq_len(28))
+#' )
 #' cl <- cluster_scale(d, s, k = 3)
 #' scale_frames(cl)
 #' head(attr(cl, "clustering"))
@@ -74,11 +75,15 @@ cluster_scale <- function(data, x, k, frame = NULL, key = NULL, value = NULL,
   key <- key %||% .resolve_key(x, frame, names(as.data.frame(data)))
   m <- .feature_matrix(data, key = key, value = value, units = units)
 
-  fit <- .cluster_fit(m, k, method, distance, scale_units, hclust_method,
-                      seed, data, x, frame, key, value, ...)
+  fit <- .cluster_fit(
+    m, k, method, distance, scale_units, hclust_method,
+    seed, data, x, frame, key, value, ...
+  )
 
-  .attach_cluster_frame(x, frame, new_frame, units, fit$assignment,
-                        fit$medoids, labels)
+  .attach_cluster_frame(
+    x, frame, new_frame, units, fit$assignment,
+    fit$medoids, labels
+  )
 }
 
 #' @noRd
@@ -95,12 +100,14 @@ cluster_scale <- function(data, x, k, frame = NULL, key = NULL, value = NULL,
 #' @noRd
 .check_new_frame <- function(x, new_frame) {
   if (!is.character(new_frame) || length(new_frame) != 1L ||
-      !nzchar(new_frame)) {
+    !nzchar(new_frame)) {
     .stop("`new_frame` must be a single non-empty string")
   }
   if (new_frame %in% scale_frames(x)) {
-    .stop("`%s` is already a frame of this scale; pick another `new_frame`",
-          new_frame)
+    .stop(
+      "`%s` is already a frame of this scale; pick another `new_frame`",
+      new_frame
+    )
   }
   invisible(TRUE)
 }
@@ -113,27 +120,37 @@ cluster_scale <- function(data, x, k, frame = NULL, key = NULL, value = NULL,
   if (method == "kmeans") {
     if (!is.null(seed)) withr_seed(seed)
     km <- stats::kmeans(m, centers = k, ...)
-    return(list(assignment = as.integer(km$cluster),
-                medoids = .medoids_from_centers(m, km$cluster, km$centers)))
+    return(list(
+      assignment = as.integer(km$cluster),
+      medoids = .medoids_from_centers(m, km$cluster, km$centers)
+    ))
   }
 
-  d <- scale_distance(data, x, frame = frame, key = key, value = value,
-                      method = distance, scale_units = scale_units)
+  d <- scale_distance(data, x,
+    frame = frame, key = key, value = value,
+    method = distance, scale_units = scale_units
+  )
 
   if (method == "pam") {
     if (!requireNamespace("cluster", quietly = TRUE)) {
-      .stop(paste0("method \"pam\" needs the cluster package; install it or ",
-                   "use method = \"hclust\""))
+      .stop(paste0(
+        "method \"pam\" needs the cluster package; install it or ",
+        "use method = \"hclust\""
+      ))
     }
     p <- cluster::pam(d, k = k, diss = TRUE, ...)
-    return(list(assignment = as.integer(p$clustering),
-                medoids = as.character(p$medoids)))
+    return(list(
+      assignment = as.integer(p$clustering),
+      medoids = as.character(p$medoids)
+    ))
   }
 
   h <- stats::hclust(d, method = hclust_method, ...)
   a <- stats::cutree(h, k = k)
-  list(assignment = as.integer(a),
-       medoids = .medoids_from_dist(d, a))
+  list(
+    assignment = as.integer(a),
+    medoids = .medoids_from_dist(d, a)
+  )
 }
 
 #' Seed without leaking the change out of the call
@@ -149,7 +166,7 @@ withr_seed <- function(seed) {
   vapply(sort(unique(assignment)), function(g) {
     idx <- which(assignment == g)
     dd <- sqrt(rowSums((m[idx, , drop = FALSE] -
-                          rep(centers[g, ], each = length(idx)))^2))
+      rep(centers[g, ], each = length(idx)))^2))
     rownames(m)[idx][which.min(dd)]
   }, character(1))
 }
@@ -176,8 +193,10 @@ withr_seed <- function(seed) {
     }
     medoids[assignment]
   } else {
-    sprintf(paste0(labels, "%0", max(2L, nchar(as.character(k))), "d"),
-            assignment)
+    sprintf(
+      paste0(labels, "%0", max(2L, nchar(as.character(k))), "d"),
+      assignment
+    )
   }
   names(code) <- units
 
@@ -190,10 +209,12 @@ withr_seed <- function(seed) {
 
   meta <- S7::prop(x, "meta")
   out <- scale_from_leaftable(
-    lt, frames = new_frames, key = scale_key(x),
+    lt,
+    frames = new_frames, key = scale_key(x),
     weights = scale_weights(x),
     default_weight = meta$default_weight,
-    name = meta$name %||% "", desc = meta$desc %||% "")
+    name = meta$name %||% "", desc = meta$desc %||% ""
+  )
   # keep everything the constructor does not take (source, labels, sampling)
   keep <- setdiff(names(meta), c("name", "desc", "weights", "default_weight"))
   if (length(keep) > 0L) {
@@ -201,8 +222,10 @@ withr_seed <- function(seed) {
     S7::prop(out, "meta") <- full
   }
 
-  tab <- data.frame(unit = units, cluster = unname(code),
-                    stringsAsFactors = FALSE)
+  tab <- data.frame(
+    unit = units, cluster = unname(code),
+    stringsAsFactors = FALSE
+  )
   names(tab)[1L] <- frame
   names(tab)[2L] <- new_frame
   if (!is.null(medoids)) {
@@ -227,14 +250,17 @@ withr_seed <- function(seed) {
 #' s <- scale_example()
 #' d <- data.frame(
 #'   unit = rep(scale_units(s), each = 4),
-#'   t = rep(sprintf("t%d", 1:4), 7), v = as.numeric(seq_len(28)))
+#'   t = rep(sprintf("t%d", 1:4), 7), v = as.numeric(seq_len(28))
+#' )
 #' cluster_medoids(cluster_scale(d, s, k = 3))
 #' @export
 cluster_medoids <- function(x, frame = NULL) {
   tab <- attr(x, "clustering")
   if (is.null(tab)) {
-    .stop(paste0("this scale carries no clustering; `cluster_medoids()` ",
-                 "reads the result of `cluster_scale()`"))
+    .stop(paste0(
+      "this scale carries no clustering; `cluster_medoids()` ",
+      "reads the result of `cluster_scale()`"
+    ))
   }
   if (!"medoid" %in% names(tab)) {
     .stop("this clustering reported no medoids")

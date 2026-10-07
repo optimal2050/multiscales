@@ -62,10 +62,12 @@ ScaleProduct <- S7::new_class(
 
     axes <- S7::prop(self, "axes")
     keys <- S7::prop(self, "keys")
-    jw   <- S7::prop(self, "joint_weights")
+    jw <- S7::prop(self, "joint_weights")
 
     # axes --------------------------------------------------------------------
-    if (!is.list(axes)) return("`axes` must be a list of Scale objects")
+    if (!is.list(axes)) {
+      return("`axes` must be a list of Scale objects")
+    }
     if (length(axes) < 2L) {
       errs <- c(errs, "a product needs at least 2 axes")
     }
@@ -73,16 +75,21 @@ ScaleProduct <- S7::new_class(
     if (is.null(nms) || anyNA(nms) || any(!nzchar(nms))) {
       errs <- c(errs, "every axis must be named")
     } else if (anyDuplicated(nms)) {
-      errs <- c(errs, sprintf("axis names must be unique; duplicated: %s",
-                              .preview(unique(nms[duplicated(nms)]))))
+      errs <- c(errs, sprintf(
+        "axis names must be unique; duplicated: %s",
+        .preview(unique(nms[duplicated(nms)]))
+      ))
     }
     for (i in seq_along(axes)) {
       a <- axes[[i]]
       nm <- if (is.null(nms)) as.character(i) else nms[[i]]
       if (S7::S7_inherits(a, ScaleProduct)) {
         errs <- c(errs, sprintf(
-          paste0("axis `%s` is itself a product; pass its axes directly ",
-                 "instead of nesting"), nm))
+          paste0(
+            "axis `%s` is itself a product; pass its axes directly ",
+            "instead of nesting"
+          ), nm
+        ))
         next
       }
       if (!S7::S7_inherits(a, Scale)) {
@@ -93,8 +100,11 @@ ScaleProduct <- S7::new_class(
       anm <- S7::prop(a, "meta")$name %||% ""
       if (!nzchar(anm)) {
         errs <- c(errs, sprintf(
-          paste0("axis `%s` has no name; a product's axes must be named ",
-                 "scales (set meta$name)"), nm))
+          paste0(
+            "axis `%s` has no name; a product's axes must be named ",
+            "scales (set meta$name)"
+          ), nm
+        ))
       }
     }
 
@@ -107,9 +117,12 @@ ScaleProduct <- S7::new_class(
       } else if (anyDuplicated(keys)) {
         dup <- unique(keys[duplicated(keys)])
         errs <- c(errs, sprintf(
-          paste0("axes resolve to the same key column: %s. Data on a product ",
-                 "carries one column per axis, so the columns must differ -- ",
-                 "pass `keys=` to name them."), .preview(dup)))
+          paste0(
+            "axes resolve to the same key column: %s. Data on a product ",
+            "carries one column per axis, so the columns must differ -- ",
+            "pass `keys=` to name them."
+          ), .preview(dup)
+        ))
       }
     }
 
@@ -122,7 +135,8 @@ ScaleProduct <- S7::new_class(
         if (length(missing_keys) > 0L) {
           errs <- c(errs, sprintf(
             "`joint_weights` is missing key column(s): %s",
-            .preview(missing_keys)))
+            .preview(missing_keys)
+          ))
         }
         wcols <- setdiff(names(jw), unname(keys))
         if (length(wcols) == 0L) {
@@ -161,8 +175,10 @@ scale_product <- function(..., name = "", desc = "", keys = NULL,
   }
   nms <- names(axes)
   if (is.null(nms) || any(!nzchar(nms))) {
-    .stop(paste0("every axis must be named, e.g. ",
-                 "scale_product(time = cal, space = gs)"))
+    .stop(paste0(
+      "every axis must be named, e.g. ",
+      "scale_product(time = cal, space = gs)"
+    ))
   }
 
   if (is.null(keys)) {
@@ -191,8 +207,10 @@ scale_product <- function(..., name = "", desc = "", keys = NULL,
     keys <- full
   }
 
-  ScaleProduct(axes = axes, keys = keys, joint_weights = joint_weights,
-               meta = list(name = name, desc = desc))
+  ScaleProduct(
+    axes = axes, keys = keys, joint_weights = joint_weights,
+    meta = list(name = name, desc = desc)
+  )
 }
 
 #' @noRd
@@ -208,12 +226,16 @@ scale_product <- function(..., name = "", desc = "", keys = NULL,
 .check_axis <- function(x, axis, arg = "axis") {
   ax <- names(S7::prop(x, "axes"))
   if (is.null(axis) || length(axis) != 1L || is.na(axis)) {
-    .stop("`%s` must be a single axis name; one of: %s", arg,
-          paste(ax, collapse = ", "))
+    .stop(
+      "`%s` must be a single axis name; one of: %s", arg,
+      paste(ax, collapse = ", ")
+    )
   }
   if (!axis %in% ax) {
-    .stop("`%s` = \"%s\" is not an axis of this product; one of: %s",
-          arg, axis, paste(ax, collapse = ", "))
+    .stop(
+      "`%s` = \"%s\" is not an axis of this product; one of: %s",
+      arg, axis, paste(ax, collapse = ", ")
+    )
   }
   invisible(axis)
 }
@@ -236,7 +258,9 @@ scale_product <- function(..., name = "", desc = "", keys = NULL,
 scale_axes <- function(x, axis = NULL) {
   .check_product(x)
   axes <- S7::prop(x, "axes")
-  if (is.null(axis)) return(axes)
+  if (is.null(axis)) {
+    return(axes)
+  }
   .check_axis(x, axis)
   axes[[axis]]
 }
@@ -280,8 +304,10 @@ product_frames <- function(x) {
 #' @export
 product_size <- function(x) {
   .check_product(x)
-  n <- vapply(S7::prop(x, "axes"),
-              function(a) nrow(S7::prop(a, "leaftable")), integer(1))
+  n <- vapply(
+    S7::prop(x, "axes"),
+    function(a) nrow(S7::prop(a, "leaftable")), integer(1)
+  )
   list(axes = n, total = prod(as.numeric(n)))
 }
 
@@ -321,9 +347,14 @@ product_coverage <- function(x, weight = NULL) {
   .check_product(x)
   vapply(S7::prop(x, "axes"), function(a) {
     w <- weight %||% (S7::prop(a, "meta")$default_weight %||%
-                        (if (length(scale_weights(a))) scale_weights(a)[[1L]]
-                         else NULL))
-    if (is.null(w)) return(1)
+      (if (length(scale_weights(a))) {
+        scale_weights(a)[[1L]]
+      } else {
+        NULL
+      }))
+    if (is.null(w)) {
+      return(1)
+    }
     scale_coverage(a, w)
   }, numeric(1))
 }
@@ -353,12 +384,16 @@ product_atoms <- function(x, limit = 1e6) {
   .check_product(x)
   sz <- product_size(x)
   if (sz$total > limit) {
-    .stop(paste0("this product has %s atoms (%s), above `limit` = %s. Pass a ",
-                 "larger `limit=` to build it anyway -- but conversion never ",
-                 "needs the atoms realised."),
-          format(sz$total, big.mark = ",", scientific = FALSE),
-          paste(sprintf("%s: %d", names(sz$axes), sz$axes), collapse = " x "),
-          format(limit, big.mark = ",", scientific = FALSE))
+    .stop(
+      paste0(
+        "this product has %s atoms (%s), above `limit` = %s. Pass a ",
+        "larger `limit=` to build it anyway -- but conversion never ",
+        "needs the atoms realised."
+      ),
+      format(sz$total, big.mark = ",", scientific = FALSE),
+      paste(sprintf("%s: %d", names(sz$axes), sz$axes), collapse = " x "),
+      format(limit, big.mark = ",", scientific = FALSE)
+    )
   }
   keys <- product_keys(x)
   parts <- lapply(names(S7::prop(x, "axes")), function(ax) {
@@ -381,9 +416,11 @@ product_atoms <- function(x, limit = 1e6) {
 
 S7::method(format, ScaleProduct) <- function(x, ...) {
   sz <- product_size(x)
-  sprintf("<ScaleProduct[%s] atoms=%s>",
-          paste(names(S7::prop(x, "axes")), collapse = " x "),
-          format(sz$total, big.mark = ",", scientific = FALSE))
+  sprintf(
+    "<ScaleProduct[%s] atoms=%s>",
+    paste(names(S7::prop(x, "axes")), collapse = " x "),
+    format(sz$total, big.mark = ",", scientific = FALSE)
+  )
 }
 
 #' @export
@@ -391,7 +428,7 @@ S7::method(format, ScaleProduct) <- function(x, ...) {
 print.ScaleProduct <- function(x, ...) {
   axes <- S7::prop(x, "axes")
   keys <- product_keys(x)
-  sz   <- product_size(x)
+  sz <- product_size(x)
   meta <- S7::prop(x, "meta")
 
   nm <- meta$name %||% ""
@@ -405,20 +442,26 @@ print.ScaleProduct <- function(x, ...) {
     a <- axes[[ax]]
     v <- scale_vocab(a)
     cat("  ", format(ax, width = w), " : ", v$object, " '",
-        S7::prop(a, "meta")$name %||% "", "'  ",
-        paste(scale_frames(a), collapse = "/"),
-        "  atoms ", format(sz$axes[[ax]], big.mark = ","),
-        "  key: ", keys[[ax]], "\n", sep = "")
+      S7::prop(a, "meta")$name %||% "", "'  ",
+      paste(scale_frames(a), collapse = "/"),
+      "  atoms ", format(sz$axes[[ax]], big.mark = ","),
+      "  key: ", keys[[ax]], "\n",
+      sep = ""
+    )
   }
   cat("Atoms: ",
-      paste(format(sz$axes, big.mark = ","), collapse = " x "),
-      " = ", format(sz$total, big.mark = ",", scientific = FALSE),
-      "  (not materialised)\n", sep = "")
+    paste(format(sz$axes, big.mark = ","), collapse = " x "),
+    " = ", format(sz$total, big.mark = ",", scientific = FALSE),
+    "  (not materialised)\n",
+    sep = ""
+  )
   cov <- product_coverage(x)
   if (any(cov < 1)) {
     cat("Coverage: ",
-        paste(sprintf("%s %.1f%%", names(cov), 100 * cov), collapse = " x "),
-        " = ", sprintf("%.1f%%", 100 * prod(cov)), "\n", sep = "")
+      paste(sprintf("%s %.1f%%", names(cov), 100 * cov), collapse = " x "),
+      " = ", sprintf("%.1f%%", 100 * prod(cov)), "\n",
+      sep = ""
+    )
   }
   if (!is.null(S7::prop(x, "joint_weights"))) {
     cat("Joint weights: attached\n")
@@ -456,18 +499,20 @@ S7::method(names, ScaleProduct) <- names.ScaleProduct
 #' @method summary ScaleProduct
 summary.ScaleProduct <- function(object, ...) {
   axes <- S7::prop(object, "axes")
-  sz   <- product_size(object)
+  sz <- product_size(object)
   keys <- product_keys(object)
-  cov  <- product_coverage(object)
+  cov <- product_coverage(object)
   meta <- S7::prop(object, "meta")
 
   rows <- data.frame(
-    axis   = names(axes),
-    scale  = vapply(axes, function(a) S7::prop(a, "meta")$name %||% "",
-                    character(1)),
+    axis = names(axes),
+    scale = vapply(
+      axes, function(a) S7::prop(a, "meta")$name %||% "",
+      character(1)
+    ),
     frames = vapply(axes, function(a) length(scale_frames(a)), integer(1)),
-    atoms  = sz$axes,
-    key    = unname(keys[names(axes)]),
+    atoms = sz$axes,
+    key = unname(keys[names(axes)]),
     coverage = unname(cov[names(axes)]),
     stringsAsFactors = FALSE, row.names = NULL
   )
@@ -496,21 +541,29 @@ S7::method(summary, ScaleProduct) <- summary.ScaleProduct
 #' @method print summary_ScaleProduct
 print.summary_ScaleProduct <- function(x, ...) {
   cat("<summary of ScaleProduct",
-      if (nzchar(x$name)) paste0(" '", x$name, "'"), ">\n", sep = "")
+    if (nzchar(x$name)) paste0(" '", x$name, "'"), ">\n",
+    sep = ""
+  )
   if (nzchar(x$desc)) cat("  desc:           ", x$desc, "\n", sep = "")
   cat("  axes:           ", nrow(x$axes), "\n", sep = "")
   for (i in seq_len(nrow(x$axes))) {
     r <- x$axes[i, ]
     cat("    ", r$axis, " -> '", r$scale, "'  ", r$frames, " frames, ",
-        format(r$atoms, big.mark = ","), " atoms, key `", r$key, "`",
-        if (r$coverage < 1) sprintf("  [%.1f%% covered]", 100 * r$coverage),
-        "\n", sep = "")
+      format(r$atoms, big.mark = ","), " atoms, key `", r$key, "`",
+      if (r$coverage < 1) sprintf("  [%.1f%% covered]", 100 * r$coverage),
+      "\n",
+      sep = ""
+    )
   }
   cat("  atoms:          ",
-      format(x$total, big.mark = ",", scientific = FALSE), "\n", sep = "")
+    format(x$total, big.mark = ",", scientific = FALSE), "\n",
+    sep = ""
+  )
   if (x$joint_coverage < 1) {
     cat("  joint coverage: ", sprintf("%.1f%%", 100 * x$joint_coverage),
-        "\n", sep = "")
+      "\n",
+      sep = ""
+    )
   }
   if (isTRUE(x$joint_weights)) cat("  joint weights:  attached\n")
   invisible(x)

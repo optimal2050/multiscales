@@ -20,7 +20,9 @@
 #' is_valid_frame(c("industry", "reg32", "", "2bad"))
 #' @export
 is_valid_frame <- function(x) {
-  if (!is.character(x)) return(rep(FALSE, length(x)))
+  if (!is.character(x)) {
+    return(rep(FALSE, length(x)))
+  }
   ok <- !is.na(x) & nzchar(x)
   ok[ok] <- make.names(x[ok]) == x[ok]
   ok

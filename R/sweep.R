@@ -25,7 +25,8 @@
 #' s <- scale_example()
 #' d <- data.frame(
 #'   unit = rep(scale_units(s), each = 4),
-#'   t = rep(sprintf("t%d", 1:4), 7), v = as.numeric(seq_len(28)))
+#'   t = rep(sprintf("t%d", 1:4), 7), v = as.numeric(seq_len(28))
+#' )
 #' cluster_sweep(d, s, ks = 2:4)
 #' @export
 cluster_sweep <- function(data, x, ks, frame = NULL, key = NULL, value = NULL,
@@ -34,13 +35,17 @@ cluster_sweep <- function(data, x, ks, frame = NULL, key = NULL, value = NULL,
   frame <- .resolve_frame(x, frame)
   units <- scale_units(x, frame)
   key <- key %||% .resolve_key(x, frame, names(as.data.frame(data)))
-  d <- scale_distance(data, x, frame = frame, key = key, value = value,
-                      method = distance, scale_units = scale_units)
+  d <- scale_distance(data, x,
+    frame = frame, key = key, value = value,
+    method = distance, scale_units = scale_units
+  )
   dm <- as.matrix(d)
 
   rows <- lapply(ks, function(k) {
-    cl <- FUN(data, x, k = k, frame = frame, key = key, value = value,
-              distance = distance, scale_units = scale_units, ...)
+    cl <- FUN(data, x,
+      k = k, frame = frame, key = key, value = value,
+      distance = distance, scale_units = scale_units, ...
+    )
     tab <- attr(cl, "clustering")
     g <- tab[[2L]]
     a <- match(g, unique(g))
@@ -49,7 +54,8 @@ cluster_sweep <- function(data, x, ks, frame = NULL, key = NULL, value = NULL,
       within = .within_dispersion(dm, a),
       silhouette = .avg_silhouette(dm, a),
       smallest = min(tabulate(a)),
-      stringsAsFactors = FALSE)
+      stringsAsFactors = FALSE
+    )
   })
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
@@ -61,7 +67,9 @@ cluster_sweep <- function(data, x, ks, frame = NULL, key = NULL, value = NULL,
 .within_dispersion <- function(dm, a) {
   sum(vapply(sort(unique(a)), function(g) {
     idx <- which(a == g)
-    if (length(idx) == 1L) return(0)
+    if (length(idx) == 1L) {
+      return(0)
+    }
     sub <- dm[idx, idx, drop = FALSE]
     min(rowSums(sub))
   }, numeric(1)))
@@ -76,16 +84,22 @@ cluster_sweep <- function(data, x, ks, frame = NULL, key = NULL, value = NULL,
 #' @noRd
 .avg_silhouette <- function(dm, a) {
   gs <- sort(unique(a))
-  if (length(gs) < 2L) return(NA_real_)
+  if (length(gs) < 2L) {
+    return(NA_real_)
+  }
   w <- vapply(seq_along(a), function(i) {
     own <- which(a == a[[i]])
     own <- setdiff(own, i)
-    if (length(own) == 0L) return(0)
+    if (length(own) == 0L) {
+      return(0)
+    }
     ai <- mean(dm[i, own])
     bi <- min(vapply(setdiff(gs, a[[i]]), function(g) {
       mean(dm[i, which(a == g)])
     }, numeric(1)))
-    if (max(ai, bi) == 0) return(0)
+    if (max(ai, bi) == 0) {
+      return(0)
+    }
     (bi - ai) / max(ai, bi)
   }, numeric(1))
   mean(w)

@@ -58,9 +58,12 @@ test_that("scale_coverage() reads the bookkeeping when present", {
   sampled <- Scale(
     leaftable = scale_leaftable(s), frames = scale_frames(s),
     members = S7::prop(s, "members"), key = "leaf",
-    meta = list(name = "part", weights = "w", default_weight = "w",
-                coverage = c(w = 0.5), parent_totals = list(w = 20),
-                parent_name = "tidy"))
+    meta = list(
+      name = "part", weights = "w", default_weight = "w",
+      coverage = c(w = 0.5), parent_totals = list(w = 20),
+      parent_name = "tidy"
+    )
+  )
   expect_equal(scale_coverage(sampled), c(w = 0.5))
   expect_true(summary(sampled)$sampled)
   expect_output(print(summary(sampled)), "SAMPLED")

@@ -45,8 +45,10 @@
 #' @examples
 #' SCALE_RULES
 #' @export
-SCALE_RULES <- c("sum", "weighted_mean", "mean", "copy", "sd", "share",
-                 "logshare")
+SCALE_RULES <- c(
+  "sum", "weighted_mean", "mean", "copy", "sd", "share",
+  "logshare"
+)
 
 #' The share rules, which are one computation under two display intents
 #' @noRd
@@ -84,7 +86,7 @@ SCALE_RULES <- c("sum", "weighted_mean", "mean", "copy", "sd", "share",
 #' @export
 register_scale_rule <- function(param, rule, weight = NULL, scope = NULL) {
   if (!is.character(param) || length(param) != 1L || is.na(param) ||
-      !nzchar(param)) {
+    !nzchar(param)) {
     .stop("`param` must be a single non-empty string")
   }
   rule <- match.arg(rule, SCALE_RULES)
@@ -117,7 +119,9 @@ register_scale_rule <- function(param, rule, weight = NULL, scope = NULL) {
 #' clear_scale_rules("demand")
 #' @export
 get_scale_rule <- function(param, scope = NULL) {
-  if (!is.character(param) || length(param) != 1L) return(NULL)
+  if (!is.character(param) || length(param) != 1L) {
+    return(NULL)
+  }
   for (k in unique(c(.rule_key(param, scope), param))) {
     if (exists(k, envir = .RULE_REGISTRY, inherits = FALSE)) {
       return(get(k, envir = .RULE_REGISTRY, inherits = FALSE))
@@ -150,17 +154,23 @@ list_scale_rules <- function(scope = NULL) {
   nms <- nms[keep]
   entries <- entries[keep]
   if (length(nms) == 0L) {
-    return(data.frame(param = character(), rule = character(),
-                      weight = character(), scope = character(),
-                      stringsAsFactors = FALSE))
+    return(data.frame(
+      param = character(), rule = character(),
+      weight = character(), scope = character(),
+      stringsAsFactors = FALSE
+    ))
   }
   data.frame(
-    param  = sub("^[^:]*:", "", nms),
-    rule   = vapply(entries, function(e) e$rule, character(1)),
-    weight = vapply(entries, function(e) e$weight %||% NA_character_,
-                    character(1)),
-    scope  = vapply(entries, function(e) e$scope %||% NA_character_,
-                    character(1)),
+    param = sub("^[^:]*:", "", nms),
+    rule = vapply(entries, function(e) e$rule, character(1)),
+    weight = vapply(
+      entries, function(e) e$weight %||% NA_character_,
+      character(1)
+    ),
+    scope = vapply(
+      entries, function(e) e$scope %||% NA_character_,
+      character(1)
+    ),
     stringsAsFactors = FALSE,
     row.names = NULL
   )
@@ -183,15 +193,21 @@ list_scale_rules <- function(scope = NULL) {
 clear_scale_rules <- function(param = NULL, scope = NULL) {
   if (is.null(param)) {
     if (is.null(scope)) {
-      rm(list = ls(envir = .RULE_REGISTRY, all.names = TRUE),
-         envir = .RULE_REGISTRY)
+      rm(
+        list = ls(envir = .RULE_REGISTRY, all.names = TRUE),
+        envir = .RULE_REGISTRY
+      )
       return(invisible(NULL))
     }
     present <- grep(paste0("^", scope, ":"),
-                    ls(envir = .RULE_REGISTRY, all.names = TRUE), value = TRUE)
+      ls(envir = .RULE_REGISTRY, all.names = TRUE),
+      value = TRUE
+    )
   } else {
-    present <- intersect(vapply(param, .rule_key, character(1), scope = scope),
-                         ls(envir = .RULE_REGISTRY, all.names = TRUE))
+    present <- intersect(
+      vapply(param, .rule_key, character(1), scope = scope),
+      ls(envir = .RULE_REGISTRY, all.names = TRUE)
+    )
   }
   if (length(present) > 0L) rm(list = present, envir = .RULE_REGISTRY)
   invisible(NULL)
@@ -214,26 +230,34 @@ clear_scale_rules <- function(param = NULL, scope = NULL) {
 .rules_for <- function(values, rule = NULL, weight = NULL, scope = NULL,
                        hint = "register_scale_rule()") {
   .per_column <- function(x, what) {
-    if (is.null(x)) return(stats::setNames(vector("list", length(values)),
-                                           values))
+    if (is.null(x)) {
+      return(stats::setNames(
+        vector("list", length(values)),
+        values
+      ))
+    }
     if (length(x) == 1L && is.null(names(x))) {
       return(stats::setNames(rep(list(unname(x)), length(values)), values))
     }
     if (is.null(names(x))) {
-      .stop(paste0("`%s` must be a single value or a NAMED vector with one ",
-                   "entry per value column"), what)
+      .stop(paste0(
+        "`%s` must be a single value or a NAMED vector with one ",
+        "entry per value column"
+      ), what)
     }
     unknown <- setdiff(names(x), values)
     if (length(unknown) > 0L) {
-      .stop("`%s` names columns that are not value columns: %s",
-            what, .preview(unknown))
+      .stop(
+        "`%s` names columns that are not value columns: %s",
+        what, .preview(unknown)
+      )
     }
     out <- stats::setNames(vector("list", length(values)), values)
     for (v in names(x)) out[[v]] <- unname(x[[v]])
     out
   }
 
-  rules   <- .per_column(rule, "rule")
+  rules <- .per_column(rule, "rule")
   weights <- .per_column(weight, "weight")
 
   out <- stats::setNames(vector("list", length(values)), values)
@@ -254,8 +278,10 @@ clear_scale_rules <- function(param = NULL, scope = NULL) {
     out[[v]] <- list(rule = r, weight = w)
   }
   if (length(missing) > 0L) {
-    .stop(paste0("no aggregation rule for value column(s): %s. Pass `rule=` ",
-                 "or register one with `%s`."), .preview(missing), hint)
+    .stop(paste0(
+      "no aggregation rule for value column(s): %s. Pass `rule=` ",
+      "or register one with `%s`."
+    ), .preview(missing), hint)
   }
   out
 }

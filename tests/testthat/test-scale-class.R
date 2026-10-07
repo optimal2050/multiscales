@@ -20,8 +20,10 @@ test_that("accessors agree with the properties", {
   expect_identical(scale_frames(s), S7::prop(s, "frames"))
   expect_identical(scale_units(s), c("L1", "L2", "L3", "L4"))
   expect_identical(scale_units(s, "mid"), c("M1", "M2"))
-  expect_identical(scale_rank(s, c("mid", "leaf", "nope")),
-                   c(2L, 3L, NA_integer_))
+  expect_identical(
+    scale_rank(s, c("mid", "leaf", "nope")),
+    c(2L, 3L, NA_integer_)
+  )
   expect_identical(names(s), scale_frames(s))
   expect_identical(as.data.frame(s), scale_leaftable(s))
 })
@@ -52,94 +54,140 @@ test_that("a single-frame scale is legal", {
 
 test_that("the validator rejects a leaftable without the key column", {
   expect_error(
-    Scale(leaftable = data.frame(a = "x", stringsAsFactors = FALSE),
-          frames = "a", members = list(a = "x"), key = "unit"),
-    "must have a `unit` column")
+    Scale(
+      leaftable = data.frame(a = "x", stringsAsFactors = FALSE),
+      frames = "a", members = list(a = "x"), key = "unit"
+    ),
+    "must have a `unit` column"
+  )
 })
 
 test_that("the validator rejects duplicate atom keys", {
-  df <- data.frame(grp = c("A", "A"), unit = c("u1", "u1"),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "A"), unit = c("u1", "u1"),
+    stringsAsFactors = FALSE
+  )
   expect_error(
-    Scale(leaftable = df, frames = c("grp", "unit"),
-          members = list(grp = "A", unit = "u1")),
-    "must be unique")
+    Scale(
+      leaftable = df, frames = c("grp", "unit"),
+      members = list(grp = "A", unit = "u1")
+    ),
+    "must be unique"
+  )
 })
 
 test_that("the validator rejects an empty leaftable", {
-  df <- data.frame(grp = character(), unit = character(),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = character(), unit = character(),
+    stringsAsFactors = FALSE
+  )
   expect_error(
-    Scale(leaftable = df, frames = c("grp", "unit"),
-          members = list(grp = "A", unit = "u1")),
-    "at least one row")
+    Scale(
+      leaftable = df, frames = c("grp", "unit"),
+      members = list(grp = "A", unit = "u1")
+    ),
+    "at least one row"
+  )
 })
 
 test_that("members must match the non-NA codes present in the leaftable", {
-  df <- data.frame(grp = c("A", "B"), unit = c("u1", "u2"),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "B"), unit = c("u1", "u2"),
+    stringsAsFactors = FALSE
+  )
   expect_error(
-    Scale(leaftable = df, frames = c("grp", "unit"),
-          members = list(grp = c("A", "B", "GHOST"),
-                         unit = c("u1", "u2"))),
-    "exactly the non-NA")
+    Scale(
+      leaftable = df, frames = c("grp", "unit"),
+      members = list(
+        grp = c("A", "B", "GHOST"),
+        unit = c("u1", "u2")
+      )
+    ),
+    "exactly the non-NA"
+  )
   # ... and NA memberships are legal (partial coverage)
-  df2 <- data.frame(grp = c("A", NA), unit = c("u1", "u2"),
-                    stringsAsFactors = FALSE)
+  df2 <- data.frame(
+    grp = c("A", NA), unit = c("u1", "u2"),
+    stringsAsFactors = FALSE
+  )
   expect_s3_class(
-    Scale(leaftable = df2, frames = c("grp", "unit"),
-          members = list(grp = "A", unit = c("u1", "u2"))),
-    "multiscales::Scale")
+    Scale(
+      leaftable = df2, frames = c("grp", "unit"),
+      members = list(grp = "A", unit = c("u1", "u2"))
+    ),
+    "multiscales::Scale"
+  )
 })
 
 test_that("the key name is reserved as a frame except as the finest frame", {
   # legal: the finest frame IS the key column
-  df <- data.frame(grp = c("A", "A"), unit = c("u1", "u2"),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "A"), unit = c("u1", "u2"),
+    stringsAsFactors = FALSE
+  )
   expect_s3_class(
-    scale_from_leaftable(df, frames = c("grp", "unit")), "multiscales::Scale")
+    scale_from_leaftable(df, frames = c("grp", "unit")), "multiscales::Scale"
+  )
   # illegal: the key name used as a coarser frame
-  df2 <- data.frame(unit = c("A", "A"), leaf = c("u1", "u2"),
-                    stringsAsFactors = FALSE)
+  df2 <- data.frame(
+    unit = c("A", "A"), leaf = c("u1", "u2"),
+    stringsAsFactors = FALSE
+  )
   df2$unit_key <- df2$leaf
   expect_error(
-    Scale(leaftable = df2, frames = c("unit", "leaf"),
-          members = list(unit = "A", leaf = c("u1", "u2")), key = "unit"),
-    "reserved names")
+    Scale(
+      leaftable = df2, frames = c("unit", "leaf"),
+      members = list(unit = "A", leaf = c("u1", "u2")), key = "unit"
+    ),
+    "reserved names"
+  )
 })
 
 test_that("frame names must be syntactically valid and unique", {
   df <- data.frame(a = "A", unit = "u1", stringsAsFactors = FALSE)
   expect_error(
-    Scale(leaftable = df, frames = c("a", "a"),
-          members = list(a = "A")), "must be unique")
+    Scale(
+      leaftable = df, frames = c("a", "a"),
+      members = list(a = "A")
+    ), "must be unique"
+  )
   expect_false(is_valid_frame("2bad"))
   expect_true(is_valid_frame("reg32"))
 })
 
 test_that("weight columns must be numeric, non-negative and not all zero", {
-  df <- data.frame(grp = c("A", "A"), unit = c("u1", "u2"),
-                   w = c(-1, 2), stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "A"), unit = c("u1", "u2"),
+    w = c(-1, 2), stringsAsFactors = FALSE
+  )
   expect_error(
     scale_from_leaftable(df, frames = c("grp", "unit"), weights = "w"),
-    ">= 0")
+    ">= 0"
+  )
   df$w <- c(0, 0)
   expect_error(
     scale_from_leaftable(df, frames = c("grp", "unit"), weights = "w"),
-    "sums to zero")
+    "sums to zero"
+  )
   df$w <- c("a", "b")
   expect_error(
     scale_from_leaftable(df, frames = c("grp", "unit"), weights = "w"),
-    "must be numeric")
+    "must be numeric"
+  )
 })
 
 test_that("default_weight must name a declared weight", {
-  df <- data.frame(grp = c("A", "A"), unit = c("u1", "u2"),
-                   w = c(1, 2), stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "A"), unit = c("u1", "u2"),
+    w = c(1, 2), stringsAsFactors = FALSE
+  )
   expect_error(
-    scale_from_leaftable(df, frames = c("grp", "unit"), weights = "w",
-                         default_weight = "nope"),
-    "must be one of")
+    scale_from_leaftable(df,
+      frames = c("grp", "unit"), weights = "w",
+      default_weight = "nope"
+    ),
+    "must be one of"
+  )
 })
 
 test_that("coverage bookkeeping is validated against the leaftable", {
@@ -147,32 +195,48 @@ test_that("coverage bookkeeping is validated against the leaftable", {
   lt <- scale_leaftable(s)
   # a coverage that does not match the leaftable is rejected
   expect_error(
-    Scale(leaftable = lt, frames = scale_frames(s),
-          members = S7::prop(s, "members"), key = "leaf",
-          meta = list(weights = "w", coverage = c(w = 0.5),
-                      parent_totals = list(w = 10))),
-    "does not match the leaftable")
+    Scale(
+      leaftable = lt, frames = scale_frames(s),
+      members = S7::prop(s, "members"), key = "leaf",
+      meta = list(
+        weights = "w", coverage = c(w = 0.5),
+        parent_totals = list(w = 10)
+      )
+    ),
+    "does not match the leaftable"
+  )
   # ... and the consistent one is accepted (10 of 20 = 0.5)
   expect_s3_class(
-    Scale(leaftable = lt, frames = scale_frames(s),
-          members = S7::prop(s, "members"), key = "leaf",
-          meta = list(weights = "w", coverage = c(w = 0.5),
-                      parent_totals = list(w = 20))),
-    "multiscales::Scale")
+    Scale(
+      leaftable = lt, frames = scale_frames(s),
+      members = S7::prop(s, "members"), key = "leaf",
+      meta = list(
+        weights = "w", coverage = c(w = 0.5),
+        parent_totals = list(w = 20)
+      )
+    ),
+    "multiscales::Scale"
+  )
 })
 
 test_that("coverage must lie in (0, 1] over declared weights", {
   s <- tidy_scale()
   expect_error(
-    Scale(leaftable = scale_leaftable(s), frames = scale_frames(s),
-          members = S7::prop(s, "members"), key = "leaf",
-          meta = list(weights = "w", coverage = c(w = 1.5))),
-    "must lie in")
+    Scale(
+      leaftable = scale_leaftable(s), frames = scale_frames(s),
+      members = S7::prop(s, "members"), key = "leaf",
+      meta = list(weights = "w", coverage = c(w = 1.5))
+    ),
+    "must lie in"
+  )
   expect_error(
-    Scale(leaftable = scale_leaftable(s), frames = scale_frames(s),
-          members = S7::prop(s, "members"), key = "leaf",
-          meta = list(weights = "w", coverage = c(nope = 1))),
-    "over declared weights")
+    Scale(
+      leaftable = scale_leaftable(s), frames = scale_frames(s),
+      members = S7::prop(s, "members"), key = "leaf",
+      meta = list(weights = "w", coverage = c(nope = 1))
+    ),
+    "over declared weights"
+  )
 })
 
 # Base generics --------------------------------------------------------------
@@ -194,16 +258,18 @@ test_that("summary() returns the classed quantitative view", {
   s <- scale_example()
   sm <- summary(s)
   expect_s3_class(sm, "summary_Scale")
-  expect_named(sm, c("name", "desc", "frames", "unassigned", "n_atoms",
-                     "weights", "weight_totals", "default_weight",
-                     "coverage", "sampled", "parent_name", "nesting",
-                     "source", "vocab"))
+  expect_named(sm, c(
+    "name", "desc", "frames", "unassigned", "n_atoms",
+    "weights", "weight_totals", "default_weight",
+    "coverage", "sampled", "parent_name", "nesting",
+    "source", "vocab"
+  ))
   expect_identical(sm$n_atoms, 7L)
   expect_false(sm$sampled)
   expect_equal(sm$weight_totals[["size"]], 3100)
   # the cross-cutting class/group pair is flagged with its offenders
   row <- sm$nesting[sm$nesting$parent == "class" &
-                    sm$nesting$child == "group", ]
+    sm$nesting$child == "group", ]
   expect_identical(nrow(row), 1L)
   expect_false(row$nests)
   expect_gt(row$n_offenders, 0)

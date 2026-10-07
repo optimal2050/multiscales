@@ -49,7 +49,7 @@ about its dimension and gets the conversion machinery from multiscales. A
 `Calendar` is a `Scale`:
 
 ```{r, eval = has_ts}
-cal <- timescales::calendar("m12_h24")   # 12 months x 24 hours
+cal <- timescales::calendar("m12_h24") # 12 months x 24 hours
 scale_is(cal)
 scale_frames(cal)
 head(scale_leaftable(cal), 3)
@@ -95,8 +95,9 @@ sectors <- data.frame(
   gva      = c(30, 20, 50, 80, 20)
 )
 nace <- scale_from_leaftable(sectors,
-                             frames = c("section", "division", "activity"),
-                             key = "activity", name = "nace")
+  frames = c("section", "division", "activity"),
+  key = "activity", name = "nace"
+)
 nace
 ```
 
@@ -123,8 +124,10 @@ each activity:
 ```{r}
 titles <- data.frame(
   activity = sectors$activity,
-  title = c("Meat processing", "Dairy products", "Basic iron and steel",
-            "Electric power generation", "Gas distribution")
+  title = c(
+    "Meat processing", "Dairy products", "Basic iron and steel",
+    "Electric power generation", "Gas distribution"
+  )
 )
 
 Industry <- S7::new_class(
@@ -135,8 +138,10 @@ Industry <- S7::new_class(
     titles = S7::class_data.frame
   ),
   constructor = function(leaftable, levels, titles) {
-    s <- scale_from_leaftable(leaftable, frames = levels, key = "activity",
-                              weights = "gva", name = "nace")
+    s <- scale_from_leaftable(leaftable,
+      frames = levels, key = "activity",
+      weights = "gva", name = "nace"
+    )
     S7::new_object(s, titles = titles)
   },
   validator = function(self) {
@@ -146,8 +151,10 @@ Industry <- S7::new_class(
   }
 )
 
-ind <- Industry(sectors, levels = c("section", "division", "activity"),
-                titles = titles)
+ind <- Industry(sectors,
+  levels = c("section", "division", "activity"),
+  titles = titles
+)
 ind@levels
 ```
 
@@ -182,8 +189,10 @@ Nothing more is needed for the industry scale to convert data:
 
 ```{r}
 jobs <- data.frame(activity = sectors$activity, jobs = c(5, 3, 8, 2, 1))
-recast_scale(jobs, ind, from = "activity", to = "section",
-             values = "jobs", rule = "sum")
+recast_scale(jobs, ind,
+  from = "activity", to = "section",
+  values = "jobs", rule = "sum"
+)
 ```
 
 The same holds for `join_scale()`, `filter_scale()`, the navigation
@@ -201,20 +210,26 @@ with words from `scale_vocab()`. Without a method, an industry scale is
 described in neutral words:
 
 ```{r, error = TRUE}
-recast_scale(jobs, ind, from = "activity", to = "group",
-             values = "jobs", rule = "sum")
+recast_scale(jobs, ind,
+  from = "activity", to = "group",
+  values = "jobs", rule = "sum"
+)
 ```
 
 A method supplies the dimension's own:
 
 ```{r, error = TRUE}
 S7::method(scale_vocab, Industry) <- function(x, ...) {
-  list(object = "Industry", frame = "level", frames = "levels",
-       unit = "industry", units = "industries", atoms = "activities")
+  list(
+    object = "Industry", frame = "level", frames = "levels",
+    unit = "industry", units = "industries", atoms = "activities"
+  )
 }
 
-recast_scale(jobs, ind, from = "activity", to = "group",
-             values = "jobs", rule = "sum")
+recast_scale(jobs, ind,
+  from = "activity", to = "group",
+  values = "jobs", rule = "sum"
+)
 ```
 
 This is why a calendar's errors talk about timeframes and a region
@@ -240,7 +255,8 @@ method cuts them down to match:
 ```{r}
 S7::method(scale_payload_slice, Industry) <- function(x, i, ...) {
   x@titles <- x@titles[x@titles$activity %in% x@leaftable$activity, ,
-                       drop = FALSE]
+    drop = FALSE
+  ]
   x
 }
 
@@ -286,11 +302,15 @@ that multiscales finds them without depending on the package:
 
 ```{r, eval = FALSE}
 # R/industry-class.R
-.scale_vocab_generic <- S7::new_external_generic("multiscales",
-                                                 "scale_vocab", "x")
+.scale_vocab_generic <- S7::new_external_generic(
+  "multiscales",
+  "scale_vocab", "x"
+)
 S7::method(.scale_vocab_generic, Industry) <- function(x, ...) {
-  list(object = "Industry", frame = "level", frames = "levels",
-       unit = "industry", units = "industries", atoms = "activities")
+  list(
+    object = "Industry", frame = "level", frames = "levels",
+    unit = "industry", units = "industries", atoms = "activities"
+  )
 }
 
 # R/zzz.R
@@ -313,8 +333,10 @@ a calendar on real dates -- and re-export the generic so that
 `library(timescales)` or `library(geoscales)` alone provides it:
 
 ```{r, eval = FALSE}
-.recast_generic <- S7::new_external_generic("multiscales", "recast",
-                                            c("x", "from"))
+.recast_generic <- S7::new_external_generic(
+  "multiscales", "recast",
+  c("x", "from")
+)
 S7::method(.recast_generic, list(S7::class_any, Industry)) <-
   function(x, from, to, ...) {
     recast_scale(x, from, to = to, ...)

@@ -38,12 +38,16 @@ NULL
 #' @noRd
 .ipc_codec <- function(compression) {
   cmp <- tolower(compression)
-  if (identical(cmp, "uncompressed") || identical(cmp, "none")) return(NULL)
+  if (identical(cmp, "uncompressed") || identical(cmp, "none")) {
+    return(NULL)
+  }
   if (identical(cmp, "lz4")) cmp <- "lz4_frame"
   z <- try(arrow::Codec$create(cmp), silent = TRUE)
   if (inherits(z, "try-error")) {
-    .warn("compression codec '%s' is unavailable; writing uncompressed",
-          compression)
+    .warn(
+      "compression codec '%s' is unavailable; writing uncompressed",
+      compression
+    )
     return(NULL)
   }
   z
@@ -61,14 +65,19 @@ NULL
 .serialisable_meta <- function(meta, nm) {
   ok <- vapply(meta, function(z) {
     is.null(z) || is.character(z) || is.numeric(z) || is.logical(z) ||
-      (is.list(z) && all(vapply(z, function(y)
-        is.character(y) || is.numeric(y) || is.logical(y), logical(1))))
+      (is.list(z) && all(vapply(z, function(y) {
+        is.character(y) || is.numeric(y) || is.logical(y)
+      }, logical(1))))
   }, logical(1))
   if (!all(ok)) {
-    .stop(paste0("the `meta` of scale \"%s\" holds value(s) that cannot be ",
-                 "written as YAML: %s. Drop them before writing, or store ",
-                 "them alongside the dataset yourself."),
-          nm, .preview(names(meta)[!ok]))
+    .stop(
+      paste0(
+        "the `meta` of scale \"%s\" holds value(s) that cannot be ",
+        "written as YAML: %s. Drop them before writing, or store ",
+        "them alongside the dataset yourself."
+      ),
+      nm, .preview(names(meta)[!ok])
+    )
   }
   meta
 }
@@ -102,14 +111,18 @@ NULL
   # rather than the whole field: YAML hands back list("DE_XR", "FR_XR") where
   # the validator wants c("DE_XR", "FR_XR").
   if (is.list(meta[["residuals"]])) {
-    meta[["residuals"]] <- lapply(meta[["residuals"]],
-                                  function(z) as.character(unlist(z)))
+    meta[["residuals"]] <- lapply(
+      meta[["residuals"]],
+      function(z) as.character(unlist(z))
+    )
   }
-  Scale(leaftable = as.data.frame(leaftable),
-        frames = as.character(unlist(entry$frames)),
-        members = members,
-        key = entry$key,
-        meta = meta)
+  Scale(
+    leaftable = as.data.frame(leaftable),
+    frames = as.character(unlist(entry$frames)),
+    members = members,
+    key = entry$key,
+    meta = meta
+  )
 }
 
 #' Write data and the scales that index it to one folder
@@ -133,12 +146,14 @@ NULL
 #'
 #' @examples
 #' p <- scale_product(a = scale_example(), b = scale_example2())
-#' d <- merge(data.frame(unit = c("U1", "U2")),
-#'            data.frame(period = c("p1", "p2")))
+#' d <- merge(
+#'   data.frame(unit = c("U1", "U2")),
+#'   data.frame(period = c("p1", "p2"))
+#' )
 #' d$v <- 1:4
 #' dir <- file.path(tempdir(), "store")
 #' if (requireNamespace("arrow", quietly = TRUE) &&
-#'     requireNamespace("yaml", quietly = TRUE)) {
+#'   requireNamespace("yaml", quietly = TRUE)) {
 #'   write_scale_dataset(d, p, dir, overwrite = TRUE)
 #'   ds <- open_scale_dataset(dir)
 #'   ds
@@ -155,21 +170,31 @@ write_scale_dataset <- function(data, x, path, partitioning = NULL,
   backend <- .ms_require_backend(data, "data")
   d <- as.data.frame(dplyr::collect(.ms_lazy(data, backend)))
 
-  axes <- if (is_prod) S7::prop(x, "axes") else
+  axes <- if (is_prod) {
+    S7::prop(x, "axes")
+  } else {
     stats::setNames(list(x), .scale_name(x, require = FALSE) %||% "scale")
-  keys <- if (is_prod) product_keys(x) else
+  }
+  keys <- if (is_prod) {
+    product_keys(x)
+  } else {
     stats::setNames(scale_key(x), names(axes))
+  }
 
   missing_keys <- setdiff(unname(keys), names(d))
   if (length(missing_keys) > 0L) {
-    .stop("the data has no column(s) %s (one key column per axis)",
-          .preview(missing_keys))
+    .stop(
+      "the data has no column(s) %s (one key column per axis)",
+      .preview(missing_keys)
+    )
   }
   if (!is.null(partitioning)) {
     bad <- setdiff(partitioning, names(d))
     if (length(bad) > 0L) {
-      .stop("`partitioning` names column(s) not in the data: %s",
-            .preview(bad))
+      .stop(
+        "`partitioning` names column(s) not in the data: %s",
+        .preview(bad)
+      )
     }
   }
 
@@ -189,19 +214,23 @@ write_scale_dataset <- function(data, x, path, partitioning = NULL,
     multiscales = as.character(utils::packageVersion("multiscales")),
     kind = if (is_prod) "product" else "scale",
     keys = as.list(keys),
-    axes = lapply(axes, .scale_manifest))
+    axes = lapply(axes, .scale_manifest)
+  )
   for (a in names(axes)) {
     arrow::write_feather(
       arrow::as_arrow_table(scale_leaftable(axes[[a]])),
       file.path(sdir, paste0(a, "-leaftable.arrow")),
-      compression = compression)
+      compression = compression
+    )
   }
   yaml::write_yaml(manifest, file.path(sdir, "manifest.yaml"))
 
   ddir <- file.path(path, "data")
   codec <- .ipc_codec(compression)
-  args <- list(d, path = ddir, format = "feather",
-               partitioning = partitioning)
+  args <- list(d,
+    path = ddir, format = "feather",
+    partitioning = partitioning
+  )
   if (!is.null(codec)) args$codec <- codec
   do.call(arrow::write_dataset, args)
   invisible(path)
@@ -231,25 +260,32 @@ open_scale_dataset <- function(path) {
 
   scales <- lapply(names(manifest$axes), function(a) {
     lt <- as.data.frame(arrow::read_feather(
-      file.path(sdir, paste0(a, "-leaftable.arrow"))))
+      file.path(sdir, paste0(a, "-leaftable.arrow"))
+    ))
     .scale_from_manifest(manifest$axes[[a]], lt)
   })
   names(scales) <- names(manifest$axes)
 
   sc <- if (identical(manifest$kind, "product")) {
     keys <- unlist(manifest$keys)
-    do.call(scale_product,
-            c(scales, list(keys = keys[names(scales)])))
+    do.call(
+      scale_product,
+      c(scales, list(keys = keys[names(scales)]))
+    )
   } else {
     scales[[1L]]
   }
 
   structure(
-    list(data = arrow::open_dataset(file.path(path, "data"),
-                                    format = "feather"),
-         scale = sc,
-         path = path),
-    class = "scale_dataset")
+    list(
+      data = arrow::open_dataset(file.path(path, "data"),
+        format = "feather"
+      ),
+      scale = sc,
+      path = path
+    ),
+    class = "scale_dataset"
+  )
 }
 
 #' Describe a stored dataset without opening it fully
@@ -266,13 +302,17 @@ scale_dataset_info <- function(path) {
     .stop("`%s` is not a scale dataset (no _scales/manifest.yaml)", path)
   }
   manifest <- yaml::read_yaml(mf)
-  files <- list.files(file.path(path, "data"), recursive = TRUE,
-                      full.names = TRUE)
-  list(kind = manifest$kind,
-       axes = names(manifest$axes),
-       keys = unlist(manifest$keys),
-       files = length(files),
-       bytes = sum(file.info(files)$size, na.rm = TRUE))
+  files <- list.files(file.path(path, "data"),
+    recursive = TRUE,
+    full.names = TRUE
+  )
+  list(
+    kind = manifest$kind,
+    axes = names(manifest$axes),
+    keys = unlist(manifest$keys),
+    files = length(files),
+    bytes = sum(file.info(files)$size, na.rm = TRUE)
+  )
 }
 
 #' @param x A `scale_dataset`.
@@ -284,10 +324,15 @@ print.scale_dataset <- function(x, ...) {
   info <- scale_dataset_info(x$path)
   cat("<scale_dataset>", x$path, "\n")
   cat("  rows:  ", tryCatch(format(nrow(x$data), big.mark = ","),
-                            error = function(e) "?"), "\n", sep = "")
+    error = function(e) "?"
+  ), "\n", sep = "")
   cat("  files: ", info$files, " (",
-      format(round(info$bytes / 1024), big.mark = ","), " KB)\n", sep = "")
+    format(round(info$bytes / 1024), big.mark = ","), " KB)\n",
+    sep = ""
+  )
   cat("  scale: ", info$kind, " over ",
-      paste(info$axes, collapse = " x "), "\n", sep = "")
+    paste(info$axes, collapse = " x "), "\n",
+    sep = ""
+  )
   invisible(x)
 }

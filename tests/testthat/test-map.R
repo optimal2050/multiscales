@@ -33,8 +33,10 @@ test_that("uncovered atoms appear with an NA target", {
 })
 
 test_that("the split factor is well defined when no weight is declared", {
-  df <- data.frame(grp = c("A", "A", "B"), unit = c("u1", "u2", "u3"),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "A", "B"), unit = c("u1", "u2", "u3"),
+    stringsAsFactors = FALSE
+  )
   s <- scale_from_leaftable(df, frames = c("grp", "unit"), name = "noweights")
   m <- scale_map("grp", "unit", x = s)
   # every atom weighs 1, so w/w_from == n_overlap/n_from
@@ -50,10 +52,12 @@ test_that("scale_map() rejects a same-frame pair and a missing scale", {
 
 test_that("cross-object maps match on shared atom keys", {
   a <- scale_example()
-  df <- data.frame(big = c("X", "X", "Y", "Y", "Y", "Y", "Z"),
-                   unit = c("U1", "U2", "U3", "U4", "U5", "U6", "OTH"),
-                   size = c(1, 1, 1, 1, 1, 1, 1),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    big = c("X", "X", "Y", "Y", "Y", "Y", "Z"),
+    unit = c("U1", "U2", "U3", "U4", "U5", "U6", "OTH"),
+    size = c(1, 1, 1, 1, 1, 1, 1),
+    stringsAsFactors = FALSE
+  )
   b <- scale_from_leaftable(df, frames = c("big", "unit"), name = "other")
   m <- scale_map(a, b)
   expect_named(m, c("example", "other", "n_from", "n_overlap", "w", "w_from"))
@@ -64,8 +68,10 @@ test_that("cross-object maps need distinct names and shared keys", {
   a <- scale_example()
   expect_error(scale_map(a, a), "same name")
 
-  df <- data.frame(grp = c("A", "B"), unit = c("z1", "z2"),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    grp = c("A", "B"), unit = c("z1", "z2"),
+    stringsAsFactors = FALSE
+  )
   b <- scale_from_leaftable(df, frames = c("grp", "unit"), name = "disjoint")
   expect_error(scale_map(a, b), "share no `unit` keys")
 })
@@ -92,8 +98,10 @@ test_that("extra map columns are carried through `by`", {
 test_that("a registered map is returned as-is", {
   s <- scale_example()
   withr::defer(clear_scale_maps())
-  fake <- data.frame(class = "G1", group = "GC", n_from = 1L, n_overlap = 1L,
-                     w = 1, w_from = 1, stringsAsFactors = FALSE)
+  fake <- data.frame(
+    class = "G1", group = "GC", n_from = 1L, n_overlap = 1L,
+    w = 1, w_from = 1, stringsAsFactors = FALSE
+  )
   register_scale_map("class", "group", fake, x = s)
   expect_equal(scale_map("class", "group", x = s), fake)
   expect_equal(get_scale_map("class", "group", x = s), fake)
@@ -102,8 +110,10 @@ test_that("a registered map is returned as-is", {
 test_that("registered maps are scoped to the object", {
   s <- scale_example()
   withr::defer(clear_scale_maps())
-  fake <- data.frame(class = "G1", group = "GC", n_from = 1L, n_overlap = 1L,
-                     w = 1, w_from = 1, stringsAsFactors = FALSE)
+  fake <- data.frame(
+    class = "G1", group = "GC", n_from = 1L, n_overlap = 1L,
+    w = 1, w_from = 1, stringsAsFactors = FALSE
+  )
   register_scale_map("class", "group", fake, x = s)
   # a different object's identically-named frames are unaffected
   expect_null(get_scale_map("class", "group", x = "other_scale"))
@@ -112,8 +122,10 @@ test_that("registered maps are scoped to the object", {
 test_that("registering NULL removes the entry", {
   s <- scale_example()
   withr::defer(clear_scale_maps())
-  fake <- data.frame(class = "G1", group = "GC", n_from = 1L, n_overlap = 1L,
-                     w = 1, w_from = 1, stringsAsFactors = FALSE)
+  fake <- data.frame(
+    class = "G1", group = "GC", n_from = 1L, n_overlap = 1L,
+    w = 1, w_from = 1, stringsAsFactors = FALSE
+  )
   register_scale_map("class", "group", fake, x = s)
   register_scale_map("class", "group", NULL, x = s)
   expect_null(get_scale_map("class", "group", x = s))
@@ -123,17 +135,22 @@ test_that("a registered map must have the schema columns", {
   s <- scale_example()
   expect_error(
     register_scale_map("class", "group", data.frame(a = 1), x = s),
-    "missing column")
-  expect_error(register_scale_map("class", "group", "nope", x = s),
-               "must be a data.frame")
+    "missing column"
+  )
+  expect_error(
+    register_scale_map("class", "group", "nope", x = s),
+    "must be a data.frame"
+  )
 })
 
 test_that("list_scale_maps() reports the keys", {
   s <- scale_example()
   withr::defer(clear_scale_maps())
   clear_scale_maps()
-  fake <- data.frame(class = "G1", group = "GC", n_from = 1L, n_overlap = 1L,
-                     w = 1, w_from = 1, stringsAsFactors = FALSE)
+  fake <- data.frame(
+    class = "G1", group = "GC", n_from = 1L, n_overlap = 1L,
+    w = 1, w_from = 1, stringsAsFactors = FALSE
+  )
   register_scale_map("class", "group", fake, x = s)
   expect_identical(list_scale_maps()$key, "example:class->group")
 })

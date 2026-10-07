@@ -49,8 +49,10 @@ test_that("meta attaches share and weight, and share sums to 1", {
 
 test_that("a cross-cutting parent yields NA with a warning", {
   s <- scale_example()
-  d <- data.frame(group = c("G1", "GB", "GC"), v = 1:3,
-                  stringsAsFactors = FALSE)
+  d <- data.frame(
+    group = c("G1", "GB", "GC"), v = 1:3,
+    stringsAsFactors = FALSE
+  )
   expect_warning(out <- join_scale(d, s, attach = "class"), "does not nest")
   expect_true(is.na(out$example.class[out$group == "GB"]))
 })
@@ -85,26 +87,33 @@ test_that("the keyed frame is inferred, and can be given", {
 
 test_that("several scales live side by side on one dataset", {
   a <- scale_example()
-  df <- data.frame(big = c("X", "X", "Y", "Y", "Y", "Y", "Z"),
-                   unit = c("U1", "U2", "U3", "U4", "U5", "U6", "OTH"),
-                   size = 1, stringsAsFactors = FALSE)
+  df <- data.frame(
+    big = c("X", "X", "Y", "Y", "Y", "Y", "Z"),
+    unit = c("U1", "U2", "U3", "U4", "U5", "U6", "OTH"),
+    size = 1, stringsAsFactors = FALSE
+  )
   b <- scale_from_leaftable(df, frames = c("big", "unit"), name = "other")
 
-  d <- data.frame(unit = c("U1", "U3", "U5"), v = 1:3,
-                  stringsAsFactors = FALSE)
+  d <- data.frame(
+    unit = c("U1", "U3", "U5"), v = 1:3,
+    stringsAsFactors = FALSE
+  )
   out <- join_scale(join_scale(d, a, attach = "sector"), b,
-                    key = "unit", frame = "unit", attach = "big")
+    key = "unit", frame = "unit", attach = "big"
+  )
   # one dataset now carries both scales' labels -- a direct crosswalk
   expect_true(all(c("example", "example.sector", "other", "other.big") %in%
-                    names(out)))
+    names(out)))
   expect_identical(as.character(out$example.sector), c("P", "P", "S"))
   expect_identical(as.character(out$other.big), c("X", "Y", "Y"))
 })
 
 test_that("nothing to attach returns the data unchanged", {
   s <- scale_example()
-  d <- data.frame(example = c("G1", "G2"), v = 1:2,
-                  stringsAsFactors = FALSE)
+  d <- data.frame(
+    example = c("G1", "G2"), v = 1:2,
+    stringsAsFactors = FALSE
+  )
   expect_identical(join_scale(d, s, frame = "class"), d)
 })
 
@@ -112,9 +121,14 @@ test_that("join_scale() honours the contract on every backend", {
   s <- scale_example()
   expect_backend_contract(
     .jd(),
-    function(x, collect = NULL) join_scale(x, s, attach = TRUE,
-                                           as_factor = FALSE,
-                                           collect = collect),
-    key_cols = "class")
+    function(x, collect = NULL) {
+      join_scale(x, s,
+        attach = TRUE,
+        as_factor = FALSE,
+        collect = collect
+      )
+    },
+    key_cols = "class"
+  )
   expect_backend_rejects(function(x) join_scale(x, s))
 })

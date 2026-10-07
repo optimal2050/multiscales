@@ -24,8 +24,10 @@ test_that("the silhouette peaks at the number of groups the data has", {
 
 test_that("smallest reports the smallest cluster, which is often the veto", {
   s <- three_group_scale()
-  out <- cluster_sweep(three_group_data(), s, ks = c(2, 8),
-                       method = "hclust")
+  out <- cluster_sweep(three_group_data(), s,
+    ks = c(2, 8),
+    method = "hclust"
+  )
   expect_identical(out$smallest[out$k == 8], 1L)
   expect_gt(out$smallest[out$k == 2], 1L)
 })
@@ -38,8 +40,10 @@ test_that("k = 1 has no silhouette rather than a made-up one", {
 
 test_that("the sweep can drive the constrained clustering too", {
   s <- ordered_scale()
-  out <- cluster_sweep(ordered_data(), s, ks = 2:4,
-                       FUN = cluster_contiguous)
+  out <- cluster_sweep(ordered_data(), s,
+    ks = 2:4,
+    FUN = cluster_contiguous
+  )
   expect_identical(out$k, 2:4)
   expect_identical(out$k[which.max(out$silhouette)], 3L)
 })

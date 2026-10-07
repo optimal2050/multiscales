@@ -9,14 +9,18 @@ test_that("the result is the scale with a new frame above the clustered one", {
   # Not expect_s3_class("Scale"): the class is spelled "Scale" or
   # "multiscales::Scale" depending on how the package was loaded.
   expect_true(scale_is(cl))
-  expect_identical(scale_frames(cl),
-                   c("top", "cluster", "unit"))
+  expect_identical(
+    scale_frames(cl),
+    c("top", "cluster", "unit")
+  )
   expect_identical(scale_key(cl), "unit")
   expect_length(scale_units(cl, "cluster"), 3L)
   # the atoms and their weights are untouched
   expect_identical(scale_units(cl), scale_units(s))
-  expect_identical(scale_weights(cl),
-                   scale_weights(s))
+  expect_identical(
+    scale_weights(cl),
+    scale_weights(s)
+  )
 })
 
 test_that("every method recovers three obvious groups", {
@@ -27,7 +31,8 @@ test_that("every method recovers three obvious groups", {
     cl <- cluster_scale(d, s, k = 3, method = m, seed = 1)
     tab <- attr(cl, "clustering")
     expect_true(recovers_groups(tab, "unit", "cluster"),
-                label = sprintf("method %s recovers the groups", m))
+      label = sprintf("method %s recovers the groups", m)
+    )
   }
 })
 
@@ -39,26 +44,40 @@ test_that("a shape distance groups by profile, not by level", {
   # shape for a correlation to match, and the package treats it as maximally
   # distant rather than pretending otherwise -- see the distance tests.)
   t <- sprintf("t%d", 1:6)
-  shape <- list(u1 = 1:6, u2 = 1:6, u3 = 1:6,
-                u4 = 6:1, u5 = 6:1, u6 = 6:1,
-                u7 = c(1, 1, 9, 1, 1, 1), u8 = c(1, 1, 9, 1, 1, 1))
-  mag <- c(u1 = 100, u2 = 1, u3 = 0.01, u4 = 100, u5 = 1, u6 = 0.01,
-           u7 = 100, u8 = 0.01)
+  shape <- list(
+    u1 = 1:6, u2 = 1:6, u3 = 1:6,
+    u4 = 6:1, u5 = 6:1, u6 = 6:1,
+    u7 = c(1, 1, 9, 1, 1, 1), u8 = c(1, 1, 9, 1, 1, 1)
+  )
+  mag <- c(
+    u1 = 100, u2 = 1, u3 = 0.01, u4 = 100, u5 = 1, u6 = 0.01,
+    u7 = 100, u8 = 0.01
+  )
   d <- do.call(rbind, lapply(names(shape), function(u) {
-    data.frame(unit = u, t = t, v = as.numeric(shape[[u]]) * mag[[u]],
-               stringsAsFactors = FALSE)
+    data.frame(
+      unit = u, t = t, v = as.numeric(shape[[u]]) * mag[[u]],
+      stringsAsFactors = FALSE
+    )
   }))
 
-  by_shape <- cluster_scale(d, s, k = 3, method = "hclust",
-                            distance = "correlation")
-  expect_true(recovers_groups(attr(by_shape, "clustering"), "unit",
-                              "cluster"))
+  by_shape <- cluster_scale(d, s,
+    k = 3, method = "hclust",
+    distance = "correlation"
+  )
+  expect_true(recovers_groups(
+    attr(by_shape, "clustering"), "unit",
+    "cluster"
+  ))
 
   # and a level distance does NOT -- it groups the big ones together
-  by_level <- cluster_scale(d, s, k = 3, method = "hclust",
-                            distance = "euclidean")
-  expect_false(recovers_groups(attr(by_level, "clustering"), "unit",
-                               "cluster"))
+  by_level <- cluster_scale(d, s,
+    k = 3, method = "hclust",
+    distance = "euclidean"
+  )
+  expect_false(recovers_groups(
+    attr(by_level, "clustering"), "unit",
+    "cluster"
+  ))
 })
 
 test_that("the clustering table reports the assignment and the medoids", {
@@ -67,7 +86,7 @@ test_that("the clustering table reports the assignment and the medoids", {
   tab <- attr(cluster_scale(three_group_data(), s, k = 3), "clustering")
   expect_named(tab, c("unit", "cluster", "medoid"))
   expect_identical(nrow(tab), 8L)
-  expect_identical(sum(tab$medoid), 3L)     # one representative per cluster
+  expect_identical(sum(tab$medoid), 3L) # one representative per cluster
 })
 
 test_that("cluster_medoids() names a real unit per cluster", {
@@ -96,10 +115,14 @@ test_that("the cluster frame works with the rest of multiscales", {
   cl <- cluster_scale(three_group_data(), s, k = 3, method = "hclust")
 
   # recasting to the clusters is now an ordinary recast
-  d <- data.frame(unit = scale_units(s), cap = 1:8,
-                  stringsAsFactors = FALSE)
-  out <- recast_scale(d, cl, from = "unit", to = "cluster",
-                                   rule = "sum")
+  d <- data.frame(
+    unit = scale_units(s), cap = 1:8,
+    stringsAsFactors = FALSE
+  )
+  out <- recast_scale(d, cl,
+    from = "unit", to = "cluster",
+    rule = "sum"
+  )
   expect_equal(sum(out$cap), sum(d$cap))
   expect_identical(nrow(out), 3L)
 
@@ -117,9 +140,13 @@ test_that("k is validated against the units available", {
 
 test_that("the new frame may not collide with an existing one", {
   s <- three_group_scale()
-  expect_error(cluster_scale(three_group_data(), s, k = 3,
-                             new_frame = "top"),
-               "already a frame")
+  expect_error(
+    cluster_scale(three_group_data(), s,
+      k = 3,
+      new_frame = "top"
+    ),
+    "already a frame"
+  )
 })
 
 test_that("a unit missing observations is an error, not a hole", {
@@ -131,17 +158,23 @@ test_that("a unit missing observations is an error, not a hole", {
 
 test_that("data with no feature column is refused", {
   s <- three_group_scale()
-  d <- data.frame(unit = scale_units(s), v = 1:8,
-                  stringsAsFactors = FALSE)
+  d <- data.frame(
+    unit = scale_units(s), v = 1:8,
+    stringsAsFactors = FALSE
+  )
   expect_error(cluster_scale(d, s, k = 2), "no identifier column")
 })
 
 test_that("kmeans is reproducible through seed", {
   s <- three_group_scale()
   d <- three_group_data()
-  a <- attr(cluster_scale(d, s, k = 3, method = "kmeans", seed = 7),
-            "clustering")
-  b <- attr(cluster_scale(d, s, k = 3, method = "kmeans", seed = 7),
-            "clustering")
+  a <- attr(
+    cluster_scale(d, s, k = 3, method = "kmeans", seed = 7),
+    "clustering"
+  )
+  b <- attr(
+    cluster_scale(d, s, k = 3, method = "kmeans", seed = 7),
+    "clustering"
+  )
   expect_equal(a, b)
 })

@@ -37,14 +37,24 @@
 #' @keywords internal
 #' @export
 .ms_backend <- function(x) {
-  if (inherits(x, c("arrow_dplyr_query", "ArrowObject", "Dataset",
-                    "ArrowTabular", "RecordBatchReader"))) {
+  if (inherits(x, c(
+    "arrow_dplyr_query", "ArrowObject", "Dataset",
+    "ArrowTabular", "RecordBatchReader"
+  ))) {
     return("arrow")
   }
-  if (inherits(x, "dtplyr_step")) return("dtplyr")
-  if (inherits(x, "data.table")) return("data.table")
-  if (inherits(x, "tbl_df")) return("tibble")
-  if (is.data.frame(x)) return("data.frame")
+  if (inherits(x, "dtplyr_step")) {
+    return("dtplyr")
+  }
+  if (inherits(x, "data.table")) {
+    return("data.table")
+  }
+  if (inherits(x, "tbl_df")) {
+    return("tibble")
+  }
+  if (is.data.frame(x)) {
+    return("data.frame")
+  }
   NA_character_
 }
 
@@ -115,14 +125,20 @@
   switch(backend,
     "data.table" = if (requireNamespace("data.table", quietly = TRUE)) {
       data.table::as.data.table(res)
-    } else as.data.frame(res),
+    } else {
+      as.data.frame(res)
+    },
     "tibble" = if (requireNamespace("tibble", quietly = TRUE)) {
       tibble::as_tibble(res)
-    } else as.data.frame(res),
+    } else {
+      as.data.frame(res)
+    },
     "arrow" = res,
     "dtplyr" = if (requireNamespace("data.table", quietly = TRUE)) {
       data.table::as.data.table(res)
-    } else as.data.frame(res),
+    } else {
+      as.data.frame(res)
+    },
     as.data.frame(res)
   )
 }
@@ -146,13 +162,19 @@
 #' @export
 .ms_bind_rows <- function(parts,
                           use_dt = requireNamespace("data.table",
-                                                    quietly = TRUE)) {
+                            quietly = TRUE
+                          )) {
   parts <- Filter(function(p) !is.null(p) && nrow(p) > 0L, parts)
-  if (length(parts) == 0L) return(NULL)
-  if (length(parts) == 1L) return(as.data.frame(parts[[1L]]))
+  if (length(parts) == 0L) {
+    return(NULL)
+  }
+  if (length(parts) == 1L) {
+    return(as.data.frame(parts[[1L]]))
+  }
   if (isTRUE(use_dt)) {
     return(as.data.frame(
-      data.table::rbindlist(parts, use.names = TRUE, fill = FALSE)))
+      data.table::rbindlist(parts, use.names = TRUE, fill = FALSE)
+    ))
   }
   as.data.frame(dplyr::bind_rows(parts))
 }
@@ -161,7 +183,9 @@
 #' @noRd
 .ms_chunks <- function(values, size) {
   n <- length(values)
-  if (n == 0L) return(list())
+  if (n == 0L) {
+    return(list())
+  }
   size <- max(1L, as.integer(size))
   split(values, ceiling(seq_len(n) / size))
 }
@@ -178,8 +202,10 @@
 .ms_require_backend <- function(x, arg = "x") {
   backend <- .ms_backend(x)
   if (is.na(backend)) {
-    .stop(paste0("`%s` must be a data.frame, tibble, data.table, dtplyr step ",
-                 "or arrow table/query"), arg)
+    .stop(paste0(
+      "`%s` must be a data.frame, tibble, data.table, dtplyr step ",
+      "or arrow table/query"
+    ), arg)
   }
   backend
 }

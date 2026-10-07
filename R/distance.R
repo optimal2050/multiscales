@@ -28,8 +28,10 @@
 #' @examples
 #' SCALE_DISTANCES
 #' @export
-SCALE_DISTANCES <- c("euclidean", "manhattan", "maximum", "correlation",
-                     "spearman", "cosine")
+SCALE_DISTANCES <- c(
+  "euclidean", "manhattan", "maximum", "correlation",
+  "spearman", "cosine"
+)
 
 #' @noRd
 .DISTANCE_REGISTRY <- new.env(parent = emptyenv())
@@ -39,13 +41,16 @@ SCALE_DISTANCES <- c("euclidean", "manhattan", "maximum", "correlation",
   switch(method,
     euclidean = stats::dist(m, method = "euclidean"),
     manhattan = stats::dist(m, method = "manhattan"),
-    maximum   = stats::dist(m, method = "maximum"),
+    maximum = stats::dist(m, method = "maximum"),
     correlation = .dist_from_similarity(
-      stats::cor(t(m), use = "everything", method = "pearson")),
+      stats::cor(t(m), use = "everything", method = "pearson")
+    ),
     spearman = .dist_from_similarity(
-      stats::cor(t(m), use = "everything", method = "spearman")),
+      stats::cor(t(m), use = "everything", method = "spearman")
+    ),
     cosine = .dist_from_similarity(.cosine_similarity(m)),
-    .stop("unknown distance `%s`; see SCALE_DISTANCES", method))
+    .stop("unknown distance `%s`; see SCALE_DISTANCES", method)
+  )
 }
 
 #' Similarity on the -1..1 scale to a distance on 0..2
@@ -91,7 +96,7 @@ SCALE_DISTANCES <- c("euclidean", "manhattan", "maximum", "correlation",
 #' @export
 register_scale_distance <- function(name, fn) {
   if (!is.character(name) || length(name) != 1L || is.na(name) ||
-      !nzchar(name)) {
+    !nzchar(name)) {
     .stop("`name` must be a single non-empty string")
   }
   if (!is.function(fn)) .stop("`fn` must be a function of a matrix")
@@ -102,7 +107,9 @@ register_scale_distance <- function(name, fn) {
 #' @rdname register_scale_distance
 #' @export
 get_scale_distance <- function(name) {
-  if (!is.character(name) || length(name) != 1L) return(NULL)
+  if (!is.character(name) || length(name) != 1L) {
+    return(NULL)
+  }
   if (!exists(name, envir = .DISTANCE_REGISTRY, inherits = FALSE)) {
     return(NULL)
   }
@@ -112,8 +119,10 @@ get_scale_distance <- function(name) {
 #' @rdname register_scale_distance
 #' @export
 list_scale_distances <- function() {
-  sort(unique(c(SCALE_DISTANCES,
-                ls(envir = .DISTANCE_REGISTRY, all.names = FALSE))))
+  sort(unique(c(
+    SCALE_DISTANCES,
+    ls(envir = .DISTANCE_REGISTRY, all.names = FALSE)
+  )))
 }
 
 #' @rdname register_scale_distance
@@ -150,7 +159,8 @@ clear_scale_distances <- function(names = NULL) {
 #' s <- scale_example()
 #' d <- data.frame(
 #'   unit = rep(scale_units(s), each = 3),
-#'   t = rep(sprintf("t%d", 1:3), 7), v = as.numeric(seq_len(21)))
+#'   t = rep(sprintf("t%d", 1:3), 7), v = as.numeric(seq_len(21))
+#' )
 #' round(scale_distance(d, s, method = "correlation"), 2)
 #' @export
 scale_distance <- function(data, x, frame = NULL, key = NULL, value = NULL,
@@ -163,7 +173,9 @@ scale_distance <- function(data, x, frame = NULL, key = NULL, value = NULL,
   if (isTRUE(scale_units)) {
     m <- t(apply(m, 1, function(z) {
       s <- stats::sd(z)
-      if (!is.finite(s) || s == 0) return(z - mean(z))
+      if (!is.finite(s) || s == 0) {
+        return(z - mean(z))
+      }
       (z - mean(z)) / s
     }))
   }
@@ -172,8 +184,10 @@ scale_distance <- function(data, x, frame = NULL, key = NULL, value = NULL,
   d <- if (!is.null(fn)) fn(m) else .dist_builtin(m, method)
   if (!inherits(d, "dist")) d <- stats::as.dist(as.matrix(d))
   if (attr(d, "Size") != length(units)) {
-    .stop(paste0("distance `%s` returned %d rows for %d units"),
-          method, attr(d, "Size"), length(units))
+    .stop(
+      paste0("distance `%s` returned %d rows for %d units"),
+      method, attr(d, "Size"), length(units)
+    )
   }
   attr(d, "Labels") <- units
   d
@@ -181,15 +195,23 @@ scale_distance <- function(data, x, frame = NULL, key = NULL, value = NULL,
 
 #' @noRd
 .resolve_frame <- function(x, frame) {
-  if (!is.null(frame)) return(frame)
+  if (!is.null(frame)) {
+    return(frame)
+  }
   .atom_level(x)
 }
 
 #' @noRd
 .resolve_key <- function(x, frame, cols) {
-  if (frame %in% cols) return(frame)
+  if (frame %in% cols) {
+    return(frame)
+  }
   k <- scale_key(x)
-  if (k %in% cols) return(k)
-  .stop("the data has neither a `%s` nor a `%s` column; pass `key=`",
-        frame, k)
+  if (k %in% cols) {
+    return(k)
+  }
+  .stop(
+    "the data has neither a `%s` nor a `%s` column; pass `key=`",
+    frame, k
+  )
 }

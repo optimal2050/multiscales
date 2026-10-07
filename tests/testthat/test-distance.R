@@ -23,7 +23,8 @@ test_that("level distances see magnitude and shape distances do not", {
     data.frame(unit = "u6", t = t, v = as.numeric(6:1)),
     data.frame(unit = "u7", t = t, v = as.numeric(6:1)),
     data.frame(unit = "u8", t = t, v = as.numeric(6:1)),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 
   lev <- as.matrix(scale_distance(d, s, method = "euclidean"))
   shp <- as.matrix(scale_distance(d, s, method = "correlation"))
@@ -39,12 +40,16 @@ test_that("scale_units = TRUE turns a level distance into a shape one", {
   s <- three_group_scale()
   t <- sprintf("t%d", 1:6)
   d <- do.call(rbind, lapply(seq_len(8), function(i) {
-    data.frame(unit = sprintf("u%d", i), t = t,
-               v = as.numeric(1:6) * i, stringsAsFactors = FALSE)
+    data.frame(
+      unit = sprintf("u%d", i), t = t,
+      v = as.numeric(1:6) * i, stringsAsFactors = FALSE
+    )
   }))
   raw <- as.matrix(scale_distance(d, s, method = "euclidean"))
-  std <- as.matrix(scale_distance(d, s, method = "euclidean",
-                                  scale_units = TRUE))
+  std <- as.matrix(scale_distance(d, s,
+    method = "euclidean",
+    scale_units = TRUE
+  ))
   expect_gt(raw["u1", "u8"], 1)
   expect_equal(unname(std["u1", "u8"]), 0, tolerance = 1e-8)
 })
@@ -53,9 +58,11 @@ test_that("a profile with no shape is maximally distant, not accidentally close"
   s <- three_group_scale()
   t <- sprintf("t%d", 1:6)
   d <- do.call(rbind, lapply(seq_len(8), function(i) {
-    v <- if (i <= 2) rep(5, 6) else as.numeric(1:6)   # u1, u2 are constant
-    data.frame(unit = sprintf("u%d", i), t = t, v = v,
-               stringsAsFactors = FALSE)
+    v <- if (i <= 2) rep(5, 6) else as.numeric(1:6) # u1, u2 are constant
+    data.frame(
+      unit = sprintf("u%d", i), t = t, v = v,
+      stringsAsFactors = FALSE
+    )
   }))
   m <- as.matrix(scale_distance(d, s, method = "correlation"))
   # two flat units are NOT treated as a matching pair
@@ -78,8 +85,10 @@ test_that("every built-in distance runs and is symmetric with a zero diagonal", 
 
 test_that("an unknown distance is an error", {
   s <- three_group_scale()
-  expect_error(scale_distance(three_group_data(), s, method = "nope"),
-               "unknown distance")
+  expect_error(
+    scale_distance(three_group_data(), s, method = "nope"),
+    "unknown distance"
+  )
 })
 
 # Registry ---------------------------------------------------------------------
@@ -100,17 +109,23 @@ test_that("a registered distance can drive a clustering", {
   withr::defer(clear_scale_distances())
   s <- three_group_scale()
   register_scale_distance("mine", function(m) stats::dist(m))
-  cl <- cluster_scale(three_group_data(), s, k = 3, method = "hclust",
-                      distance = "mine")
+  cl <- cluster_scale(three_group_data(), s,
+    k = 3, method = "hclust",
+    distance = "mine"
+  )
   expect_true(recovers_groups(attr(cl, "clustering"), "unit", "cluster"))
 })
 
 test_that("the registry validates and clears", {
   withr::defer(clear_scale_distances())
-  expect_error(register_scale_distance("", function(m) m),
-               "non-empty string")
-  expect_error(register_scale_distance("x", "not a function"),
-               "must be a function")
+  expect_error(
+    register_scale_distance("", function(m) m),
+    "non-empty string"
+  )
+  expect_error(
+    register_scale_distance("x", "not a function"),
+    "must be a function"
+  )
   register_scale_distance("tmp", function(m) stats::dist(m))
   expect_false(is.null(get_scale_distance("tmp")))
   clear_scale_distances("tmp")
@@ -123,6 +138,8 @@ test_that("a registered distance of the wrong size is caught", {
   withr::defer(clear_scale_distances())
   s <- three_group_scale()
   register_scale_distance("wrong", function(m) stats::dist(m[1:3, ]))
-  expect_error(scale_distance(three_group_data(), s, method = "wrong"),
-               "returned 3 rows for 8 units")
+  expect_error(
+    scale_distance(three_group_data(), s, method = "wrong"),
+    "returned 3 rows for 8 units"
+  )
 })

@@ -95,12 +95,13 @@ Scale <- S7::new_class(
 
     # key ---------------------------------------------------------------------
     if (!is.character(key) || length(key) != 1L || is.na(key) ||
-        !nzchar(key)) {
+      !nzchar(key)) {
       return("`key` must be a single non-empty string")
     }
     if (!key %in% names(leaftable)) {
       errs <- c(errs, sprintf(
-        "`leaftable` must have a `%s` column (the atom key)", key))
+        "`leaftable` must have a `%s` column (the atom key)", key
+      ))
     }
 
     # frames ------------------------------------------------------------------
@@ -112,7 +113,8 @@ Scale <- S7::new_class(
       bad <- frames[!is_valid_frame(frames)]
       if (length(bad) > 0L) {
         errs <- c(errs, sprintf(
-          "`frames` contains invalid names: %s", .preview(bad)))
+          "`frames` contains invalid names: %s", .preview(bad)
+        ))
       }
       # The key name is allowed as the FINEST frame: there the frame column
       # *is* the key column, so nothing collides. As a coarser frame it would
@@ -123,12 +125,14 @@ Scale <- S7::new_class(
       }
       if (length(clash) > 0L) {
         errs <- c(errs, sprintf(
-          "`frames` may not use reserved names: %s", .preview(clash)))
+          "`frames` may not use reserved names: %s", .preview(clash)
+        ))
       }
       missing_cols <- setdiff(frames, names(leaftable))
       if (length(missing_cols) > 0L) {
         errs <- c(errs, sprintf(
-          "`leaftable` missing frame columns: %s", .preview(missing_cols)))
+          "`leaftable` missing frame columns: %s", .preview(missing_cols)
+        ))
       }
     }
 
@@ -137,13 +141,17 @@ Scale <- S7::new_class(
       uid <- leaftable[[key]]
       if (!is.character(uid) || anyNA(uid) || any(!nzchar(uid))) {
         errs <- c(errs, sprintf(
-          "`leaftable$%s` must be a non-empty character vector", key))
+          "`leaftable$%s` must be a non-empty character vector", key
+        ))
       } else if (anyDuplicated(uid)) {
         dup <- unique(uid[duplicated(uid)])
         errs <- c(errs, sprintf(
-          paste0("`leaftable$%s` must be unique; duplicated: %s. ",
-                 "Parallel dimensions belong in separate Scale objects."),
-          key, .preview(dup)))
+          paste0(
+            "`leaftable$%s` must be unique; duplicated: %s. ",
+            "Parallel dimensions belong in separate Scale objects."
+          ),
+          key, .preview(dup)
+        ))
       }
     }
 
@@ -154,22 +162,27 @@ Scale <- S7::new_class(
       missing_mb <- setdiff(frames, names(members))
       if (length(missing_mb) > 0L) {
         errs <- c(errs, sprintf(
-          "`members` missing entries for: %s", .preview(missing_mb)))
+          "`members` missing entries for: %s", .preview(missing_mb)
+        ))
       }
       for (f in intersect(frames, names(members))) {
         mb <- members[[f]]
         if (!is.character(mb) || length(mb) == 0L || anyNA(mb) ||
-            any(!nzchar(mb)) || anyDuplicated(mb)) {
+          any(!nzchar(mb)) || anyDuplicated(mb)) {
           errs <- c(errs, sprintf(
             "`members[[\"%s\"]]` must be a unique non-empty character vector",
-            f))
+            f
+          ))
           next
         }
         seen <- unique(stats::na.omit(as.character(leaftable[[f]])))
         if (!setequal(seen, mb)) {
           errs <- c(errs, sprintf(
-            paste0("`members[[\"%s\"]]` must contain exactly the non-NA ",
-                   "values present in `leaftable$%s`"), f, f))
+            paste0(
+              "`members[[\"%s\"]]` must contain exactly the non-NA ",
+              "values present in `leaftable$%s`"
+            ), f, f
+          ))
         }
       }
     }
@@ -183,7 +196,8 @@ Scale <- S7::new_class(
         for (w in wts) {
           if (!w %in% names(leaftable)) {
             errs <- c(errs, sprintf(
-              "weight column `%s` not found in `leaftable`", w))
+              "weight column `%s` not found in `leaftable`", w
+            ))
             next
           }
           v <- leaftable[[w]]
@@ -211,27 +225,32 @@ Scale <- S7::new_class(
     res <- meta[["residuals"]]
     if (!is.null(res)) {
       if (!is.list(res) || is.null(names(res)) || any(!nzchar(names(res)))) {
-        errs <- c(errs, paste0("`meta$residuals` must be a named list, one ",
-                               "entry per frame"))
+        errs <- c(errs, paste0(
+          "`meta$residuals` must be a named list, one ",
+          "entry per frame"
+        ))
       } else {
         bad_fr <- setdiff(names(res), frames)
         if (length(bad_fr) > 0L) {
           errs <- c(errs, sprintf(
             "`meta$residuals` names frame(s) that are not frames: %s",
-            .preview(bad_fr)))
+            .preview(bad_fr)
+          ))
         }
         for (f in intersect(names(res), frames)) {
           codes <- res[[f]]
           if (!is.character(codes) || anyNA(codes)) {
             errs <- c(errs, sprintf(
-              "`meta$residuals[[\"%s\"]]` must be a character vector", f))
+              "`meta$residuals[[\"%s\"]]` must be a character vector", f
+            ))
             next
           }
           unknown <- setdiff(codes, members[[f]])
           if (length(unknown) > 0L) {
             errs <- c(errs, sprintf(
               "`meta$residuals[[\"%s\"]]` names non-member(s): %s",
-              f, .preview(unknown)))
+              f, .preview(unknown)
+            ))
           }
         }
       }
@@ -249,9 +268,11 @@ Scale <- S7::new_class(
       cov <- meta[["coverage"]]
       wts <- meta[["weights"]] %||% character()
       if (!is.numeric(cov) || is.null(names(cov)) ||
-          !all(names(cov) %in% wts)) {
-        errs <- c(errs, paste0("`meta$coverage` must be a named numeric ",
-                               "over declared weights"))
+        !all(names(cov) %in% wts)) {
+        errs <- c(errs, paste0(
+          "`meta$coverage` must be a named numeric ",
+          "over declared weights"
+        ))
       } else if (!all(is.finite(cov)) || any(cov <= 0) || any(cov > 1)) {
         errs <- c(errs, "`meta$coverage` values must lie in (0, 1]")
       } else if (!is.null(meta[["parent_totals"]])) {
@@ -261,14 +282,15 @@ Scale <- S7::new_class(
           if (abs(got - cov[[w]]) > 1e-8) {
             errs <- c(errs, sprintf(
               "`meta$coverage[\"%s\"]` (%.6g) does not match the leaftable (%.6g)",
-              w, cov[[w]], got))
+              w, cov[[w]], got
+            ))
           }
         }
       }
       if (!is.null(meta[["parent_name"]]) &&
-          !(is.character(meta[["parent_name"]]) &&
-            length(meta[["parent_name"]]) == 1L &&
-            nzchar(meta[["parent_name"]]))) {
+        !(is.character(meta[["parent_name"]]) &&
+          length(meta[["parent_name"]]) == 1L &&
+          nzchar(meta[["parent_name"]]))) {
         errs <- c(errs, "`meta$parent_name` must be a single non-empty string")
       }
     }
@@ -302,8 +324,10 @@ Scale <- S7::new_class(
 scale_vocab <- S7::new_generic("scale_vocab", "x")
 
 S7::method(scale_vocab, Scale) <- function(x, ...) {
-  list(object = "Scale", frame = "frame", frames = "frames",
-       unit = "unit", units = "units", atoms = "atoms")
+  list(
+    object = "Scale", frame = "frame", frames = "frames",
+    unit = "unit", units = "units", atoms = "atoms"
+  )
 }
 
 # Accessors --------------------------------------------------------------------
@@ -377,7 +401,7 @@ scale_units <- function(x, frame = NULL) {
   if (is.null(frame)) frame <- .atom_level(x)
   .check_frame(x, frame)
   if (identical(frame, S7::prop(x, "key")) &&
-      !frame %in% S7::prop(x, "frames")) {
+    !frame %in% S7::prop(x, "frames")) {
     return(unique(as.character(S7::prop(x, "leaftable")[[frame]])))
   }
   S7::prop(x, "members")[[frame]]
@@ -423,8 +447,11 @@ scale_atom_level <- function(x) {
   frames <- S7::prop(x, "frames")
   finest <- frames[length(frames)]
   n <- length(S7::prop(x, "members")[[finest]])
-  if (!is.null(n) && n == nrow(S7::prop(x, "leaftable"))) finest
-  else S7::prop(x, "key")
+  if (!is.null(n) && n == nrow(S7::prop(x, "leaftable"))) {
+    finest
+  } else {
+    S7::prop(x, "key")
+  }
 }
 
 #' The levels the navigation verbs step through: the frames, plus the key as
@@ -510,8 +537,10 @@ scale_weights <- function(x) {
 #' @return `x`, with any payload subset to the kept rows.
 #'
 #' @examples
-#' identical(scale_payload_slice(scale_example(), 1:3),
-#'           scale_example())
+#' identical(
+#'   scale_payload_slice(scale_example(), 1:3),
+#'   scale_example()
+#' )
 #' @export
 scale_payload_slice <- S7::new_generic("scale_payload_slice", "x")
 
@@ -533,11 +562,15 @@ S7::method(scale_payload_slice, Scale) <- function(x, i, ...) x
 #' @return An S7 property.
 #'
 #' @examples
-#' Aliased <- S7::new_class("Aliased", parent = scale_class(),
-#'   properties = list(levels = scale_alias_property("frames")))
-#' a <- Aliased(leaftable = scale_leaftable(scale_example()),
-#'              frames = scale_frames(scale_example()),
-#'              members = S7::prop(scale_example(), "members"))
+#' Aliased <- S7::new_class("Aliased",
+#'   parent = scale_class(),
+#'   properties = list(levels = scale_alias_property("frames"))
+#' )
+#' a <- Aliased(
+#'   leaftable = scale_leaftable(scale_example()),
+#'   frames = scale_frames(scale_example()),
+#'   members = S7::prop(scale_example(), "members")
+#' )
 #' a@levels
 #' @export
 scale_alias_property <- function(name) {
@@ -545,7 +578,9 @@ scale_alias_property <- function(name) {
   S7::new_property(
     getter = function(self) S7::prop(self, name),
     setter = function(self, value) {
-      if (is.null(value)) return(self)
+      if (is.null(value)) {
+        return(self)
+      }
       S7::prop(self, name) <- value
       self
     }
@@ -573,13 +608,15 @@ scale_alias_property <- function(name) {
 #'
 #' @examples
 #' s <- scale_example()
-#' scale_residuals(s)                       # none declared
+#' scale_residuals(s) # none declared
 #'
 #' lf <- scale_leaftable(s)
 #' r <- scale_from_leaftable(
-#'   lf, frames = scale_frames(s), key = "unit",
+#'   lf,
+#'   frames = scale_frames(s), key = "unit",
 #'   weights = scale_weights(s), name = "with_residual",
-#'   residuals = list(unit = "OTH"))
+#'   residuals = list(unit = "OTH")
+#' )
 #' scale_residuals(r, "unit")
 #' @export
 scale_residuals <- function(x, frame = NULL) {
@@ -588,7 +625,9 @@ scale_residuals <- function(x, frame = NULL) {
   if (is.null(res)) {
     return(if (is.null(frame)) list() else character())
   }
-  if (is.null(frame)) return(res)
+  if (is.null(frame)) {
+    return(res)
+  }
   .check_frame(x, frame)
   res[[frame]] %||% character()
 }
@@ -599,10 +638,12 @@ scale_residuals <- function(x, frame = NULL) {
     # A product is the near miss worth naming: it holds scales but is not one,
     # and its per-atom table is the thing a caller must ask for deliberately.
     if (S7::S7_inherits(x, ScaleProduct)) {
-      .stop(paste0("`%s` is a ScaleProduct, not a single Scale. Its atoms ",
-                   "are not materialised -- use `scale_axes()` for the ",
-                   "component scales, or `product_atoms()` to build the ",
-                   "grid."), arg)
+      .stop(paste0(
+        "`%s` is a ScaleProduct, not a single Scale. Its atoms ",
+        "are not materialised -- use `scale_axes()` for the ",
+        "component scales, or `product_atoms()` to build the ",
+        "grid."
+      ), arg)
     }
     .stop("`%s` must be a Scale object", arg)
   }
@@ -620,13 +661,17 @@ scale_residuals <- function(x, frame = NULL) {
   v <- scale_vocab(x)
   if (is.null(arg)) arg <- v$frame
   if (is.null(frame) || length(frame) != 1L || is.na(frame)) {
-    .stop("`%s` must be a single %s name; one of: %s",
-          arg, v$frame, paste(f, collapse = ", "))
+    .stop(
+      "`%s` must be a single %s name; one of: %s",
+      arg, v$frame, paste(f, collapse = ", ")
+    )
   }
   if (!frame %in% c(f, S7::prop(x, "key"))) {
-    .stop("`%s` = \"%s\" is not a %s of this %s; one of: %s",
-          arg, frame, v$frame, v$object,
-          paste(unique(c(f, S7::prop(x, "key"))), collapse = ", "))
+    .stop(
+      "`%s` = \"%s\" is not a %s of this %s; one of: %s",
+      arg, frame, v$frame, v$object,
+      paste(unique(c(f, S7::prop(x, "key"))), collapse = ", ")
+    )
   }
   invisible(frame)
 }
@@ -640,12 +685,16 @@ scale_residuals <- function(x, frame = NULL) {
       (if (length(wts) > 0L) wts[[1L]] else NULL)
   }
   if (is.null(weight)) {
-    .stop(paste0("no weight column available; declare one via ",
-                 "`meta$weights` or pass `weight=`"))
+    .stop(paste0(
+      "no weight column available; declare one via ",
+      "`meta$weights` or pass `weight=`"
+    ))
   }
   if (!weight %in% wts) {
-    .stop("`weight` = \"%s\" is not a weight column; one of: %s",
-          weight, if (length(wts)) paste(wts, collapse = ", ") else "<none>")
+    .stop(
+      "`weight` = \"%s\" is not a weight column; one of: %s",
+      weight, if (length(wts)) paste(wts, collapse = ", ") else "<none>"
+    )
   }
   weight
 }
@@ -653,9 +702,11 @@ scale_residuals <- function(x, frame = NULL) {
 # Format / print ---------------------------------------------------------------
 
 S7::method(format, Scale) <- function(x, ...) {
-  sprintf("<Scale[%s] atoms=%d>",
-          paste(S7::prop(x, "frames"), collapse = "/"),
-          nrow(S7::prop(x, "leaftable")))
+  sprintf(
+    "<Scale[%s] atoms=%d>",
+    paste(S7::prop(x, "frames"), collapse = "/"),
+    nrow(S7::prop(x, "leaftable"))
+  )
 }
 
 #' @export
@@ -674,14 +725,18 @@ print.Scale <- function(x, ...) {
   }
 
   cat(toupper(substring(v$frames, 1, 1)), substring(v$frames, 2),
-      " (", length(f), ", coarsest first):\n", sep = "")
+    " (", length(f), ", coarsest first):\n",
+    sep = ""
+  )
   for (i in seq_along(f)) {
     l <- f[i]
     n_code <- length(mb[[l]])
     n_na <- sum(is.na(lf[[l]]))
     cat("  ", strrep("  ", i - 1L), "- ", l, " (", n_code, ")",
-        if (n_na > 0L) sprintf("  [%d %s unassigned]", n_na, v$unit) else "",
-        "\n", sep = "")
+      if (n_na > 0L) sprintf("  [%d %s unassigned]", n_na, v$unit) else "",
+      "\n",
+      sep = ""
+    )
   }
   cat("Atoms: ", nrow(lf), "\n", sep = "")
 
@@ -689,7 +744,9 @@ print.Scale <- function(x, ...) {
   if (length(wts) > 0L) {
     dw <- meta$default_weight %||% wts[[1L]]
     cat("Weights: ", paste(wts, collapse = ", "),
-        " (default: ", dw, ")\n", sep = "")
+      " (default: ", dw, ")\n",
+      sep = ""
+    )
   }
   if (!is.null(meta$source)) cat("Source: ", meta$source, "\n", sep = "")
   invisible(x)
@@ -735,10 +792,12 @@ summary.Scale <- function(object, ...) {
   if (length(fr) > 1L) {
     nesting <- do.call(rbind, lapply(seq_len(length(fr) - 1L), function(i) {
       ok <- scale_nests(object, fr[i], fr[i + 1L])
-      data.frame(parent = fr[i], child = fr[i + 1L],
-                 nests = isTRUE(ok),
-                 n_offenders = length(attr(ok, "offenders")),
-                 stringsAsFactors = FALSE)
+      data.frame(
+        parent = fr[i], child = fr[i + 1L],
+        nests = isTRUE(ok),
+        n_offenders = length(attr(ok, "offenders")),
+        stringsAsFactors = FALSE
+      )
     }))
   }
 
@@ -751,7 +810,9 @@ summary.Scale <- function(object, ...) {
     weights = wts,
     weight_totals = if (length(wts)) {
       colSums(as.data.frame(lt)[, wts, drop = FALSE], na.rm = TRUE)
-    } else numeric(0),
+    } else {
+      numeric(0)
+    },
     default_weight = meta[["default_weight"]],
     coverage = cov,
     sampled = any(cov < 1),
@@ -776,44 +837,64 @@ S7::method(summary, Scale) <- summary.Scale
 print.summary_Scale <- function(x, ...) {
   v <- x$vocab %||% list(object = "Scale", frames = "frames", units = "units")
   cat("<summary of ", v$object,
-      if (nzchar(x$name)) paste0(" '", x$name, "'"), ">\n", sep = "")
+    if (nzchar(x$name)) paste0(" '", x$name, "'"), ">\n",
+    sep = ""
+  )
   if (nzchar(x$desc)) cat("  desc:          ", x$desc, "\n", sep = "")
   cat("  ", format(paste0(v$frames, ":"), width = 16),
-      paste(sprintf("%s (%d)", names(x$frames), x$frames), collapse = " / "),
-      "\n", sep = "")
+    paste(sprintf("%s (%d)", names(x$frames), x$frames), collapse = " / "),
+    "\n",
+    sep = ""
+  )
   cat("  atoms:          ", x$n_atoms, "\n", sep = "")
   if (any(x$unassigned > 0)) {
     ua <- x$unassigned[x$unassigned > 0]
     cat("  unassigned:     ",
-        paste(sprintf("%s (%d)", names(ua), ua), collapse = ", "),
-        "\n", sep = "")
+      paste(sprintf("%s (%d)", names(ua), ua), collapse = ", "),
+      "\n",
+      sep = ""
+    )
   }
   if (length(x$weights)) {
     cat("  weight totals:  ",
-        paste(sprintf("%s = %s", names(x$weight_totals),
-                      format(x$weight_totals, big.mark = ",", digits = 6)),
-              collapse = ", "),
-        if (!is.null(x$default_weight)) {
-          paste0("  (default: ", x$default_weight, ")")
-        },
-        "\n", sep = "")
+      paste(
+        sprintf(
+          "%s = %s", names(x$weight_totals),
+          format(x$weight_totals, big.mark = ",", digits = 6)
+        ),
+        collapse = ", "
+      ),
+      if (!is.null(x$default_weight)) {
+        paste0("  (default: ", x$default_weight, ")")
+      },
+      "\n",
+      sep = ""
+    )
   }
   if (isTRUE(x$sampled)) {
     cat("  SAMPLED:        ",
-        paste(sprintf("%s %.1f%%", names(x$coverage), 100 * x$coverage),
-              collapse = ", "),
-        if (!is.null(x$parent_name) && nzchar(x$parent_name)) {
-          paste0(" of '", x$parent_name, "'")
-        },
-        "\n", sep = "")
+      paste(sprintf("%s %.1f%%", names(x$coverage), 100 * x$coverage),
+        collapse = ", "
+      ),
+      if (!is.null(x$parent_name) && nzchar(x$parent_name)) {
+        paste0(" of '", x$parent_name, "'")
+      },
+      "\n",
+      sep = ""
+    )
   }
   if (!is.null(x$nesting)) {
     for (i in seq_len(nrow(x$nesting))) {
       r <- x$nesting[i, ]
       cat("  nesting:        ", r$parent, " > ", r$child, ": ",
-          if (r$nests) "nested" else
-            paste0("CROSS-CUTTING (", r$n_offenders, " offender(s))"),
-          "\n", sep = "")
+        if (r$nests) {
+          "nested"
+        } else {
+          paste0("CROSS-CUTTING (", r$n_offenders, " offender(s))")
+        },
+        "\n",
+        sep = ""
+      )
     }
   }
   if (!is.null(x$source)) cat("  source:         ", x$source, "\n", sep = "")

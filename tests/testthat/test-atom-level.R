@@ -13,26 +13,32 @@
   d <- sprintf("d%03d", seq_len(days))
   h <- sprintf("h%02d", seq_len(hours) - 1L)
   g <- expand.grid(HOUR = h, YDAY = d, stringsAsFactors = FALSE)
-  data.frame(YDAY = g$YDAY, HOUR = g$HOUR,
-             timeslice = paste0(g$YDAY, "_", g$HOUR),
-             share = 1 / (days * hours), weight = 1,
-             stringsAsFactors = FALSE)
+  data.frame(
+    YDAY = g$YDAY, HOUR = g$HOUR,
+    timeslice = paste0(g$YDAY, "_", g$HOUR),
+    share = 1 / (days * hours), weight = 1,
+    stringsAsFactors = FALSE
+  )
 }
 
 # An IRREGULAR one: month x day-of-month with unequal month lengths.
 .irregular_lt <- function(lens = c(3L, 2L, 4L)) {
   mm <- rep(sprintf("m%02d", seq_along(lens)), lens)
   dd <- unlist(lapply(lens, function(n) sprintf("md%02d", seq_len(n))))
-  data.frame(MONTH = mm, MDAY = dd,
-             timeslice = paste0(mm, "_", dd),
-             share = 1 / sum(lens), weight = 1,
-             stringsAsFactors = FALSE)
+  data.frame(
+    MONTH = mm, MDAY = dd,
+    timeslice = paste0(mm, "_", dd),
+    share = 1 / sum(lens), weight = 1,
+    stringsAsFactors = FALSE
+  )
 }
 
 .build <- function(lt, frames) {
-  scale_from_leaftable(lt, frames = frames, key = "timeslice",
-                       weights = c("share", "weight"),
-                       default_weight = "share", name = "fixture")
+  scale_from_leaftable(lt,
+    frames = frames, key = "timeslice",
+    weights = c("share", "weight"),
+    default_weight = "share", name = "fixture"
+  )
 }
 
 test_that("the atoms come from the key when no frame enumerates them", {
@@ -65,12 +71,12 @@ test_that("data keyed by the atoms recasts up to either cross-cutting frame", {
 })
 
 test_that("an IRREGULAR scale aggregates by its real groupings", {
-  lt <- .irregular_lt(c(3L, 2L, 4L))   # 9 atoms, months of 3, 2 and 4
+  lt <- .irregular_lt(c(3L, 2L, 4L)) # 9 atoms, months of 3, 2 and 4
   s <- .build(lt, c("MONTH", "MDAY"))
   expect_equal(length(scale_units(s)), 9L)
   # the product of the frames would be 3 x 4 = 12; the atoms are 9
   expect_equal(length(scale_units(s, "MONTH")) *
-               length(scale_units(s, "MDAY")), 12L)
+    length(scale_units(s, "MDAY")), 12L)
   d <- data.frame(timeslice = lt$timeslice, v = 1)
   up <- recast_scale(d, s, from = "timeslice", to = "MONTH", rule = "sum")
   expect_equal(nrow(up), 3L)
@@ -88,23 +94,29 @@ test_that("cross-cutting and irregular frames raise no ordering warning", {
 
 test_that("a genuinely inverted frame order still warns", {
   # `unit` contains `group`: the list really is upside down.
-  lt <- data.frame(group = c("G1", "G1", "G2"),
-                   unit = c("U1", "U2", "U3"),
-                   stringsAsFactors = FALSE)
+  lt <- data.frame(
+    group = c("G1", "G1", "G2"),
+    unit = c("U1", "U2", "U3"),
+    stringsAsFactors = FALSE
+  )
   # The ordering diagnostic is what is under test; this leaftable is also
   # invalid for unrelated reasons, so the construction is allowed to fail
   # after warning.
   expect_warning(
     try(scale_from_leaftable(lt, frames = c("unit", "group"), key = "unit"),
-        silent = TRUE),
-    "CONTAINS the frame before it")
+      silent = TRUE
+    ),
+    "CONTAINS the frame before it"
+  )
 })
 
 test_that("navigation treats a key-level atom as the finest level", {
   s <- .build(.irregular_lt(c(3L, 2L, 4L)), c("MONTH", "MDAY"))
   expect_identical(scale_parents(s, "timeslice", "m02_md01"), "md01")
-  expect_identical(scale_children(s, "MONTH", "m02", to = "timeslice"),
-                   c("m02_md01", "m02_md02"))
+  expect_identical(
+    scale_children(s, "MONTH", "m02", to = "timeslice"),
+    c("m02_md01", "m02_md02")
+  )
   expect_error(scale_children(s, "timeslice", "m02_md01"), "finest")
   anc <- scale_ancestors(s, "timeslice", "m03_md04")
   expect_identical(anc$unit, c("m03", "md04"))
@@ -125,11 +137,16 @@ test_that("clustering at a key-level atom adds the cluster frame last", {
   s <- .build(lt, c("YDAY", "HOUR"))
   # d001_h02 and d002_h00 are the outliers: the clusters cut across hours
   v <- c(1, 1.1, 5, 5.2, 1, 1.2)
-  d <- rbind(data.frame(year = 2020, timeslice = lt$timeslice, v = v),
-             data.frame(year = 2021, timeslice = lt$timeslice, v = v + 0.1))
+  d <- rbind(
+    data.frame(year = 2020, timeslice = lt$timeslice, v = v),
+    data.frame(year = 2021, timeslice = lt$timeslice, v = v + 0.1)
+  )
   cl <- expect_no_warning(
-    cluster_scale(d, s, k = 2, frame = "timeslice", value = "v",
-                  method = "pam"))
+    cluster_scale(d, s,
+      k = 2, frame = "timeslice", value = "v",
+      method = "pam"
+    )
+  )
   expect_identical(scale_frames(cl), c("YDAY", "HOUR", "cluster"))
   lf <- scale_leaftable(cl)
   hi <- lf$cluster[lf$timeslice %in% c("d001_h02", "d002_h00")]

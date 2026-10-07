@@ -34,10 +34,12 @@
 .scale_name <- function(x, require = TRUE, arg = "x") {
   nm <- S7::prop(x, "meta")$name %||% ""
   if (require && (!is.character(nm) || length(nm) != 1L || is.na(nm) ||
-                  !nzchar(nm))) {
-    .stop(paste0("`%s` has no name; conversion and attach need a named ",
-                 "scale -- set meta$name, or pass `name=` to ",
-                 "scale_from_leaftable()"), arg)
+    !nzchar(nm))) {
+    .stop(paste0(
+      "`%s` has no name; conversion and attach need a named ",
+      "scale -- set meta$name, or pass `name=` to ",
+      "scale_from_leaftable()"
+    ), arg)
   }
   nm
 }
@@ -46,9 +48,13 @@
 #' @noRd
 .preview <- function(x, n = 3L) {
   x <- as.character(x)
-  if (length(x) <= n) return(paste(x, collapse = ", "))
-  sprintf("%s, ... (%d total)", paste(utils::head(x, n), collapse = ", "),
-          length(x))
+  if (length(x) <= n) {
+    return(paste(x, collapse = ", "))
+  }
+  sprintf(
+    "%s, ... (%d total)", paste(utils::head(x, n), collapse = ", "),
+    length(x)
+  )
 }
 
 #' Build the unit-by-feature matrix a clustering works on
@@ -78,9 +84,13 @@
   if (is.null(value)) {
     num <- id_cols[vapply(data[id_cols], is.numeric, logical(1))]
     if (length(num) != 1L) {
-      .stop(paste0("cannot infer the value column (numeric columns: %s); ",
-                   "pass `value=`"),
-            if (length(num) == 0L) "none" else .preview(num))
+      .stop(
+        paste0(
+          "cannot infer the value column (numeric columns: %s); ",
+          "pass `value=`"
+        ),
+        if (length(num) == 0L) "none" else .preview(num)
+      )
     }
     value <- num
   }
@@ -89,8 +99,10 @@
   }
   feat <- setdiff(names(data), c(key, value))
   if (length(feat) == 0L) {
-    .stop(paste0("the data has no identifier column to compare units over; ",
-                 "clustering needs each unit observed across something"))
+    .stop(paste0(
+      "the data has no identifier column to compare units over; ",
+      "clustering needs each unit observed across something"
+    ))
   }
 
   u <- as.character(data[[key]])
@@ -102,19 +114,26 @@
   fi <- match(f, fl)
   keep <- !is.na(ui)
   if (!all(keep)) {
-    ui <- ui[keep]; fi <- fi[keep]
+    ui <- ui[keep]
+    fi <- fi[keep]
   }
 
-  m <- matrix(NA_real_, nrow = length(units), ncol = length(fl),
-              dimnames = list(units, NULL))
+  m <- matrix(NA_real_,
+    nrow = length(units), ncol = length(fl),
+    dimnames = list(units, NULL)
+  )
   m[cbind(ui, fi)] <- as.numeric(data[[value]])[keep]
 
   gaps <- rownames(m)[!stats::complete.cases(m)]
   if (length(gaps) > 0L) {
-    .stop(paste0("%d unit(s) are not observed over every one of the %d ",
-                 "feature combinations (%s). Every distance would read those ",
-                 "holes as something; fill or drop them first."),
-          length(gaps), length(fl), .preview(gaps))
+    .stop(
+      paste0(
+        "%d unit(s) are not observed over every one of the %d ",
+        "feature combinations (%s). Every distance would read those ",
+        "holes as something; fill or drop them first."
+      ),
+      length(gaps), length(fl), .preview(gaps)
+    )
   }
   m
 }

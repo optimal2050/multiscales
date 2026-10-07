@@ -13,8 +13,10 @@ test_that("scale_product() combines named axes", {
 })
 
 test_that("axes must be named", {
-  expect_error(scale_product(scale_example(), scale_example2()),
-               "must be named")
+  expect_error(
+    scale_product(scale_example(), scale_example2()),
+    "must be named"
+  )
   expect_error(scale_product(), "pass the axes as named")
 })
 
@@ -23,19 +25,26 @@ test_that("a product needs at least two axes", {
 })
 
 test_that("axes must be named Scale objects", {
-  expect_error(scale_product(a = scale_example(), b = 42),
-               "is not a Scale object")
+  expect_error(
+    scale_product(a = scale_example(), b = 42),
+    "is not a Scale object"
+  )
   # a scale with no name cannot key a crosswalk or a join column
   anon <- scale_from_leaftable(
-    data.frame(g = c("A", "A"), unit = c("u1", "u2"),
-               stringsAsFactors = FALSE),
-    frames = c("g", "unit"))
+    data.frame(
+      g = c("A", "A"), unit = c("u1", "u2"),
+      stringsAsFactors = FALSE
+    ),
+    frames = c("g", "unit")
+  )
   expect_error(scale_product(a = scale_example(), b = anon), "has no name")
 })
 
 test_that("a product may not nest another product", {
-  expect_error(scale_product(a = .p2(), b = scale_example2()),
-               "is itself a product")
+  expect_error(
+    scale_product(a = .p2(), b = scale_example2()),
+    "is itself a product"
+  )
 })
 
 # Keys ------------------------------------------------------------------------
@@ -52,18 +61,26 @@ test_that("colliding keys fall back to the axis names", {
 })
 
 test_that("keys= overrides per axis and is validated", {
-  p <- scale_product(a = scale_example(), b = scale_example2(),
-                     keys = c(a = "code"))
+  p <- scale_product(
+    a = scale_example(), b = scale_example2(),
+    keys = c(a = "code")
+  )
   expect_identical(product_keys(p), c(a = "code", b = "period"))
   expect_error(
-    scale_product(a = scale_example(), b = scale_example2(),
-                  keys = c(zz = "code")),
-    "unknown axes")
+    scale_product(
+      a = scale_example(), b = scale_example2(),
+      keys = c(zz = "code")
+    ),
+    "unknown axes"
+  )
   # an override that recreates a collision is still rejected
   expect_error(
-    scale_product(a = scale_example(), b = scale_example2(),
-                  keys = c(a = "period")),
-    "same key column")
+    scale_product(
+      a = scale_example(), b = scale_example2(),
+      keys = c(a = "period")
+    ),
+    "same key column"
+  )
 })
 
 # Accessors -------------------------------------------------------------------
@@ -80,8 +97,10 @@ test_that("the cheap accessors report the components", {
 })
 
 test_that("coverage is per axis, and the joint one is their product", {
-  p <- scale_product(a = filter_scale(scale_example(), "sector", "P"),
-                     b = scale_example2())
+  p <- scale_product(
+    a = filter_scale(scale_example(), "sector", "P"),
+    b = scale_example2()
+  )
   cov <- product_coverage(p)
   expect_equal(unname(cov[["a"]]), 1000 / 3100)
   expect_equal(unname(cov[["b"]]), 1)
@@ -97,7 +116,7 @@ test_that("product_atoms() is the cross product of the components", {
   expect_true(all(c("unit", "period") %in% names(at)))
   # each axis's frames are carried, prefixed by the axis name
   expect_true(all(c("a.sector", "a.class", "a.group", "b.era") %in%
-                    names(at)))
+    names(at)))
   # the key column is not repeated as a prefixed frame
   expect_false("a.unit" %in% names(at))
   expect_setequal(unique(at$unit), scale_units(scale_example()))
@@ -123,20 +142,30 @@ test_that("joint_weights is accepted and validated but not required", {
   p <- .p2()
   expect_null(S7::prop(p, "joint_weights"))
 
-  jw <- data.frame(unit = "U1", period = "p1", jw = 1,
-                   stringsAsFactors = FALSE)
-  q <- scale_product(a = scale_example(), b = scale_example2(),
-                     joint_weights = jw)
+  jw <- data.frame(
+    unit = "U1", period = "p1", jw = 1,
+    stringsAsFactors = FALSE
+  )
+  q <- scale_product(
+    a = scale_example(), b = scale_example2(),
+    joint_weights = jw
+  )
   expect_s3_class(q, "multiscales::ScaleProduct")
 
   expect_error(
-    scale_product(a = scale_example(), b = scale_example2(),
-                  joint_weights = data.frame(unit = "U1", jw = 1)),
-    "missing key column")
+    scale_product(
+      a = scale_example(), b = scale_example2(),
+      joint_weights = data.frame(unit = "U1", jw = 1)
+    ),
+    "missing key column"
+  )
   expect_error(
-    scale_product(a = scale_example(), b = scale_example2(),
-                  joint_weights = data.frame(unit = "U1", period = "p1")),
-    "no weight column")
+    scale_product(
+      a = scale_example(), b = scale_example2(),
+      joint_weights = data.frame(unit = "U1", period = "p1")
+    ),
+    "no weight column"
+  )
 })
 
 # Base generics ---------------------------------------------------------------
@@ -150,8 +179,10 @@ test_that("print() reports the axes and the implied size", {
 })
 
 test_that("print() reports sampling when an axis is a sample", {
-  p <- scale_product(a = filter_scale(scale_example(), "sector", "P"),
-                     b = scale_example2())
+  p <- scale_product(
+    a = filter_scale(scale_example(), "sector", "P"),
+    b = scale_example2()
+  )
   expect_output(print(p), "Coverage")
 })
 
@@ -163,8 +194,10 @@ test_that("summary() returns the classed view and prints it", {
   p <- .p2()
   s <- summary(p)
   expect_s3_class(s, "summary_ScaleProduct")
-  expect_named(s, c("name", "desc", "axes", "total", "coverage",
-                    "joint_coverage", "joint_weights"))
+  expect_named(s, c(
+    "name", "desc", "axes", "total", "coverage",
+    "joint_coverage", "joint_weights"
+  ))
   expect_identical(nrow(s$axes), 2L)
   expect_equal(s$total, 28)
   expect_output(print(s), "summary of ScaleProduct")

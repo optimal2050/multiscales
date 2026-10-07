@@ -20,13 +20,15 @@ scales_test_tier <- function() {
   t <- tolower(Sys.getenv("SCALES_TEST_TIER", ""))
   if (nzchar(t)) {
     if (!t %in% names(.tier_levels)) {
-      stop("SCALES_TEST_TIER must be one of: ",
-           paste(names(.tier_levels), collapse = ", "), " (got '", t, "')")
+      stop(
+        "SCALES_TEST_TIER must be one of: ",
+        paste(names(.tier_levels), collapse = ", "), " (got '", t, "')"
+      )
     }
     return(t)
   }
   if (nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_")) ||
-      identical(Sys.getenv("NOT_CRAN"), "false")) {
+    identical(Sys.getenv("NOT_CRAN"), "false")) {
     return("check")
   }
   "fast"
@@ -35,8 +37,10 @@ scales_test_tier <- function() {
 skip_if_tier_below <- function(tier) {
   stopifnot(tier %in% names(.tier_levels))
   if (.tier_levels[[scales_test_tier()]] < .tier_levels[[tier]]) {
-    testthat::skip(paste0("tier '", scales_test_tier(), "' < required '",
-                          tier, "' (set SCALES_TEST_TIER=", tier,
-                          " to run)"))
+    testthat::skip(paste0(
+      "tier '", scales_test_tier(), "' < required '",
+      tier, "' (set SCALES_TEST_TIER=", tier,
+      " to run)"
+    ))
   }
 }

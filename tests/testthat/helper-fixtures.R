@@ -34,7 +34,8 @@ keyed_scale <- function(key = "id") {
 flat_scale <- function() {
   scale_from_leaftable(
     data.frame(unit = c("u1", "u2"), w = c(1, 3), stringsAsFactors = FALSE),
-    frames = "unit", name = "flat")
+    frames = "unit", name = "flat"
+  )
 }
 
 # --- clustering fixtures (merged from clusterscales) ---
@@ -50,27 +51,33 @@ flat_scale <- function() {
 
 three_group_scale <- function() {
   scale_from_leaftable(
-    data.frame(top = "T",
-               unit = sprintf("u%d", 1:8),
-               w = c(1, 1, 1, 2, 2, 2, 3, 3),
-               stringsAsFactors = FALSE),
+    data.frame(
+      top = "T",
+      unit = sprintf("u%d", 1:8),
+      w = c(1, 1, 1, 2, 2, 2, 3, 3),
+      stringsAsFactors = FALSE
+    ),
     frames = c("top", "unit"), key = "unit", weights = "w",
-    name = "fixture")
+    name = "fixture"
+  )
 }
 
 # group A: u1..u3 flat; B: u4..u6 rising; C: u7..u8 spiked
 three_group_data <- function(noise = 0.01, seed = 42) {
   set.seed(seed)
-  t <- sprintf("t%d", 1:6)     # the feature LABEL, deliberately not numeric
-  ramp <- as.numeric(1:6)      # the rising group's actual values
+  t <- sprintf("t%d", 1:6) # the feature LABEL, deliberately not numeric
+  ramp <- as.numeric(1:6) # the rising group's actual values
   shape <- list(
     u1 = rep(1, 6), u2 = rep(1, 6), u3 = rep(1, 6),
     u4 = ramp, u5 = ramp, u6 = ramp,
-    u7 = c(0, 0, 10, 0, 0, 0), u8 = c(0, 0, 10, 0, 0, 0))
+    u7 = c(0, 0, 10, 0, 0, 0), u8 = c(0, 0, 10, 0, 0, 0)
+  )
   d <- do.call(rbind, lapply(names(shape), function(u) {
-    data.frame(unit = u, t = t,
-               v = shape[[u]] + stats::rnorm(6, sd = noise),
-               stringsAsFactors = FALSE)
+    data.frame(
+      unit = u, t = t,
+      v = shape[[u]] + stats::rnorm(6, sd = noise),
+      stringsAsFactors = FALSE
+    )
   }))
   d
 }
@@ -95,17 +102,22 @@ recovers_groups <- function(tab, unit_col, cluster_col,
 # An ordered scale: 12 periods forming a cycle, three contiguous regimes.
 ordered_scale <- function() {
   scale_from_leaftable(
-    data.frame(all = "A",
-               period = sprintf("p%02d", 1:12),
-               w = 1, stringsAsFactors = FALSE),
+    data.frame(
+      all = "A",
+      period = sprintf("p%02d", 1:12),
+      w = 1, stringsAsFactors = FALSE
+    ),
     frames = c("all", "period"), key = "period", weights = "w",
-    name = "cycle")
+    name = "cycle"
+  )
 }
 
 ordered_data <- function() {
   lvl <- c(rep(1, 4), rep(5, 4), rep(9, 4))
   do.call(rbind, lapply(seq_len(12), function(i) {
-    data.frame(period = sprintf("p%02d", i), t = sprintf("t%d", 1:3),
-               v = lvl[[i]] + c(0, 0.1, -0.1), stringsAsFactors = FALSE)
+    data.frame(
+      period = sprintf("p%02d", i), t = sprintf("t%d", 1:3),
+      v = lvl[[i]] + c(0, 0.1, -0.1), stringsAsFactors = FALSE
+    )
   }))
 }

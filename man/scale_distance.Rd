@@ -18,7 +18,7 @@ scale_distance(
 \item{data}{Long data: a column of unit codes, one or more identifier
 columns saying which observation each row is, and a value column.}
 
-\item{x}{A \code{Scale}.}
+\item{x}{A \code{DiscreteScale}.}
 
 \item{frame}{Frame whose units are compared. Defaults to the atom frame.}
 

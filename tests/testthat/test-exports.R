@@ -1,7 +1,7 @@
 # The export surface must not collide with packages users attach alongside it.
 #
 # This is the test that would have caught both of the collisions this file was
-# written for: `Scale` against ggplot2's ggproto base class, and `recast`
+# written for: `DiscreteScale` against ggplot2's ggproto base class, and `recast`
 # against the generic timescales owns and geoscales extends. It also caught a
 # third, introduced while fixing them -- ggplot2 exports `is_scale` too.
 
@@ -9,12 +9,12 @@ test_that("no export collides with a package users attach alongside", {
   # A shared NAME is only a collision when it means a different OBJECT. The
   # dimension packages re-export this package's `recast` generic, so the name
   # is shared on purpose and identity is what matters.
-  ours <- getNamespaceExports("multiscales")
+  ours <- getNamespaceExports("discretescales")
   for (pkg in c("ggplot2", "scales", "timescales", "geoscales")) {
     skip_if_not_installed(pkg)
     shared <- intersect(ours, getNamespaceExports(pkg))
     for (nm in shared) {
-      expect_identical(getExportedValue("multiscales", nm),
+      expect_identical(getExportedValue("discretescales", nm),
         getExportedValue(pkg, nm),
         info = paste0(pkg, "::", nm)
       )
@@ -24,8 +24,8 @@ test_that("no export collides with a package users attach alongside", {
 
 test_that("unrelated packages share no export name at all", {
   # ggplot2 and scales have no business sharing a name with this package --
-  # `Scale` and `is_scale` both did, which is why the classes are internal.
-  ours <- getNamespaceExports("multiscales")
+  # `DiscreteScale` and `is_scale` both did, which is why the classes are internal.
+  ours <- getNamespaceExports("discretescales")
   for (pkg in c("ggplot2", "scales")) {
     skip_if_not_installed(pkg)
     expect_equal(intersect(ours, getNamespaceExports(pkg)), character(),
@@ -35,10 +35,10 @@ test_that("unrelated packages share no export name at all", {
 })
 
 test_that("the classes are deliberately NOT exported", {
-  # `Scale` would mask ggplot2::Scale, and a bare `recast` would mask the
-  # generic timescales owns. Reached through scale_class() and the verbs.
-  ours <- getNamespaceExports("multiscales")
-  expect_false("Scale" %in% ours)
+  # The surface is functions: classes are reached through scale_class(), and
+  # a bare `recast` would mask the generic timescales owns.
+  ours <- getNamespaceExports("discretescales")
+  expect_false("DiscreteScale" %in% ours)
   expect_false("ScaleProduct" %in% ours)
   expect_true("recast" %in% ours) # owned here, re-exported by the twins
   expect_true(all(c("scale_class", "scale_is", "recast_scale") %in% ours))
@@ -72,11 +72,25 @@ test_that("scale_class() is the class, so subclassing still works", {
 
 test_that("base methods still dispatch with the class unexported", {
   # S3method() entries are NAMESPACE directives, not exports, so print/names/
-  # as.data.frame/`[` are unaffected by dropping export(Scale).
+  # as.data.frame/`[` are unaffected by dropping export(DiscreteScale).
   s <- scale_example()
   expect_output(print(s))
   expect_type(names(s), "character")
   expect_s3_class(as.data.frame(s), "data.frame")
   f <- scale_frames(s)[1]
   expect_true(scale_is(s[f, scale_units(s, f)[1]]))
+})
+
+test_that("loading the namespace leaves ggplot2 scale objects alone", {
+  # ggplot2's scales carry "Scale" in their S3 class vector; our methods are
+  # registered on the qualified class only, so none of them may capture one.
+  skip_if_not_installed("ggplot2")
+  sc <- ggplot2::scale_x_discrete()
+  expect_true("Scale" %in% class(sc))
+  for (g in c("print", "summary", "names", "as.data.frame", "[")) {
+    expect_null(utils::getS3method(g, "Scale", optional = TRUE), info = g)
+  }
+  expect_no_error(names(sc))
+  expect_identical(class(sc[["name"]]), class(ggplot2::waiver()))
+  expect_output(print(sc), "ggproto")
 })

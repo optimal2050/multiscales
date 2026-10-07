@@ -2,38 +2,48 @@
 % Please edit documentation in R/map.R
 \name{register_scale_map}
 \alias{register_scale_map}
+\alias{register_scale_map_between}
 \alias{get_scale_map}
+\alias{get_scale_map_between}
 \alias{list_scale_maps}
 \title{Register / look up a direct crosswalk}
 \usage{
-register_scale_map(from, to, map, x = NULL)
+register_scale_map(x, from, to, map)
 
-get_scale_map(from, to, x = NULL)
+register_scale_map_between(from, to, map)
+
+get_scale_map(x, from, to)
+
+get_scale_map_between(from, to)
 
 list_scale_maps()
 }
 \arguments{
-\item{from, to}{The pair the map applies to: frame names (with \code{x} naming the
-object), scale names, or \code{\link{Scale}} objects (their names are used).}
+\item{x}{The \code{\link{DiscreteScale}} the frames belong to, or its name.}
+
+\item{from, to}{For the within-scale functions, frame names of \code{x}. For the
+\verb{_between} functions, two \code{\link{DiscreteScale}} objects or their names.}
 
 \item{map}{A \code{data.frame} shaped like a \code{\link[=scale_map]{scale_map()}} result: the two
-label columns named after \code{from} and \code{to}, plus \code{n_from}, \code{n_overlap},
-\code{w} and \code{w_from}. \code{NULL} removes a previously registered map.}
-
-\item{x}{Optional \code{\link{Scale}} (or its name) scoping a within-object map, so
-the same frame pair in two different objects does not collide.
-Cross-object maps need no scope.}
+label columns named after the frames (or scales), plus \code{n_from},
+\code{n_overlap}, \code{w} and \code{w_from}. \code{NULL} removes a previously registered map.}
 }
 \value{
-Invisibly, the registry key. \code{get_scale_map()} returns the
+Invisibly, the registry key. The \code{get_} functions return the
 registered map (or \code{NULL}); \code{list_scale_maps()} a \code{data.frame} of registry
 keys.
 }
 \description{
 A registered map short-circuits the atom-layer derivation in
-\code{\link[=scale_map]{scale_map()}} (and thereby \code{\link[=recast_scale]{recast_scale()}}) for one pair of
-resolutions -- for cases where the exact correspondence is known
-(hand-audited crosswalks, official concordance tables).
+\code{\link[=scale_map]{scale_map()}} or \code{\link[=scale_map_between]{scale_map_between()}} (and thereby \code{\link[=recast_scale]{recast_scale()}})
+for one pair of resolutions -- for cases where the exact correspondence is
+known (hand-audited crosswalks, official concordance tables).
+}
+\details{
+\code{register_scale_map()} and \code{get_scale_map()} handle a pair of frames of one
+scale; the map is scoped to that scale, so the same frame pair in two
+different scales does not collide. \code{register_scale_map_between()} and
+\code{get_scale_map_between()} handle a pair of scales.
 }
 \examples{
 s <- scale_example()
@@ -41,9 +51,9 @@ fake <- data.frame(
   class = "G1", group = "GC", n_from = 1L,
   n_overlap = 1L, w = 1, w_from = 1
 )
-register_scale_map("class", "group", fake, x = s)
+register_scale_map(s, "class", "group", fake)
 list_scale_maps()
-get_scale_map("class", "group", x = s)
-register_scale_map("class", "group", NULL, x = s) # remove
+get_scale_map(s, "class", "group")
+register_scale_map(s, "class", "group", NULL) # remove
 clear_scale_maps()
 }

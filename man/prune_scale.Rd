@@ -2,20 +2,20 @@
 % Please edit documentation in R/filter.R
 \name{prune_scale}
 \alias{prune_scale}
-\title{Collapse a Scale to a coarser frame}
+\title{Collapse a DiscreteScale to a coarser frame}
 \usage{
 prune_scale(x, frame)
 }
 \arguments{
-\item{x}{A \code{\link{Scale}}.}
+\item{x}{A \code{\link{DiscreteScale}}.}
 
 \item{frame}{The frame to become the new atom layer.}
 }
 \value{
-A \code{\link{Scale}}.
+A \code{\link{DiscreteScale}}.
 }
 \description{
-Returns a new \code{\link{Scale}} whose atom layer is \code{frame}, dropping every finer
+Returns a new \code{\link{DiscreteScale}} whose atom layer is \code{frame}, dropping every finer
 frame. Weights are summed over the collapsed atoms.
 }
 \details{

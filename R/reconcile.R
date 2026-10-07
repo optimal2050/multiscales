@@ -29,7 +29,7 @@ NULL
 #' default; can also close it.
 #'
 #' @param data The fine data, keyed at `from`.
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param from,to Frame names: where the data is, and the coarser frame whose
 #'   totals it is checked against.
 #' @param totals The independent parent figures: a table keyed at `to`
@@ -73,14 +73,14 @@ NULL
 #' fine <- data.frame(unit = c("DE1", "DE2", "DE_XR"), gdp = c(400, 300, 0))
 #' published <- data.frame(country = "DE", gdp = 750)
 #'
-#' scale_reconcile(fine, s, from = "unit", to = "country", published)
+#' reconcile_scale(fine, s, from = "unit", to = "country", published)
 #'
-#' scale_reconcile(fine, s,
+#' reconcile_scale(fine, s,
 #'   from = "unit", to = "country", published,
 #'   balance = "residual"
 #' )
 #' @export
-scale_reconcile <- function(data, x, from, to, totals,
+reconcile_scale <- function(data, x, from, to, totals,
                             key = NULL, values = NULL,
                             rule = "sum", weight = NULL,
                             balance = c("none", "residual", "proportional"),
@@ -249,7 +249,7 @@ scale_reconcile <- function(data, x, from, to, totals,
   out
 }
 
-#' Scale each group's children so the group hits its target
+#' DiscreteScale each group's children so the group hits its target
 #' @noRd
 .balance_proportional <- function(data, x, from, to, key, id_cols, gap) {
   fam <- scale_family(x, to, from)

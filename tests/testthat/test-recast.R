@@ -335,7 +335,7 @@ test_that("a registered crosswalk short-circuits the derivation", {
     n_from = 1L, n_overlap = 1L, w = 1, w_from = 1,
     stringsAsFactors = FALSE
   )
-  register_scale_map("unit", "sector", fake, x = s)
+  register_scale_map(s, "unit", "sector", fake)
   out <- suppressWarnings(
     recast_scale(.d6(), s, from = "unit", to = "sector", rule = "sum")
   )

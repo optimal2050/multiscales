@@ -5,7 +5,7 @@
 .onLoad <- function(libname, pkgname) {
   # Required for S7 methods on generics owned by other packages (here base's
   # `print`/`format`/`summary`). An S7 object is NOT S4-backed -- `isS4()` on a
-  # Scale is FALSE and the object carries a plain character class attribute --
+  # DiscreteScale is FALSE and the object carries a plain character class attribute --
   # so the methods S7 defines against another package's generic are not
   # visible until they are registered here. Without this call, `print(s)`
   # falls through to the default and dumps the raw properties.

@@ -1,4 +1,4 @@
-#' multiscales: Nested Scales and Multi-Dimensional Indexes for Modeling
+#' discretescales: Nested Scales and Multi-Dimensional Indexes for Modeling
 #'
 #' A dimension-agnostic representation of nested discrete scales: a flat table
 #' of atoms plus the ordered frames that group them, conversion of data between
@@ -8,11 +8,11 @@
 #' Time and space live in dimension packages built on this one:
 #' [timescales](https://github.com/optimal2050/timescales)' `Calendar` and
 #' [geoscales](https://github.com/optimal2050/geoscales)' `Geoscale` are
-#' subclasses of `Scale`, so every verb here accepts them. Any other
+#' subclasses of `DiscreteScale`, so every verb here accepts them. Any other
 #' dimension -- industries, income brackets, temperature regimes, technology
 #' vintages -- is declared directly with [`scale_from_leaftable()`], or given
 #' a package of its own the same way: see
-#' `vignette("dimension-package", package = "multiscales")`.
+#' `vignette("dimension-package", package = "discretescales")`.
 #'
 #' A clustering is treated as scale construction: [`cluster_scale()`] returns
 #' the scale with a new coarser frame inserted above the one clustered, so

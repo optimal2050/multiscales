@@ -6,7 +6,7 @@
 \alias{scale_parents}
 \alias{scale_descendants}
 \alias{scale_ancestors}
-\title{Navigate a Scale's hierarchy}
+\title{Navigate a DiscreteScale's hierarchy}
 \usage{
 scale_children(x, frame, unit, to = NULL)
 
@@ -17,7 +17,7 @@ scale_descendants(x, frame, unit, to = NULL)
 scale_ancestors(x, frame, unit, to = NULL)
 }
 \arguments{
-\item{x}{A \code{\link{Scale}}.}
+\item{x}{A \code{\link{DiscreteScale}}.}
 
 \item{frame}{The frame \code{unit} belongs to.}
 

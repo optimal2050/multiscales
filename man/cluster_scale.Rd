@@ -26,7 +26,7 @@ cluster_scale(
 which observation each row is, and a value column. A unit that is not
 observed over the same set as the others is an error rather than a hole.}
 
-\item{x}{A \code{Scale}.}
+\item{x}{A \code{DiscreteScale}.}
 
 \item{k}{Number of clusters.}
 
@@ -71,7 +71,7 @@ the scale with those groups added as a new, coarser frame.
 The new frame goes directly above the clustered one, which is the only
 position that is always true: the clusters are coarser than \code{frame} by
 construction, but they need not nest inside any existing coarser frame, and
-\code{multiscales} does not require them to. Use
+\code{discretescales} does not require them to. Use
 \code{scale_nests()} to ask whether a given pair happens to nest.
 }
 \examples{

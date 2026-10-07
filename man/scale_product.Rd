@@ -7,7 +7,7 @@
 scale_product(..., name = "", desc = "", keys = NULL, joint_weights = NULL)
 }
 \arguments{
-\item{...}{Two or more named \code{\link{Scale}} objects; the argument names become
+\item{...}{Two or more named \code{\link{DiscreteScale}} objects; the argument names become
 the axis names.}
 
 \item{name, desc}{Short name and description of the product.}

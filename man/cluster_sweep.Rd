@@ -22,7 +22,7 @@ cluster_sweep(
 which observation each row is, and a value column. A unit that is not
 observed over the same set as the others is an error rather than a hole.}
 
-\item{x}{A \code{Scale}.}
+\item{x}{A \code{DiscreteScale}.}
 
 \item{ks}{Values of \code{k} to try.}
 

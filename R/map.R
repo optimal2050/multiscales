@@ -9,11 +9,11 @@
 #
 # Two shapes:
 #   * within ONE scale -- `from`/`to` are frame names of `x`;
-#   * across TWO scales -- `from`/`to` are Scale objects, matched on shared
+#   * across TWO scales -- `from`/`to` are DiscreteScale objects, matched on shared
 #     atom keys.
 #
 # The ADAPTER SEAM is `scale_atom_pairs()`: a dimension supplies the atom-level
-# (from, to, w) correspondence and everything downstream is shared. The `Scale`
+# (from, to, w) correspondence and everything downstream is shared. The `DiscreteScale`
 # default reads it straight from the leaftable, which is already the atom
 # enumeration. A dimension whose atom layer must be GENERATED rather than read
 # -- time, where the atoms are a datetime grid that depends on the year --
@@ -33,7 +33,7 @@ NULL
 #' rather than enumerated. Returns one row per atom (or per atom and extra
 #' identifier, e.g. per grid instant and year).
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param ... Method arguments: `from` and `to` (frame names of `x`), `weight`
 #'   (a weight column, or `NULL` for the scale's default), and whatever else
 #'   the dimension needs to generate its atoms -- `year` for a calendar.
@@ -47,7 +47,7 @@ NULL
 #' @export
 scale_atom_pairs <- S7::new_generic("scale_atom_pairs", "x")
 
-S7::method(scale_atom_pairs, Scale) <- function(x, from, to, weight = NULL,
+S7::method(scale_atom_pairs, DiscreteScale) <- function(x, from, to, weight = NULL,
                                                 ...) {
   leaves <- S7::prop(x, "leaftable")
   wcol <- .map_weight(x, weight)
@@ -59,7 +59,7 @@ S7::method(scale_atom_pairs, Scale) <- function(x, from, to, weight = NULL,
   )
 }
 
-#' Crosswalk between two resolutions through the atom layer
+#' Crosswalk between two frames of a scale
 #'
 #' Materialises the `from -> atoms -> to` route as a table: one row per pair of
 #' overlapping units with
@@ -72,15 +72,12 @@ S7::method(scale_atom_pairs, Scale) <- function(x, from, to, weight = NULL,
 #' * `w_from` -- the full weight of the `from` unit; `w / w_from` is the split
 #'   share `"sum"` disaggregation uses.
 #'
-#' The two label columns are named by the frames (within one scale) or by the
-#' scale names (across two); rows with an `NA` target label are atoms `to` does
-#' not cover. A crosswalk registered with [`register_scale_map()`] is returned
-#' as-is instead of being derived.
+#' The two label columns are named by the frames; rows with an `NA` target
+#' label are atoms `to` does not cover. A crosswalk registered with
+#' [`register_scale_map()`] is returned as-is instead of being derived.
 #'
-#' @param from,to Either two frame names of `x` (within-object map), or two
-#'   named [`Scale`] objects (cross-object map on shared atom keys).
-#' @param x The [`Scale`] the frame names belong to; required for the
-#'   within-object shape, ignored otherwise.
+#' @param x The [`DiscreteScale`] the frames belong to.
+#' @param from,to Frame names of `x`.
 #' @param weight Weight column for `w`. `NULL` uses the default weight; when
 #'   the object declares no weights at all, every atom gets weight 1 (an equal
 #'   split).
@@ -91,23 +88,17 @@ S7::method(scale_atom_pairs, Scale) <- function(x, from, to, weight = NULL,
 #' @return A `data.frame` with columns `<from>`, `<to>` (`NA` = uncovered by
 #'   `to`), `n_from`, `n_overlap`, `w`, `w_from`, plus any `by` columns.
 #'
+#' @seealso [`scale_map_between()`] for the map between two scales.
 #' @examples
 #' s <- scale_example()
-#' scale_map("class", "group", x = s)
-#' scale_map("sector", "class", x = s, weight = "count")
+#' scale_map(s, "class", "group")
+#' scale_map(s, "sector", "class", weight = "count")
 #' @export
-scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
-                      ...) {
-  cross <- S7::S7_inherits(from, Scale) || S7::S7_inherits(to, Scale)
-  if (cross) {
-    .check_scale(from, "from")
-    .check_scale(to, "to")
-    return(.scale_map_cross(from, to, weight))
-  }
-  if (is.null(x)) {
+scale_map <- function(x, from, to, weight = NULL, by = character(), ...) {
+  if (S7::S7_inherits(from, DiscreteScale) || S7::S7_inherits(to, DiscreteScale)) {
     .stop(paste0(
-      "`x` is required when `from`/`to` are frame names; pass ",
-      "Scale objects for a cross-object map"
+      "`from` and `to` are frame names of `x`; for the map between two ",
+      "scales use `scale_map_between()`"
     ))
   }
   .check_scale(x, "x")
@@ -130,9 +121,36 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
   .finish_map(d, from, to, by = by)
 }
 
-#' Cross-object map: atoms matched on shared keys
-#' @noRd
-.scale_map_cross <- function(from, to, weight) {
+#' Crosswalk between two scales through their shared atoms
+#'
+#' The counterpart of [`scale_map()`] for two scales: atoms are matched on
+#' their keys, so a unit of `from` overlaps a unit of `to` where they contain
+#' the same atoms. Same columns as [`scale_map()`], with the two label columns
+#' named after the scales. Atoms of `from` absent from `to` get an `NA` target
+#' (with a warning). A crosswalk registered with
+#' [`register_scale_map_between()`] is returned as-is instead of being derived.
+#'
+#' @param from,to Two named [`DiscreteScale`] objects whose atom keys overlap.
+#' @param weight Weight column of `from` for `w`; `NULL` uses its default
+#'   weight, or weight 1 per atom when it declares none.
+#'
+#' @return A `data.frame` with columns `<from name>`, `<to name>`, `n_from`,
+#'   `n_overlap`, `w`, `w_from`.
+#'
+#' @examples
+#' a <- scale_example()
+#' b <- scale_from_leaftable(
+#'   data.frame(
+#'     big = c("X", "X", "Y", "Y", "Y", "Y", "Z"),
+#'     unit = c("U1", "U2", "U3", "U4", "U5", "U6", "OTH")
+#'   ),
+#'   frames = c("big", "unit"), name = "other"
+#' )
+#' scale_map_between(a, b)
+#' @export
+scale_map_between <- function(from, to, weight = NULL) {
+  .check_scale(from, "from")
+  .check_scale(to, "to")
   from_nm <- .scale_name(from, arg = "from")
   to_nm <- .scale_name(to, arg = "to")
   if (identical(from_nm, to_nm)) {
@@ -156,7 +174,7 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
   shared <- intersect(lf[[kf]], lt[[kt]])
   if (length(shared) == 0L) {
     keys <- if (identical(kf, kt)) sprintf("`%s` keys", kf) else "keys"
-    hint <- scale_vocab(from)$register_map %||% "register_scale_map()"
+    hint <- scale_vocab(from)$register_map %||% "register_scale_map_between()"
     .stop(
       paste0(
         "the atom layers of \"%s\" and \"%s\" share no %s; ",
@@ -232,20 +250,23 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
 #' Register / look up a direct crosswalk
 #'
 #' A registered map short-circuits the atom-layer derivation in
-#' [`scale_map()`] (and thereby [`recast_scale()`]) for one pair of
-#' resolutions -- for cases where the exact correspondence is known
-#' (hand-audited crosswalks, official concordance tables).
+#' [`scale_map()`] or [`scale_map_between()`] (and thereby [`recast_scale()`])
+#' for one pair of resolutions -- for cases where the exact correspondence is
+#' known (hand-audited crosswalks, official concordance tables).
 #'
-#' @param from,to The pair the map applies to: frame names (with `x` naming the
-#'   object), scale names, or [`Scale`] objects (their names are used).
+#' `register_scale_map()` and `get_scale_map()` handle a pair of frames of one
+#' scale; the map is scoped to that scale, so the same frame pair in two
+#' different scales does not collide. `register_scale_map_between()` and
+#' `get_scale_map_between()` handle a pair of scales.
+#'
+#' @param x The [`DiscreteScale`] the frames belong to, or its name.
+#' @param from,to For the within-scale functions, frame names of `x`. For the
+#'   `_between` functions, two [`DiscreteScale`] objects or their names.
 #' @param map A `data.frame` shaped like a [`scale_map()`] result: the two
-#'   label columns named after `from` and `to`, plus `n_from`, `n_overlap`,
-#'   `w` and `w_from`. `NULL` removes a previously registered map.
-#' @param x Optional [`Scale`] (or its name) scoping a within-object map, so
-#'   the same frame pair in two different objects does not collide.
-#'   Cross-object maps need no scope.
+#'   label columns named after the frames (or scales), plus `n_from`,
+#'   `n_overlap`, `w` and `w_from`. `NULL` removes a previously registered map.
 #'
-#' @return Invisibly, the registry key. `get_scale_map()` returns the
+#' @return Invisibly, the registry key. The `get_` functions return the
 #'   registered map (or `NULL`); `list_scale_maps()` a `data.frame` of registry
 #'   keys.
 #'
@@ -255,16 +276,27 @@ scale_map <- function(from, to, x = NULL, weight = NULL, by = character(),
 #'   class = "G1", group = "GC", n_from = 1L,
 #'   n_overlap = 1L, w = 1, w_from = 1
 #' )
-#' register_scale_map("class", "group", fake, x = s)
+#' register_scale_map(s, "class", "group", fake)
 #' list_scale_maps()
-#' get_scale_map("class", "group", x = s)
-#' register_scale_map("class", "group", NULL, x = s) # remove
+#' get_scale_map(s, "class", "group")
+#' register_scale_map(s, "class", "group", NULL) # remove
 #' clear_scale_maps()
 #' @export
-register_scale_map <- function(from, to, map, x = NULL) {
-  from_nm <- .map_name_of(from, "from")
-  to_nm <- .map_name_of(to, "to")
-  scope <- if (is.null(x)) "" else .map_name_of(x, "x")
+register_scale_map <- function(x, from, to, map) {
+  .register_map(
+    .map_name_of(x, "x"), .frame_label(from, "from"), .frame_label(to, "to"),
+    map
+  )
+}
+
+#' @rdname register_scale_map
+#' @export
+register_scale_map_between <- function(from, to, map) {
+  .register_map("", .map_name_of(from, "from"), .map_name_of(to, "to"), map)
+}
+
+#' @noRd
+.register_map <- function(scope, from_nm, to_nm, map) {
   key <- paste0(scope, if (nzchar(scope)) ":", from_nm, "->", to_nm)
   if (is.null(map)) {
     if (exists(key, envir = .MAP_REGISTRY, inherits = FALSE)) {
@@ -284,6 +316,7 @@ register_scale_map <- function(from, to, map, x = NULL) {
   invisible(key)
 }
 
+#' A DiscreteScale's name, or a name given directly
 #' @noRd
 .map_name_of <- function(z, arg) {
   if (is.character(z) && length(z) == 1L && nzchar(z)) {
@@ -291,6 +324,15 @@ register_scale_map <- function(from, to, map, x = NULL) {
   }
   .check_scale(z, arg)
   .scale_name(z, arg = arg)
+}
+
+#' A frame name: one non-empty string
+#' @noRd
+.frame_label <- function(z, arg) {
+  if (!is.character(z) || length(z) != 1L || is.na(z) || !nzchar(z)) {
+    .stop("`%s` must be a single frame name", arg)
+  }
+  z
 }
 
 #' @noRd
@@ -308,10 +350,16 @@ register_scale_map <- function(from, to, map, x = NULL) {
 
 #' @rdname register_scale_map
 #' @export
-get_scale_map <- function(from, to, x = NULL) {
-  .get_scale_map(.map_name_of(from, "from"), .map_name_of(to, "to"),
-    scope = if (is.null(x)) "" else .map_name_of(x, "x")
+get_scale_map <- function(x, from, to) {
+  .get_scale_map(.frame_label(from, "from"), .frame_label(to, "to"),
+    scope = .map_name_of(x, "x")
   )
+}
+
+#' @rdname register_scale_map
+#' @export
+get_scale_map_between <- function(from, to) {
+  .get_scale_map(.map_name_of(from, "from"), .map_name_of(to, "to"))
 }
 
 #' @rdname register_scale_map

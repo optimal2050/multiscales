@@ -22,7 +22,7 @@ NULL
 #' Existing columns are never overwritten -- a collision is an error.
 #'
 #' @param data The data, in any supported backend, with a column of unit codes.
-#' @param x The [`Scale`] to attach.
+#' @param x The [`DiscreteScale`] to attach.
 #' @param key Name of the code column in `data`. Inferred from the scale's
 #'   name, the keyed frame, or the scale's own key column.
 #' @param frame The frame the codes in `key` are at. `NULL` (default) is

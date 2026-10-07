@@ -7,7 +7,7 @@
 scale_nests(x, parent, child)
 }
 \arguments{
-\item{x}{A \code{\link{Scale}}.}
+\item{x}{A \code{\link{DiscreteScale}}.}
 
 \item{parent, child}{Frame names.}
 }
@@ -22,7 +22,7 @@ can straddle two parents, and a reporting classification can assign one
 detailed class to several aggregates.
 }
 \details{
-Nesting is \emph{not} required by \code{\link{Scale}} -- conversion routes through the atom
+Nesting is \emph{not} required by \code{\link{DiscreteScale}} -- conversion routes through the atom
 layer and works either way. This function is a diagnostic.
 }
 \examples{

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Writing a dimension package • multiscales</title>
+<title>Writing a dimension package • discretescales</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -31,7 +31,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">multiscales</a>
+        <a class="navbar-link" href="../index.html">discretescales</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
@@ -59,7 +59,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/optimal2050/multiscales/" class="external-link">
+  <a href="https://github.com/optimal2050/discretescales/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
 
   </a>
@@ -80,7 +80,7 @@
       <h1 data-toc-skip>Writing a dimension package</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/optimal2050/multiscales/blob/HEAD/vignettes/dimension-package.Rmd" class="external-link"><code>vignettes/dimension-package.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/optimal2050/discretescales/blob/HEAD/vignettes/dimension-package.Rmd" class="external-link"><code>vignettes/dimension-package.Rmd</code></a></small>
       <div class="hidden name"><code>dimension-package.Rmd</code></div>
 
     </div>
@@ -88,7 +88,7 @@
     
     
 <div class="section level2">
-<h2 id="what-multiscales-is-for">What multiscales is for<a class="anchor" aria-label="anchor" href="#what-multiscales-is-for"></a>
+<h2 id="what-discretescales-is-for">What discretescales is for<a class="anchor" aria-label="anchor" href="#what-discretescales-is-for"></a>
 </h2>
 <p>Models rarely use data at the resolution it arrives in. Demand comes
 by hour and the model runs on twelve representative days; statistics
@@ -97,14 +97,14 @@ detailed industry and the model has six sectors. Each of these is a
 <em>scale</em>: a set of fine units, the <strong>atoms</strong>, grouped
 into coarser levels, the <strong>frames</strong>. Hours sit inside days
 inside months; districts inside provinces inside countries.</p>
-<p>multiscales stores such a hierarchy as a <code>Scale</code> and
-converts data along it: summing extensive quantities, averaging
-intensive ones with the right weights, splitting coarse values down to
-fine units, and attaching group labels to a dataset. The same functions
-work whatever the dimension is, because a scale is just a table of atoms
-with one column per frame.</p>
+<p>discretescales stores such a hierarchy as a
+<code>DiscreteScale</code> and converts data along it: summing extensive
+quantities, averaging intensive ones with the right weights, splitting
+coarse values down to fine units, and attaching group labels to a
+dataset. The same functions work whatever the dimension is, because a
+scale is just a table of atoms with one column per frame.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://optimal2050.github.io/multiscales/r/" class="external-link">multiscales</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://optimal2050.github.io/discretescales/r/">discretescales</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="dimension-packages">Dimension packages<a class="anchor" aria-label="anchor" href="#dimension-packages"></a>
@@ -112,7 +112,7 @@ with one column per frame.</p>
 <p>Some dimensions need more than a table. Time has calendars, leap
 years, fiscal years, and a mapping from clock time to the model’s time
 slices. Space has maps, geometry and coordinate systems. These live in
-<strong>dimension packages</strong> built on multiscales:</p>
+<strong>dimension packages</strong> built on discretescales:</p>
 <ul>
 <li>
 <strong>timescales</strong> provides <code>Calendar</code>, a scale
@@ -122,10 +122,10 @@ calendar plots.</li>
 <strong>geoscales</strong> provides <code>Geoscale</code>, a scale
 of space: region hierarchies from data providers, geometry, maps.</li>
 </ul>
-<p>Both classes are subclasses of <code>Scale</code>, so each package
-adds what is special about its dimension and gets the conversion
-machinery from multiscales. A <code>Calendar</code> is a
-<code>Scale</code>:</p>
+<p>Both classes are subclasses of <code>DiscreteScale</code>, so each
+package adds what is special about its dimension and gets the conversion
+machinery from discretescales. A <code>Calendar</code> is a
+<code>DiscreteScale</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu">timescales</span><span class="fu">::</span><span class="fu"><a href="https://optimal2050.github.io/timescales/r/reference/calendar_build.html" class="external-link">calendar</a></span><span class="op">(</span><span class="st">"m12_h24"</span><span class="op">)</span> <span class="co"># 12 months x 24 hours</span></span>
 <span><span class="fu"><a href="../reference/scale_is.html">scale_is</a></span><span class="op">(</span><span class="va">cal</span><span class="op">)</span></span>
@@ -186,7 +186,7 @@ directly:</p>
 <span>  key <span class="op">=</span> <span class="st">"activity"</span>, name <span class="op">=</span> <span class="st">"nace"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">nace</span></span>
-<span><span class="co">#&gt; Scale: nace</span></span>
+<span><span class="co">#&gt; DiscreteScale: nace</span></span>
 <span><span class="co">#&gt; Frames (3, coarsest first):</span></span>
 <span><span class="co">#&gt;   - section (2)</span></span>
 <span><span class="co">#&gt;     - division (3)</span></span>
@@ -204,9 +204,9 @@ the same thing.</p>
 <h2 id="step-1-a-subclass">Step 1: a subclass<a class="anchor" aria-label="anchor" href="#step-1-a-subclass"></a>
 </h2>
 <p>A dimension class is an S7 class whose parent is
-<code><a href="../reference/scale_class.html">scale_class()</a></code>. (The <code>Scale</code> class itself is
-reached this way rather than exported, because its name would clash with
-<code><a href="https://ggplot2.tidyverse.org/reference/Scale.html" class="external-link">ggplot2::Scale</a></code>.)</p>
+<code><a href="../reference/scale_class.html">scale_class()</a></code>. (The <code>DiscreteScale</code> class itself
+is reached this way rather than exported; the package exports functions
+only.)</p>
 <p>Two parts are typical. A <strong>constructor</strong> fixes what is
 fixed for the dimension, such as the name of the key column and the
 weights, and passes the rest to <code><a href="../reference/scale_from_leaftable.html">scale_from_leaftable()</a></code>. An
@@ -259,17 +259,17 @@ carries geometry:</p>
 <code class="sourceCode R"><span><span class="co"># timescales</span></span>
 <span><span class="va">Calendar</span> <span class="op">&lt;-</span> <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/new_class.html" class="external-link">new_class</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Calendar"</span>,</span>
-<span>  parent <span class="op">=</span> <span class="fu">multiscales</span><span class="fu">::</span><span class="fu"><a href="../reference/scale_class.html">scale_class</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>timeframes <span class="op">=</span> <span class="fu">multiscales</span><span class="fu">::</span><span class="fu"><a href="../reference/scale_alias_property.html">scale_alias_property</a></span><span class="op">(</span><span class="st">"frames"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  parent <span class="op">=</span> <span class="fu">discretescales</span><span class="fu">::</span><span class="fu"><a href="../reference/scale_class.html">scale_class</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>timeframes <span class="op">=</span> <span class="fu">discretescales</span><span class="fu">::</span><span class="fu"><a href="../reference/scale_alias_property.html">scale_alias_property</a></span><span class="op">(</span><span class="st">"frames"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># geoscales</span></span>
 <span><span class="va">Geoscale</span> <span class="op">&lt;-</span> <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/new_class.html" class="external-link">new_class</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Geoscale"</span>,</span>
-<span>  parent <span class="op">=</span> <span class="fu">multiscales</span><span class="fu">::</span><span class="fu"><a href="../reference/scale_class.html">scale_class</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  parent <span class="op">=</span> <span class="fu">discretescales</span><span class="fu">::</span><span class="fu"><a href="../reference/scale_class.html">scale_class</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    geoframes <span class="op">=</span> <span class="fu">multiscales</span><span class="fu">::</span><span class="fu"><a href="../reference/scale_alias_property.html">scale_alias_property</a></span><span class="op">(</span><span class="st">"frames"</span><span class="op">)</span>,</span>
+<span>    geoframes <span class="op">=</span> <span class="fu">discretescales</span><span class="fu">::</span><span class="fu"><a href="../reference/scale_alias_property.html">scale_alias_property</a></span><span class="op">(</span><span class="st">"frames"</span><span class="op">)</span>,</span>
 <span>    geometry  <span class="op">=</span> <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/new_property.html" class="external-link">new_property</a></span><span class="op">(</span><span class="fu">S7</span><span class="fu">::</span><span class="va"><a href="https://rconsortium.github.io/S7/reference/class_any.html" class="external-link">class_any</a></span>, default <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -311,7 +311,7 @@ industry scale is described in neutral words:</p>
 <span>  values <span class="op">=</span> <span class="st">"jobs"</span>, rule <span class="op">=</span> <span class="st">"sum"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `to` = "group" is not a frame of this Scale; one of: section, division, activity</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `to` = "group" is not a frame of this DiscreteScale; one of: section, division, activity</span></span></code></pre></div>
 <p>A method supplies the dimension’s own:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/method.html" class="external-link">method</a></span><span class="op">(</span><span class="va">scale_vocab</span>, <span class="va">Industry</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
@@ -359,7 +359,8 @@ down to match:</p>
 <span></span>
 <span><span class="va">manufacturing</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filter_scale.html">filter_scale</a></span><span class="op">(</span><span class="va">ind</span>, <span class="st">"section"</span>, <span class="st">"C"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">manufacturing</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Industry"           "multiscales::Scale" "S7_object"</span></span>
+<span><span class="co">#&gt; [1] "Industry"                      "discretescales::DiscreteScale"</span></span>
+<span><span class="co">#&gt; [3] "S7_object"</span></span>
 <span><span class="va">manufacturing</span><span class="op">@</span><span class="va">titles</span></span>
 <span><span class="co">#&gt;   activity                title</span></span>
 <span><span class="co">#&gt; 1    C10.1      Meat processing</span></span>
@@ -382,7 +383,7 @@ every division to one section: the frames nest, and the finest frame
 lists the atoms. Time does not work that way. In <code>m12_h24</code>
 the frames are months and hours of the day; an hour of the day is not
 inside a month, and the atoms – 288 time slices – are combinations of
-the two. multiscales handles this by taking the atoms from the key
+the two. discretescales handles this by taking the atoms from the key
 column when no frame lists them. <code><a href="../reference/scale_atom_level.html">scale_atom_level()</a></code> reports
 which case applies:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -400,13 +401,13 @@ the same way, with no extra code.</p>
 <h2 id="turning-it-into-a-package">Turning it into a package<a class="anchor" aria-label="anchor" href="#turning-it-into-a-package"></a>
 </h2>
 <p>Inside a script, methods can be registered directly, as above. A
-package registers them on the multiscales generics with S7’s external
-generics, so that multiscales finds them without depending on the
+package registers them on the discretescales generics with S7’s external
+generics, so that discretescales finds them without depending on the
 package:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># R/industry-class.R</span></span>
 <span><span class="va">.scale_vocab_generic</span> <span class="op">&lt;-</span> <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/new_external_generic.html" class="external-link">new_external_generic</a></span><span class="op">(</span></span>
-<span>  <span class="st">"multiscales"</span>,</span>
+<span>  <span class="st">"discretescales"</span>,</span>
 <span>  <span class="st">"scale_vocab"</span>, <span class="st">"x"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/method.html" class="external-link">method</a></span><span class="op">(</span><span class="va">.scale_vocab_generic</span>, <span class="va">Industry</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
@@ -420,9 +421,9 @@ package:</p>
 <span><span class="va">.onLoad</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">libname</span>, <span class="va">pkgname</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/methods_register.html" class="external-link">methods_register</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>The DESCRIPTION names multiscales and S7:</p>
+<p>The DESCRIPTION names discretescales and S7:</p>
 <pre><code>Imports:
-    multiscales,
+    discretescales,
     S7</code></pre>
 <p>Both dimension packages also give <code><a href="../reference/recast.html">recast()</a></code> a method of
 their own, because their conversions take extra arguments – timescales
@@ -431,7 +432,7 @@ re-export the generic so that <code><a href="https://optimal2050.github.io/times
 <code><a href="https://optimal2050.github.io/geoscales/r/" class="external-link">library(geoscales)</a></code> alone provides it:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">.recast_generic</span> <span class="op">&lt;-</span> <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/new_external_generic.html" class="external-link">new_external_generic</a></span><span class="op">(</span></span>
-<span>  <span class="st">"multiscales"</span>, <span class="st">"recast"</span>,</span>
+<span>  <span class="st">"discretescales"</span>, <span class="st">"recast"</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"from"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/method.html" class="external-link">method</a></span><span class="op">(</span><span class="va">.recast_generic</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">S7</span><span class="fu">::</span><span class="va"><a href="https://rconsortium.github.io/S7/reference/class_any.html" class="external-link">class_any</a></span>, <span class="va">Industry</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span></span>
@@ -439,9 +440,9 @@ re-export the generic so that <code><a href="https://optimal2050.github.io/times
 <span>    <span class="fu"><a href="../reference/recast_scale.html">recast_scale</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">from</span>, to <span class="op">=</span> <span class="va">to</span>, <span class="va">...</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span></span>
-<span><span class="co">#' @importFrom multiscales recast</span></span>
+<span><span class="co">#' @importFrom discretescales recast</span></span>
 <span><span class="co">#' @export</span></span>
-<span><span class="fu">multiscales</span><span class="fu">::</span><span class="va"><a href="../reference/recast.html">recast</a></span></span></code></pre></div>
+<span><span class="fu">discretescales</span><span class="fu">::</span><span class="va"><a href="../reference/recast.html">recast</a></span></span></code></pre></div>
 <p>When a dimension’s conversions cannot be read off one scale’s table –
 timescales maps one calendar onto another through a grid of real dates –
 the package builds the correspondence itself and hands it to
@@ -462,12 +463,12 @@ name.</strong> Inside an installed package an S7 class is called
 <strong>Saved objects carry their class.</strong> An object saved to
 <code>data/</code> or an <code>.rds</code> file records its class and
 parent. If either changes, the saved object stops being a
-<code>Scale</code> and the shared functions reject it with
-“<code>x</code> must be a Scale object”. Rebuild saved objects after
-changing a class.</li>
+<code>DiscreteScale</code> and the shared functions reject it with
+“<code>x</code> must be a DiscreteScale object”. Rebuild saved objects
+after changing a class.</li>
 <li>
 <strong>Keep dimension-specific code in the dimension
-package.</strong> multiscales depends on no dimension package, and
+package.</strong> discretescales depends on no dimension package, and
 nothing in it needs to know that calendars or regions exist.</li>
 </ul>
 </div>

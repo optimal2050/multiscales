@@ -1,10 +1,10 @@
-Package: multiscales
+Package: discretescales
 Title: Nested Scales and Multi-Dimensional Indexes for Modeling
 Version: 0.1.0
-URL: https://optimal2050.github.io/multiscales/r/,
-    https://optimal2050.github.io/multiscales/,
-    https://github.com/optimal2050/multiscales
-BugReports: https://github.com/optimal2050/multiscales/issues
+URL: https://optimal2050.github.io/discretescales/r/,
+    https://optimal2050.github.io/discretescales/,
+    https://github.com/optimal2050/discretescales
+BugReports: https://github.com/optimal2050/discretescales/issues
 Authors@R:
     person(given = "Oleg",
            family = "Lugovoy",
@@ -54,13 +54,13 @@ Collate:
     'cluster.R'
     'contiguity.R'
     'dataset.R'
+    'discretescales-package.R'
     'distance.R'
     'navigate.R'
     'filter.R'
     'frames.R'
     'join.R'
     'map.R'
-    'multiscales-package.R'
     'recast.R'
     'product-recast.R'
     'reconcile.R'

@@ -2,12 +2,12 @@
 % Please edit documentation in R/scale-construct.R
 \name{scale_example2}
 \alias{scale_example2}
-\title{A second small example Scale}
+\title{A second small example DiscreteScale}
 \usage{
 scale_example2()
 }
 \value{
-A \code{\link{Scale}} with 4 atoms and frames \code{era}/\code{period}.
+A \code{\link{DiscreteScale}} with 4 atoms and frames \code{era}/\code{period}.
 }
 \description{
 A different dimension from \code{\link[=scale_example]{scale_example()}}, for the examples that need

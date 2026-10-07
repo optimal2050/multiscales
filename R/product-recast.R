@@ -202,7 +202,7 @@ NULL
     s <- axes[[a]]
     to <- targets[[a]]
     n_from <- nrow(S7::prop(s, "leaftable"))
-    n_to <- if (S7::S7_inherits(to, Scale)) {
+    n_to <- if (S7::S7_inherits(to, DiscreteScale)) {
       nrow(S7::prop(to, "leaftable"))
     } else {
       length(S7::prop(s, "members")[[to]])
@@ -227,7 +227,7 @@ NULL
 #'   axis (see [`product_keys()`]) plus the value columns.
 #' @param x A [`ScaleProduct`].
 #' @param to Named list or character vector, one entry per axis to convert:
-#'   either a frame name of that axis's scale, or another [`Scale`] to convert
+#'   either a frame name of that axis's scale, or another [`DiscreteScale`] to convert
 #'   into. Axes omitted pass through unchanged.
 #' @param values Value columns to convert. Default: all numeric columns that
 #'   are not key columns. Numeric identifiers (a year) must be excluded
@@ -300,7 +300,7 @@ recast_product <- function(data, x, to,
   }
   for (a in names(to)) {
     t <- to[[a]]
-    if (!S7::S7_inherits(t, Scale)) .check_frame(axes[[a]], t, paste0("to$", a))
+    if (!S7::S7_inherits(t, DiscreteScale)) .check_frame(axes[[a]], t, paste0("to$", a))
   }
 
   # -- resolve each axis's key column ----------------------------------------
@@ -401,7 +401,7 @@ recast_product <- function(data, x, to,
 #' Target column name an axis's pass will produce
 #' @noRd
 .axis_target_name <- function(to_a) {
-  if (S7::S7_inherits(to_a, Scale)) .atom_level(to_a) else to_a
+  if (S7::S7_inherits(to_a, DiscreteScale)) .atom_level(to_a) else to_a
 }
 
 #' Guard the one way a sequence of passes can silently lose a column
@@ -452,14 +452,14 @@ recast_product <- function(data, x, to,
 
   for (a in ax) {
     s <- axes[[a]]
-    if (S7::S7_inherits(to[[a]], Scale)) {
+    if (S7::S7_inherits(to[[a]], DiscreteScale)) {
       .stop(paste0(
         "pooled \"sd\" across a product needs frame targets; ",
         "axis `%s` targets another scale"
       ), a)
     }
     from <- .infer_from(s, .ms_schema(data), keys[[a]])
-    m <- scale_map(from, to[[a]], x = s, weight = spec[[a]]$weight)
+    m <- scale_map(s, from, to[[a]], weight = spec[[a]]$weight)
     if (na_action != "keep") m <- m[!is.na(m[[to[[a]]]]), , drop = FALSE]
 
     jm <- m[, c(from, to[[a]], "n_overlap")]

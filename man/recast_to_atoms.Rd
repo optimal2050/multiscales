@@ -34,7 +34,7 @@ recast_from_atoms(
 \item{data}{The data: for \code{recast_to_atoms()} keyed by unit code at frame
 \code{from}; for \code{recast_from_atoms()} keyed by atom IDs.}
 
-\item{x}{The \code{\link{Scale}} the data is keyed in, or aggregated into.}
+\item{x}{The \code{\link{DiscreteScale}} the data is keyed in, or aggregated into.}
 
 \item{from}{\code{to_atoms} only: frame name the codes belong to. \code{NULL}
 (default) is inferred as in \code{\link[=recast_scale]{recast_scale()}}.}

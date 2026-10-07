@@ -2,12 +2,12 @@
 % Please edit documentation in R/scale-construct.R
 \name{scale_example}
 \alias{scale_example}
-\title{A small example Scale}
+\title{A small example DiscreteScale}
 \usage{
 scale_example()
 }
 \value{
-A \code{\link{Scale}} with 7 atoms and frames \code{sector}/\code{class}/\code{group}/\code{unit}.
+A \code{\link{DiscreteScale}} with 7 atoms and frames \code{sector}/\code{class}/\code{group}/\code{unit}.
 }
 \description{
 A synthetic 3-frame hierarchy used in examples and tests. It deliberately

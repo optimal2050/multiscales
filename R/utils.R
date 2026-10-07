@@ -26,7 +26,7 @@
 #' @noRd
 .warn <- function(...) warning(sprintf(...), call. = FALSE)
 
-#' Name of a Scale (meta$name), required for conversion and attach
+#' Name of a DiscreteScale (meta$name), required for conversion and attach
 #'
 #' The crosswalk's label columns and `join_scale()`'s attached columns are
 #' named after the object, so those operations need a non-empty name.

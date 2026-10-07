@@ -2,15 +2,15 @@
 % Please edit documentation in R/scale-class.R
 \name{scale_frames}
 \alias{scale_frames}
-\alias{names.Scale}
-\title{Frames of a Scale}
+\alias{names.DiscreteScale}
+\title{Frames of a DiscreteScale}
 \usage{
 scale_frames(x, finest = FALSE)
 
-\method{names}{Scale}(x)
+\method{names}{DiscreteScale}(x)
 }
 \arguments{
-\item{x}{A \code{\link{Scale}}.}
+\item{x}{A \code{\link{DiscreteScale}}.}
 
 \item{finest}{Return only the finest (atom) frame.}
 }

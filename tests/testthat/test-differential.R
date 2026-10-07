@@ -2,22 +2,22 @@
 # DIFFERENTIAL HARNESS: the neutral engine vs the dimension it will replace.
 #
 # This is the numeric safety net for the rebase. `geoscales` is the package
-# whose model `Scale` generalises, so the strongest possible check is to give
+# whose model `DiscreteScale` generalises, so the strongest possible check is to give
 # BOTH engines literally the same data and demand the same answers -- no
 # hand-written expected values, no translation table that could itself be
 # wrong.
 #
-# The Scale is built FROM `geoscale_example()`'s own leaftable, keeping its
+# The DiscreteScale is built FROM `geoscale_example()`'s own leaftable, keeping its
 # frame names, codes, weights and key, so every call below is the same
 # question asked twice. Any divergence here is a real behavioural difference
-# and must be resolved BEFORE `Geoscale` becomes a `Scale` subclass.
+# and must be resolved BEFORE `Geoscale` becomes a `DiscreteScale` subclass.
 # =========================================================================== #
 
 skip_if_not_installed("geoscales")
 
 .gs <- function() geoscales::geoscale_example()
 
-# The same hierarchy, expressed as a neutral Scale.
+# The same hierarchy, expressed as a neutral DiscreteScale.
 .ms <- function() {
   gs <- .gs()
   scale_from_leaftable(
@@ -277,7 +277,7 @@ test_that("the crosswalk itself agrees", {
   )) {
     .same(
       geoscales::geoscale_map(pair[1], pair[2], gs = gs, weight = "km2"),
-      scale_map(pair[1], pair[2], x = ms, weight = "km2"),
+      scale_map(ms, pair[1], pair[2], weight = "km2"),
       paste(pair, collapse = "->")
     )
   }

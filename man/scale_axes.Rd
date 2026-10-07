@@ -9,10 +9,10 @@ scale_axes(x, axis = NULL)
 \arguments{
 \item{x}{A \code{\link{ScaleProduct}}.}
 
-\item{axis}{Optional single axis name, to get just that \code{\link{Scale}}.}
+\item{axis}{Optional single axis name, to get just that \code{\link{DiscreteScale}}.}
 }
 \value{
-A named list of \code{\link{Scale}} objects, or one Scale when \code{axis} is
+A named list of \code{\link{DiscreteScale}} objects, or one DiscreteScale when \code{axis} is
 given.
 }
 \description{

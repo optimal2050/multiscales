@@ -7,7 +7,7 @@
 scale_vocab(x, ...)
 }
 \arguments{
-\item{x}{A \code{\link{Scale}}.}
+\item{x}{A \code{\link{DiscreteScale}}.}
 
 \item{...}{Passed to methods.}
 }
@@ -23,7 +23,7 @@ Engine messages are written once and interpolated with the words of the
 dimension at hand, so a \code{Calendar} flowing through the shared engine still
 errors in the language of time ("timeframe", "timeslice") and a \code{Geoscale}
 in the language of space ("geoframe", "region"). Subclasses supply their own
-method; the \code{Scale} default is the neutral vocabulary.
+method; the \code{DiscreteScale} default is the neutral vocabulary.
 }
 \examples{
 scale_vocab(scale_example())

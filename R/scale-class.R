@@ -1,7 +1,7 @@
 # =============================================================================
-# Scale (S7 class) -- the dimension-agnostic core type
+# DiscreteScale (S7 class) -- the dimension-agnostic core type
 # =============================================================================
-# A `Scale` is a nested partition of a set of atoms, in ANY dimension:
+# A `DiscreteScale` is a nested partition of a set of atoms, in ANY dimension:
 #
 #   * `leaftable` -- flat enumeration of the atoms, with one column per frame
 #                    in the hierarchy, a unique key column (named by `key`),
@@ -28,7 +28,7 @@
 # `scale_vocab()`.
 # =============================================================================
 
-#' Scale (S7 class)
+#' DiscreteScale (S7 class)
 #'
 #' A nested discrete partition: a flat table of atoms plus the ordered
 #' hierarchy of frames that groups them. The dimension is not named -- time and
@@ -50,14 +50,15 @@
 #'   `default_weight`, `residuals` (see [`scale_residuals()`]), `labels`,
 #'   `source`, sample bookkeeping).
 #'
-#' @return A `Scale` object.
+#' @return A `DiscreteScale` object.
 #'
 #' @seealso [`scale_from_leaftable()`], [`scale_frames()`], [`scale_units()`]
 #' @examples
 #' scale_example()
 #' @keywords internal
-Scale <- S7::new_class(
-  "Scale",
+DiscreteScale <- S7::new_class(
+  "DiscreteScale",
+  package = "discretescales",
   properties = list(
     leaftable = S7::new_property(S7::class_data.frame),
     frames    = S7::new_property(S7::class_character),
@@ -148,7 +149,7 @@ Scale <- S7::new_class(
         errs <- c(errs, sprintf(
           paste0(
             "`leaftable$%s` must be unique; duplicated: %s. ",
-            "Parallel dimensions belong in separate Scale objects."
+            "Parallel dimensions belong in separate DiscreteScale objects."
           ),
           key, .preview(dup)
         ))
@@ -307,9 +308,9 @@ Scale <- S7::new_class(
 #' dimension at hand, so a `Calendar` flowing through the shared engine still
 #' errors in the language of time ("timeframe", "timeslice") and a `Geoscale`
 #' in the language of space ("geoframe", "region"). Subclasses supply their own
-#' method; the `Scale` default is the neutral vocabulary.
+#' method; the `DiscreteScale` default is the neutral vocabulary.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param ... Passed to methods.
 #'
 #' @return A named list with elements `object`, `frame`, `frames`, `unit`,
@@ -323,9 +324,9 @@ Scale <- S7::new_class(
 #' @export
 scale_vocab <- S7::new_generic("scale_vocab", "x")
 
-S7::method(scale_vocab, Scale) <- function(x, ...) {
+S7::method(scale_vocab, DiscreteScale) <- function(x, ...) {
   list(
-    object = "Scale", frame = "frame", frames = "frames",
+    object = "DiscreteScale", frame = "frame", frames = "frames",
     unit = "unit", units = "units", atoms = "atoms"
   )
 }
@@ -336,7 +337,7 @@ S7::method(scale_vocab, Scale) <- function(x, ...) {
 #'
 #' Position of a frame in the hierarchy: 1 is the coarsest.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param frame Character vector of frame names.
 #'
 #' @return An integer vector of ranks; `NA` for names that are not frames of
@@ -358,14 +359,14 @@ scale_rank <- function(x, frame) {
   r
 }
 
-#' Frames of a Scale
+#' Frames of a DiscreteScale
 #'
 #' The hierarchy names, ordered coarsest first. The last entry is the atom
 #' frame whenever one frame enumerates the atoms; when none does -- a
 #' `Calendar`'s atoms are combinations of its frames -- the key column is the
 #' atom level instead.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param finest Return only the finest (atom) frame.
 #'
 #' @return A character vector of frame names, or a single name when
@@ -382,11 +383,11 @@ scale_frames <- function(x, finest = FALSE) {
   if (isTRUE(finest)) f[length(f)] else f
 }
 
-#' Units of a Scale
+#' Units of a DiscreteScale
 #'
 #' The code vocabulary at one frame, in canonical order.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param frame A single frame name; defaults to the finest frame (the atoms).
 #'
 #' @return A character vector of unit codes.
@@ -410,14 +411,14 @@ scale_units <- function(x, frame = NULL) {
 #' The level at which a scale enumerates its atoms
 #'
 #' The finest frame when one code of it sits on each leaftable row, and the
-#' key column otherwise. A [`Scale`] built from a nested hierarchy is the
+#' key column otherwise. A [`DiscreteScale`] built from a nested hierarchy is the
 #' first kind; a `timescales::Calendar` is the second, because its timeslices
 #' are combinations of its frames rather than codes of any one of them.
 #'
 #' Needed by the dimension packages: it is the `frame` to pass to
 #' [`join_scale()`] or [`recast_scale()`] for data keyed at the atoms.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @return A single string -- a frame name, or the key.
 #' @examples
 #' scale_atom_level(scale_example())
@@ -465,7 +466,7 @@ scale_atom_level <- function(x) {
 
 #' The atom key column name
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @return A single string.
 #' @examples
 #' scale_key(scale_example())
@@ -475,14 +476,14 @@ scale_key <- function(x) {
   S7::prop(x, "key")
 }
 
-#' The leaftable of a Scale
+#' The leaftable of a DiscreteScale
 #'
 #' The one-row-per-atom table the scale is built on, as a plain `data.frame` --
 #' the exported accessor to prefer over reaching for `x@leaftable`.
-#' `as.data.frame()` and `ggplot2::fortify()` on a Scale are equivalent, so
+#' `as.data.frame()` and `ggplot2::fortify()` on a DiscreteScale are equivalent, so
 #' `ggplot(s) + geom_*()` pipelines work directly.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param row.names,optional Ignored (S3 signature compatibility).
 #' @param ... Ignored.
 #' @return A `data.frame`: one row per atom, with the frame columns plus any
@@ -497,21 +498,20 @@ scale_leaftable <- function(x) {
 }
 
 #' @rdname scale_leaftable
-#' @export
-#' @method as.data.frame Scale
-as.data.frame.Scale <- function(x, row.names = NULL, optional = FALSE, ...) {
+#' @method as.data.frame DiscreteScale
+as.data.frame.DiscreteScale <- function(x, row.names = NULL, optional = FALSE, ...) {
   scale_leaftable(x)
 }
 
-S7::method(as.data.frame, Scale) <- as.data.frame.Scale
+S7::method(as.data.frame, DiscreteScale) <- as.data.frame.DiscreteScale
 
 #' @rdname scale_leaftable
 #' @export
-`as.data.frame.multiscales::Scale` <- as.data.frame.Scale
+`as.data.frame.discretescales::DiscreteScale` <- as.data.frame.DiscreteScale
 
-#' Weight columns of a Scale
+#' Weight columns of a DiscreteScale
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #'
 #' @return A character vector of weight column names (possibly empty).
 #'
@@ -528,9 +528,9 @@ scale_weights <- function(x) {
 #' The seam a dimension package overrides when it carries per-atom data
 #' alongside the leaftable -- `geoscales::Geoscale` and its geometry. Called
 #' whenever the engine rebuilds an object from a row subset, with the kept row
-#' indices. The `Scale` default has no payload and returns `x` unchanged.
+#' indices. The `DiscreteScale` default has no payload and returns `x` unchanged.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param ... Method arguments: `i`, the integer vector of kept leaftable row
 #'   indices.
 #'
@@ -544,7 +544,7 @@ scale_weights <- function(x) {
 #' @export
 scale_payload_slice <- S7::new_generic("scale_payload_slice", "x")
 
-S7::method(scale_payload_slice, Scale) <- function(x, i, ...) x
+S7::method(scale_payload_slice, DiscreteScale) <- function(x, i, ...) x
 
 #' An alias property for a subclass
 #'
@@ -599,7 +599,7 @@ scale_alias_property <- function(name) {
 #' unique across frames:
 #' `scale_from_leaftable(..., residuals = list(unit = "DE_XR"))`.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param frame A single frame name for just that frame's residuals, or
 #'   `NULL` for the whole named list.
 #'
@@ -634,25 +634,25 @@ scale_residuals <- function(x, frame = NULL) {
 
 #' @noRd
 .check_scale <- function(x, arg = "x") {
-  if (!S7::S7_inherits(x, Scale)) {
+  if (!S7::S7_inherits(x, DiscreteScale)) {
     # A product is the near miss worth naming: it holds scales but is not one,
     # and its per-atom table is the thing a caller must ask for deliberately.
     if (S7::S7_inherits(x, ScaleProduct)) {
       .stop(paste0(
-        "`%s` is a ScaleProduct, not a single Scale. Its atoms ",
+        "`%s` is a ScaleProduct, not a single DiscreteScale. Its atoms ",
         "are not materialised -- use `scale_axes()` for the ",
         "component scales, or `product_atoms()` to build the ",
         "grid."
       ), arg)
     }
-    .stop("`%s` must be a Scale object", arg)
+    .stop("`%s` must be a DiscreteScale object", arg)
   }
   invisible(TRUE)
 }
 
-#' Resolve a frame name against a Scale
+#' Resolve a frame name against a DiscreteScale
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param frame A single frame name.
 #' @param arg Argument name used in the error message.
 #' @noRd
@@ -701,17 +701,16 @@ scale_residuals <- function(x, frame = NULL) {
 
 # Format / print ---------------------------------------------------------------
 
-S7::method(format, Scale) <- function(x, ...) {
+S7::method(format, DiscreteScale) <- function(x, ...) {
   sprintf(
-    "<Scale[%s] atoms=%d>",
+    "<DiscreteScale[%s] atoms=%d>",
     paste(S7::prop(x, "frames"), collapse = "/"),
     nrow(S7::prop(x, "leaftable"))
   )
 }
 
-#' @export
-#' @method print Scale
-print.Scale <- function(x, ...) {
+#' @method print DiscreteScale
+print.DiscreteScale <- function(x, ...) {
   meta <- S7::prop(x, "meta")
   f <- S7::prop(x, "frames")
   mb <- S7::prop(x, "members")
@@ -752,23 +751,23 @@ print.Scale <- function(x, ...) {
   invisible(x)
 }
 
-S7::method(print, Scale) <- print.Scale
+S7::method(print, DiscreteScale) <- print.DiscreteScale
 
 # Dispatch on the fully-qualified S7 class name: `class()` reports
-# `multiscales::Scale` first, and that is the registration base-R `print()`
+# `discretescales::DiscreteScale` first, and that is the registration base-R `print()`
 # finds before falling through to `print.S7_object`.
 #' @export
-`print.multiscales::Scale` <- print.Scale
+`print.discretescales::DiscreteScale` <- print.DiscreteScale
 
 # Summary ----------------------------------------------------------------------
 
-#' Summarize a Scale
+#' Summarize a DiscreteScale
 #'
 #' Complements [print()] with the quantitative view: per-weight totals and
 #' coverage, and the adjacent-frame nesting table. Returns a `"summary_Scale"`
 #' object (a list) with its own print method.
 #'
-#' @param object A [`Scale`].
+#' @param object A [`DiscreteScale`].
 #' @param x A `"summary_Scale"` object (the print method's argument).
 #' @param ... Ignored.
 #' @return `summary()` returns a list of class `"summary_Scale"`: `name`,
@@ -779,9 +778,8 @@ S7::method(print, Scale) <- print.Scale
 #'   `source`, `vocab`.
 #' @examples
 #' summary(scale_example())
-#' @export
-#' @method summary Scale
-summary.Scale <- function(object, ...) {
+#' @method summary DiscreteScale
+summary.DiscreteScale <- function(object, ...) {
   meta <- S7::prop(object, "meta")
   lt <- S7::prop(object, "leaftable")
   fr <- S7::prop(object, "frames")
@@ -825,17 +823,17 @@ summary.Scale <- function(object, ...) {
   out
 }
 
-S7::method(summary, Scale) <- summary.Scale
+S7::method(summary, DiscreteScale) <- summary.DiscreteScale
 
-#' @rdname summary.Scale
+#' @rdname summary.DiscreteScale
 #' @export
-`summary.multiscales::Scale` <- summary.Scale
+`summary.discretescales::DiscreteScale` <- summary.DiscreteScale
 
-#' @rdname summary.Scale
+#' @rdname summary.DiscreteScale
 #' @export
 #' @method print summary_Scale
 print.summary_Scale <- function(x, ...) {
-  v <- x$vocab %||% list(object = "Scale", frames = "frames", units = "units")
+  v <- x$vocab %||% list(object = "DiscreteScale", frames = "frames", units = "units")
   cat("<summary of ", v$object,
     if (nzchar(x$name)) paste0(" '", x$name, "'"), ">\n",
     sep = ""
@@ -904,21 +902,19 @@ print.summary_Scale <- function(x, ...) {
 # Other base generics ----------------------------------------------------------
 
 #' @rdname scale_frames
-#' @export
-#' @method names Scale
-names.Scale <- function(x) scale_frames(x)
+#' @method names DiscreteScale
+names.DiscreteScale <- function(x) scale_frames(x)
 
-S7::method(names, Scale) <- names.Scale
+S7::method(names, DiscreteScale) <- names.DiscreteScale
 
 #' @export
-`names.multiscales::Scale` <- names.Scale
+`names.discretescales::DiscreteScale` <- names.DiscreteScale
 
 #' Is this a scale, or a product of scales?
 #'
-#' The classes themselves are not exported -- `Scale` would mask
-#' `ggplot2::Scale` for anyone attaching both -- so these are how calling code
-#' asks. Build a scale with [`scale_from_leaftable()`] and a product with
-#' [`scale_product()`].
+#' The classes themselves are not exported (the package's surface is its
+#' functions), so these are how calling code asks. Build a scale with
+#' [`scale_from_leaftable()`] and a product with [`scale_product()`].
 #'
 #' Named with the object prefix rather than `is_scale()`, which `ggplot2`
 #' already exports.
@@ -932,7 +928,7 @@ S7::method(names, Scale) <- names.Scale
 #' scale_is_product(scale_product(a = scale_example(), b = scale_example2()))
 #' @export
 scale_is <- function(x) {
-  S7::S7_inherits(x, Scale)
+  S7::S7_inherits(x, DiscreteScale)
 }
 
 #' @rdname scale_is
@@ -943,8 +939,8 @@ scale_is_product <- function(x) {
 
 #' The scale classes, for subclassing and dispatch
 #'
-#' The classes are not exported under their own names -- `Scale` would mask
-#' `ggplot2::Scale` -- so these return them. Needed to build a subclass
+#' The classes are not exported under their own names (the package's surface
+#' is its functions), so these return them. Needed to build a subclass
 #' (`S7::new_class(..., parent = scale_class())`, which is what
 #' [`scale_alias_property()`] is for) or to register an S7 method against one.
 #' To merely ask what an object is, use [`scale_is()`].
@@ -955,7 +951,7 @@ scale_is_product <- function(x) {
 #' S7::S7_inherits(scale_example(), scale_class())
 #' @export
 scale_class <- function() {
-  Scale
+  DiscreteScale
 }
 
 #' @rdname scale_class

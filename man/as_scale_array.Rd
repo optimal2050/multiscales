@@ -14,7 +14,7 @@ as_scale_table(a, x, value = "value", frames = NULL, drop_na = TRUE)
 column. Lazy inputs are materialised -- an array is a dense in-memory
 object by definition.}
 
-\item{x}{A \code{\link{Scale}} or \code{\link{ScaleProduct}}.}
+\item{x}{A \code{\link{DiscreteScale}} or \code{\link{ScaleProduct}}.}
 
 \item{value}{Name of the value column. Defaults to the single numeric
 column that is not a key.}

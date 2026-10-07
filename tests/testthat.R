@@ -1,4 +1,4 @@
 library(testthat)
-library(multiscales)
+library(discretescales)
 
-test_check("multiscales")
+test_check("discretescales")

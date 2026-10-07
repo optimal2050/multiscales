@@ -1,10 +1,10 @@
 # =========================================================================== #
-# The Scale class: properties, validator invariants, accessors, base generics.
+# The DiscreteScale class: properties, validator invariants, accessors, base generics.
 # =========================================================================== #
 
 test_that("scale_example() has the documented shape", {
   s <- scale_example()
-  expect_s3_class(s, "multiscales::Scale")
+  expect_s3_class(s, "discretescales::DiscreteScale")
   expect_identical(scale_frames(s), c("sector", "class", "group", "unit"))
   expect_identical(scale_frames(s, finest = TRUE), "unit")
   expect_identical(scale_key(s), "unit")
@@ -54,7 +54,7 @@ test_that("a single-frame scale is legal", {
 
 test_that("the validator rejects a leaftable without the key column", {
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = data.frame(a = "x", stringsAsFactors = FALSE),
       frames = "a", members = list(a = "x"), key = "unit"
     ),
@@ -68,7 +68,7 @@ test_that("the validator rejects duplicate atom keys", {
     stringsAsFactors = FALSE
   )
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = df, frames = c("grp", "unit"),
       members = list(grp = "A", unit = "u1")
     ),
@@ -82,7 +82,7 @@ test_that("the validator rejects an empty leaftable", {
     stringsAsFactors = FALSE
   )
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = df, frames = c("grp", "unit"),
       members = list(grp = "A", unit = "u1")
     ),
@@ -96,7 +96,7 @@ test_that("members must match the non-NA codes present in the leaftable", {
     stringsAsFactors = FALSE
   )
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = df, frames = c("grp", "unit"),
       members = list(
         grp = c("A", "B", "GHOST"),
@@ -111,11 +111,11 @@ test_that("members must match the non-NA codes present in the leaftable", {
     stringsAsFactors = FALSE
   )
   expect_s3_class(
-    Scale(
+    DiscreteScale(
       leaftable = df2, frames = c("grp", "unit"),
       members = list(grp = "A", unit = c("u1", "u2"))
     ),
-    "multiscales::Scale"
+    "discretescales::DiscreteScale"
   )
 })
 
@@ -126,7 +126,7 @@ test_that("the key name is reserved as a frame except as the finest frame", {
     stringsAsFactors = FALSE
   )
   expect_s3_class(
-    scale_from_leaftable(df, frames = c("grp", "unit")), "multiscales::Scale"
+    scale_from_leaftable(df, frames = c("grp", "unit")), "discretescales::DiscreteScale"
   )
   # illegal: the key name used as a coarser frame
   df2 <- data.frame(
@@ -135,7 +135,7 @@ test_that("the key name is reserved as a frame except as the finest frame", {
   )
   df2$unit_key <- df2$leaf
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = df2, frames = c("unit", "leaf"),
       members = list(unit = "A", leaf = c("u1", "u2")), key = "unit"
     ),
@@ -146,7 +146,7 @@ test_that("the key name is reserved as a frame except as the finest frame", {
 test_that("frame names must be syntactically valid and unique", {
   df <- data.frame(a = "A", unit = "u1", stringsAsFactors = FALSE)
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = df, frames = c("a", "a"),
       members = list(a = "A")
     ), "must be unique"
@@ -195,7 +195,7 @@ test_that("coverage bookkeeping is validated against the leaftable", {
   lt <- scale_leaftable(s)
   # a coverage that does not match the leaftable is rejected
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = lt, frames = scale_frames(s),
       members = S7::prop(s, "members"), key = "leaf",
       meta = list(
@@ -207,7 +207,7 @@ test_that("coverage bookkeeping is validated against the leaftable", {
   )
   # ... and the consistent one is accepted (10 of 20 = 0.5)
   expect_s3_class(
-    Scale(
+    DiscreteScale(
       leaftable = lt, frames = scale_frames(s),
       members = S7::prop(s, "members"), key = "leaf",
       meta = list(
@@ -215,14 +215,14 @@ test_that("coverage bookkeeping is validated against the leaftable", {
         parent_totals = list(w = 20)
       )
     ),
-    "multiscales::Scale"
+    "discretescales::DiscreteScale"
   )
 })
 
 test_that("coverage must lie in (0, 1] over declared weights", {
   s <- tidy_scale()
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = scale_leaftable(s), frames = scale_frames(s),
       members = S7::prop(s, "members"), key = "leaf",
       meta = list(weights = "w", coverage = c(w = 1.5))
@@ -230,7 +230,7 @@ test_that("coverage must lie in (0, 1] over declared weights", {
     "must lie in"
   )
   expect_error(
-    Scale(
+    DiscreteScale(
       leaftable = scale_leaftable(s), frames = scale_frames(s),
       members = S7::prop(s, "members"), key = "leaf",
       meta = list(weights = "w", coverage = c(nope = 1))
@@ -242,7 +242,7 @@ test_that("coverage must lie in (0, 1] over declared weights", {
 # Base generics --------------------------------------------------------------
 
 test_that("print() shows the hierarchy and weights", {
-  expect_output(print(scale_example()), "Scale: example")
+  expect_output(print(scale_example()), "DiscreteScale: example")
   expect_output(print(scale_example()), "sector \\(2\\)")
   expect_output(print(scale_example()), "Atoms: 7")
   expect_output(print(scale_example()), "Weights: size, count")
@@ -251,7 +251,7 @@ test_that("print() shows the hierarchy and weights", {
 })
 
 test_that("format() is the one-line form", {
-  expect_match(format(tidy_scale()), "^<Scale\\[top/mid/leaf\\] atoms=4>$")
+  expect_match(format(tidy_scale()), "^<DiscreteScale\\[top/mid/leaf\\] atoms=4>$")
 })
 
 test_that("summary() returns the classed quantitative view", {
@@ -277,19 +277,19 @@ test_that("summary() returns the classed quantitative view", {
 
 test_that("summary() prints its formatted view, not a list dump", {
   sm <- summary(scale_example())
-  expect_output(print(sm), "summary of Scale 'example'")
+  expect_output(print(sm), "summary of DiscreteScale 'example'")
   expect_output(print(sm), "CROSS-CUTTING")
   expect_output(print(sm), "atoms:")
 })
 
 test_that("scale_vocab() gives the neutral words by default", {
   v <- scale_vocab(scale_example())
-  expect_identical(v$object, "Scale")
+  expect_identical(v$object, "DiscreteScale")
   expect_identical(v$frame, "frame")
   expect_identical(v$unit, "unit")
 })
 
-test_that("accessors reject non-Scale input", {
-  expect_error(scale_frames(42), "must be a Scale object")
-  expect_error(scale_leaftable("x"), "must be a Scale object")
+test_that("accessors reject non-DiscreteScale input", {
+  expect_error(scale_frames(42), "must be a DiscreteScale object")
+  expect_error(scale_leaftable("x"), "must be a DiscreteScale object")
 })

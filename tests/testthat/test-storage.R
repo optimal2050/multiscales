@@ -52,7 +52,7 @@ test_that("a fill value other than NA is honoured", {
   expect_false(anyNA(a))
 })
 
-test_that("a one-dimensional Scale also works", {
+test_that("a one-dimensional DiscreteScale also works", {
   s <- scale_example()
   d <- data.frame(unit = c("U1", "U2"), v = c(5, 6), stringsAsFactors = FALSE)
   a <- as_scale_array(d, s, value = "v")
@@ -112,7 +112,7 @@ test_that("a product dataset round-trips through the store", {
   ds <- open_scale_dataset(path)
 
   expect_s3_class(ds, "scale_dataset")
-  expect_s3_class(ds$scale, "multiscales::ScaleProduct")
+  expect_s3_class(ds$scale, "discretescales::ScaleProduct")
   expect_identical(names(scale_axes(ds$scale)), c("a", "b"))
   expect_identical(product_keys(ds$scale), product_keys(p))
 
@@ -170,7 +170,7 @@ test_that("a stored dataset can be recast without re-declaring anything", {
   expect_equal(got$v, ref$v)
 })
 
-test_that("a single Scale round-trips too", {
+test_that("a single DiscreteScale round-trips too", {
   skip_if_not_installed("arrow")
   skip_if_not_installed("yaml")
   s <- scale_example()
@@ -178,7 +178,7 @@ test_that("a single Scale round-trips too", {
   dir <- withr::local_tempdir()
   write_scale_dataset(d, s, file.path(dir, "s"))
   ds <- open_scale_dataset(file.path(dir, "s"))
-  expect_s3_class(ds$scale, "multiscales::Scale")
+  expect_s3_class(ds$scale, "discretescales::DiscreteScale")
   expect_identical(scale_units(ds$scale), scale_units(s))
 })
 

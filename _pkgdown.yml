@@ -1,3 +1,4 @@
+url: https://optimal2050.github.io/discretescales/
 
 home:
   sidebar:
@@ -10,3 +11,101 @@ footer:
   components:
     blank: ""
 
+reference:
+- title: Scales
+  desc: Build a scale and read its structure.
+  contents:
+  - scale_from_leaftable
+  - scale_example
+  - scale_example2
+  - DiscreteScale
+  - scale_class
+  - scale_is
+  - scale_frames
+  - scale_units
+  - scale_key
+  - scale_leaftable
+  - scale_weights
+  - scale_rank
+  - scale_atom_level
+  - scale_residuals
+  - is_valid_frame
+  - summary.DiscreteScale
+  - "`[.DiscreteScale`"
+- title: Navigation and shares
+  desc: Move between frames and report what a unit holds.
+  contents:
+  - scale_navigate
+  - scale_family
+  - scale_ancestry
+  - scale_nests
+  - scale_share
+  - scale_coverage
+- title: Subsetting
+  contents:
+  - filter_scale
+  - prune_scale
+- title: Conversion
+  desc: Recast data between resolutions, attach labels, and declare rules.
+  contents:
+  - recast_scale
+  - recast
+  - recast_to_atoms
+  - recast_crosswalk
+  - join_scale
+  - reconcile_scale
+  - SCALE_RULES
+  - register_scale_rule
+  - get_scale_rule
+  - list_scale_rules
+  - clear_scale_rules
+- title: Crosswalks
+  desc: The map behind every conversion, and the registry of exact ones.
+  contents:
+  - scale_map
+  - scale_map_between
+  - register_scale_map
+  - clear_scale_maps
+- title: Products of scales
+  desc: Several scales as one multi-index.
+  contents:
+  - scale_product
+  - ScaleProduct
+  - scale_axes
+  - product_size
+  - product_keys
+  - product_frames
+  - product_weights
+  - product_coverage
+  - product_atoms
+  - recast_product
+  - join_product
+  - filter_product
+  - summary.ScaleProduct
+- title: Clustering
+  desc: Group units by their data into a new, coarser frame.
+  contents:
+  - cluster_scale
+  - cluster_contiguous
+  - cluster_medoids
+  - cluster_sweep
+  - scale_distance
+  - SCALE_DISTANCES
+  - register_scale_distance
+- title: Arrays and storage
+  contents:
+  - as_scale_array
+  - write_scale_dataset
+  - open_scale_dataset
+  - scale_dataset_info
+- title: Building a dimension package
+  desc: Hooks and helpers for packages that subclass DiscreteScale.
+  contents:
+  - scale_alias_property
+  - scale_vocab
+  - scale_payload_slice
+  - scale_atom_pairs
+  - starts_with(".ms_")
+- title: Package
+  contents:
+  - discretescales-package

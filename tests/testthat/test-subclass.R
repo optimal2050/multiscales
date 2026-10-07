@@ -2,12 +2,12 @@
 # The subclass contract.
 #
 # `timescales::Calendar` and `geoscales::Geoscale` become S7 subclasses of
-# `Scale`. Everything those rebases depend on is asserted here against a
+# `DiscreteScale`. Everything those rebases depend on is asserted here against a
 # synthetic subclass, so the engine can never quietly break the arrangement:
 #
 #   * the parent validator runs, and the child's own checks run after it
 #   * an ALIAS property (`timeframes` -> `frames`) reads AND writes
-#   * `class()` keeps the child first and gains Scale at the TAIL, so the
+#   * `class()` keeps the child first and gains DiscreteScale at the TAIL, so the
 #     twins' existing S3 registrations still win
 #   * every engine accessor works on the subclass unchanged
 #   * `scale_vocab()` can be overridden, which is what keeps the twins'
@@ -18,7 +18,7 @@
 # and adds one invariant of its own.
 Widget <- S7::new_class(
   "Widget",
-  parent = Scale,
+  parent = DiscreteScale,
   properties = list(
     payload = S7::new_property(S7::class_any, default = NULL),
     slots = scale_alias_property("frames")
@@ -81,20 +81,20 @@ test_that("a subclass adds its own invariants on top", {
   )
 })
 
-test_that("class() puts the child first and Scale at the tail", {
+test_that("class() puts the child first and DiscreteScale at the tail", {
   w <- .widget()
   cl <- class(w)
   # The "pkg::Child" spelling leads when the class is defined in a package --
   # which is why the twins keep their `print.geoscales::Geoscale`
   # registrations. Whether this test-local class gets that prefix depends on
   # how the suite runs (R CMD check does, load_all() does not), so assert the
-  # invariant that actually matters: the CHILD precedes Scale.
-  child <- which(cl %in% c("Widget", "multiscales::Widget"))
+  # invariant that actually matters: the CHILD precedes DiscreteScale.
+  child <- which(cl %in% c("Widget", "discretescales::Widget"))
   expect_gt(length(child), 0L)
-  expect_true("multiscales::Scale" %in% cl)
-  expect_true(S7::S7_inherits(w, Scale))
-  # this ordering is what lets a child's S3 method win over Scale's
-  expect_lt(min(child), match("multiscales::Scale", cl))
+  expect_true("discretescales::DiscreteScale" %in% cl)
+  expect_true(S7::S7_inherits(w, DiscreteScale))
+  # this ordering is what lets a child's S3 method win over DiscreteScale's
+  expect_lt(min(child), match("discretescales::DiscreteScale", cl))
   expect_identical(cl[[length(cl)]], "S7_object")
 })
 

@@ -2,12 +2,12 @@
 % Please edit documentation in R/navigate.R
 \name{scale_coverage}
 \alias{scale_coverage}
-\title{Coverage of a sampled Scale}
+\title{Coverage of a sampled DiscreteScale}
 \usage{
 scale_coverage(x, weight = NULL)
 }
 \arguments{
-\item{x}{A \code{\link{Scale}}.}
+\item{x}{A \code{\link{DiscreteScale}}.}
 
 \item{weight}{A single weight name, or \code{NULL} for all declared weights.}
 }

@@ -2,8 +2,8 @@
 # ScaleProduct -- several scales combined into one multi-index
 # =============================================================================
 # A product of an hourly calendar (8,760 atoms) and a NUTS3 geoscale (1,477)
-# has ~12.9M atoms. A `Scale`'s contract is "leaftable = one row per atom", so
-# a product CANNOT be a Scale subclass without either lying about that
+# has ~12.9M atoms. A `DiscreteScale`'s contract is "leaftable = one row per atom", so
+# a product CANNOT be a DiscreteScale subclass without either lying about that
 # contract or materialising something nobody asked for. It is a sibling class
 # that HOLDS scales instead, and its atoms are never built unless asked for
 # explicitly.
@@ -21,7 +21,7 @@ NULL
 
 #' A product of several scales (S7 class)
 #'
-#' Combines two or more [`Scale`] objects into one multi-dimensional index --
+#' Combines two or more [`DiscreteScale`] objects into one multi-dimensional index --
 #' time x space, time x space x industry, and so on. The atoms of the product
 #' are tuples of the component atoms, and they stay LAZY: nothing is
 #' materialised at construction, and [`product_atoms()`] is the guarded way to
@@ -29,7 +29,7 @@ NULL
 #'
 #' Construct with [`scale_product()`].
 #'
-#' @param axes Named list of [`Scale`] objects; the names are the axis names.
+#' @param axes Named list of [`DiscreteScale`] objects; the names are the axis names.
 #' @param keys Named character vector, one entry per axis, giving the data
 #'   column that carries that axis's unit codes.
 #' @param joint_weights Reserved for a weight that varies jointly across axes
@@ -45,6 +45,7 @@ NULL
 #' @keywords internal
 ScaleProduct <- S7::new_class(
   "ScaleProduct",
+  package = "discretescales",
   properties = list(
     axes          = S7::new_property(S7::class_list),
     keys          = S7::new_property(S7::class_character),
@@ -66,7 +67,7 @@ ScaleProduct <- S7::new_class(
 
     # axes --------------------------------------------------------------------
     if (!is.list(axes)) {
-      return("`axes` must be a list of Scale objects")
+      return("`axes` must be a list of DiscreteScale objects")
     }
     if (length(axes) < 2L) {
       errs <- c(errs, "a product needs at least 2 axes")
@@ -92,8 +93,8 @@ ScaleProduct <- S7::new_class(
         ))
         next
       }
-      if (!S7::S7_inherits(a, Scale)) {
-        errs <- c(errs, sprintf("axis `%s` is not a Scale object", nm))
+      if (!S7::S7_inherits(a, DiscreteScale)) {
+        errs <- c(errs, sprintf("axis `%s` is not a DiscreteScale object", nm))
         next
       }
       # the crosswalk and join machinery is keyed by the object's name
@@ -151,7 +152,7 @@ ScaleProduct <- S7::new_class(
 
 #' Combine scales into a product index
 #'
-#' @param ... Two or more named [`Scale`] objects; the argument names become
+#' @param ... Two or more named [`DiscreteScale`] objects; the argument names become
 #'   the axis names.
 #' @param name,desc Short name and description of the product.
 #' @param keys Optional named character vector overriding the data key column
@@ -183,7 +184,7 @@ scale_product <- function(..., name = "", desc = "", keys = NULL,
 
   if (is.null(keys)) {
     keys <- vapply(axes, function(a) {
-      if (S7::S7_inherits(a, Scale)) scale_key(a) else NA_character_
+      if (S7::S7_inherits(a, DiscreteScale)) scale_key(a) else NA_character_
     }, character(1))
     names(keys) <- nms
     # Two generic scales both keyed "unit" would collide; fall back to the
@@ -200,7 +201,7 @@ scale_product <- function(..., name = "", desc = "", keys = NULL,
       .stop("`keys` names unknown axes: %s", .preview(unknown))
     }
     full <- vapply(axes, function(a) {
-      if (S7::S7_inherits(a, Scale)) scale_key(a) else NA_character_
+      if (S7::S7_inherits(a, DiscreteScale)) scale_key(a) else NA_character_
     }, character(1))
     names(full) <- nms
     full[names(keys)] <- keys
@@ -245,9 +246,9 @@ scale_product <- function(..., name = "", desc = "", keys = NULL,
 #' Axes of a product
 #'
 #' @param x A [`ScaleProduct`].
-#' @param axis Optional single axis name, to get just that [`Scale`].
+#' @param axis Optional single axis name, to get just that [`DiscreteScale`].
 #'
-#' @return A named list of [`Scale`] objects, or one Scale when `axis` is
+#' @return A named list of [`DiscreteScale`] objects, or one DiscreteScale when `axis` is
 #'   given.
 #'
 #' @examples
@@ -423,7 +424,6 @@ S7::method(format, ScaleProduct) <- function(x, ...) {
   )
 }
 
-#' @export
 #' @method print ScaleProduct
 print.ScaleProduct <- function(x, ...) {
   axes <- S7::prop(x, "axes")
@@ -472,16 +472,15 @@ print.ScaleProduct <- function(x, ...) {
 S7::method(print, ScaleProduct) <- print.ScaleProduct
 
 #' @export
-`print.multiscales::ScaleProduct` <- print.ScaleProduct
+`print.discretescales::ScaleProduct` <- print.ScaleProduct
 
-#' @export
 #' @method names ScaleProduct
 names.ScaleProduct <- function(x) names(S7::prop(x, "axes"))
 
 S7::method(names, ScaleProduct) <- names.ScaleProduct
 
 #' @export
-`names.multiscales::ScaleProduct` <- names.ScaleProduct
+`names.discretescales::ScaleProduct` <- names.ScaleProduct
 
 # Summary ----------------------------------------------------------------------
 
@@ -495,7 +494,6 @@ S7::method(names, ScaleProduct) <- names.ScaleProduct
 #'   `joint_weights`.
 #' @examples
 #' summary(scale_product(a = scale_example(), b = scale_example2()))
-#' @export
 #' @method summary ScaleProduct
 summary.ScaleProduct <- function(object, ...) {
   axes <- S7::prop(object, "axes")
@@ -534,7 +532,7 @@ S7::method(summary, ScaleProduct) <- summary.ScaleProduct
 
 #' @rdname summary.ScaleProduct
 #' @export
-`summary.multiscales::ScaleProduct` <- summary.ScaleProduct
+`summary.discretescales::ScaleProduct` <- summary.ScaleProduct
 
 #' @rdname summary.ScaleProduct
 #' @export

@@ -124,7 +124,7 @@ test_that("the crosswalk is what defines the expected source set", {
     unit = "U1", class = "G1", n_from = 1L, n_overlap = 1L,
     w = 1, w_from = 1, stringsAsFactors = FALSE
   )
-  register_scale_map("unit", "class", one, x = s)
+  register_scale_map(s, "unit", "class", one)
   out <- suppressWarnings(
     recast_scale(.partial(), s, from = "unit", to = "class", rule = "sum")
   )

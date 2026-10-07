@@ -2,16 +2,14 @@
 % Please edit documentation in R/map.R
 \name{scale_map}
 \alias{scale_map}
-\title{Crosswalk between two resolutions through the atom layer}
+\title{Crosswalk between two frames of a scale}
 \usage{
-scale_map(from, to, x = NULL, weight = NULL, by = character(), ...)
+scale_map(x, from, to, weight = NULL, by = character(), ...)
 }
 \arguments{
-\item{from, to}{Either two frame names of \code{x} (within-object map), or two
-named \code{\link{Scale}} objects (cross-object map on shared atom keys).}
+\item{x}{The \code{\link{DiscreteScale}} the frames belong to.}
 
-\item{x}{The \code{\link{Scale}} the frame names belong to; required for the
-within-object shape, ignored otherwise.}
+\item{from, to}{Frame names of \code{x}.}
 
 \item{weight}{Weight column for \code{w}. \code{NULL} uses the default weight; when
 the object declares no weights at all, every atom gets weight 1 (an equal
@@ -41,13 +39,15 @@ column), the quantity \code{"weighted_mean"} aggregation uses,
 share \code{"sum"} disaggregation uses.
 }
 
-The two label columns are named by the frames (within one scale) or by the
-scale names (across two); rows with an \code{NA} target label are atoms \code{to} does
-not cover. A crosswalk registered with \code{\link[=register_scale_map]{register_scale_map()}} is returned
-as-is instead of being derived.
+The two label columns are named by the frames; rows with an \code{NA} target
+label are atoms \code{to} does not cover. A crosswalk registered with
+\code{\link[=register_scale_map]{register_scale_map()}} is returned as-is instead of being derived.
 }
 \examples{
 s <- scale_example()
-scale_map("class", "group", x = s)
-scale_map("sector", "class", x = s, weight = "count")
+scale_map(s, "class", "group")
+scale_map(s, "sector", "class", weight = "count")
+}
+\seealso{
+\code{\link[=scale_map_between]{scale_map_between()}} for the map between two scales.
 }

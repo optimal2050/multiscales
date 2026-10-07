@@ -7,7 +7,7 @@
 scale_residuals(x, frame = NULL)
 }
 \arguments{
-\item{x}{A \code{\link{Scale}}.}
+\item{x}{A \code{\link{DiscreteScale}}.}
 
 \item{frame}{A single frame name for just that frame's residuals, or
 \code{NULL} for the whole named list.}

@@ -16,7 +16,7 @@ write_scale_dataset(
 \arguments{
 \item{data}{The table to write, in any supported backend.}
 
-\item{x}{The \code{\link{Scale}} or \code{\link{ScaleProduct}} the data is indexed by.}
+\item{x}{The \code{\link{DiscreteScale}} or \code{\link{ScaleProduct}} the data is indexed by.}
 
 \item{path}{Directory to create. It must not already contain a store
 unless \code{overwrite = TRUE}.}

@@ -2,13 +2,13 @@
 % Please edit documentation in R/product-class.R
 \name{summary.ScaleProduct}
 \alias{summary.ScaleProduct}
-\alias{summary.multiscales::ScaleProduct}
+\alias{summary.discretescales::ScaleProduct}
 \alias{print.summary_ScaleProduct}
 \title{Summarize a product}
 \usage{
 \method{summary}{ScaleProduct}(object, ...)
 
-\method{summary}{`multiscales::ScaleProduct`}(object, ...)
+\method{summary}{`discretescales::ScaleProduct`}(object, ...)
 
 \method{print}{summary_ScaleProduct}(x, ...)
 }

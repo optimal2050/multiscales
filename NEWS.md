@@ -1,14 +1,14 @@
-# multiscales 0.1.0
+# discretescales 0.1.0
 
-* First release. multiscales is the dimension-agnostic core under
+* First release. discretescales is the dimension-agnostic core under
   [timescales](https://github.com/optimal2050/timescales) and
   [geoscales](https://github.com/optimal2050/geoscales): their `Calendar` and
-  `Geoscale` classes are subclasses of its `Scale`, so every verb below works
+  `Geoscale` classes are subclasses of its `DiscreteScale`, so every verb below works
   on calendars and region hierarchies as well as on any other dimension.
 
 ## Scales
 
-* A `Scale` is a flat table of atoms plus the ordered frames that group them.
+* A `DiscreteScale` is a flat table of atoms plus the ordered frames that group them.
   Build one with `scale_from_leaftable()`; read it with `scale_frames()`,
   `scale_units()`, `scale_key()`, `scale_leaftable()`, `scale_weights()`,
   `scale_rank()` and `scale_atom_level()`.
@@ -21,7 +21,7 @@
 * `filter_scale()` (or `x[frame, unit]`) and `prune_scale()` subset and
   collapse a scale, recording the result's coverage of the original.
 * `scale_class()`, `scale_is()` and their product counterparts stand in for
-  the classes, which are not exported so as not to mask `ggplot2::Scale`.
+  the classes, which are not exported; the package's surface is its functions.
 
 ## Conversion
 
@@ -35,14 +35,16 @@
   such as timescales' mapping of one calendar onto another.
 * `recast()` is the S7 generic that timescales and geoscales extend, so one
   pipeline can recast time and space in turn.
-* `scale_map()` returns the crosswalk; `register_scale_map()` and
+* `scale_map(x, from, to)` returns the crosswalk between two frames of a
+  scale and `scale_map_between(from, to)` the one between two scales;
+  `register_scale_map()` / `register_scale_map_between()` and
   `register_scale_rule()` record exact crosswalks and per-column rules.
   A value column without a rule is an error, never a guess.
 * `join_scale()` attaches a scale's labels, coarser frames (`attach =`),
   shares and weights to a dataset.
 * Declared residuals (`scale_from_leaftable(residuals = )`,
   `scale_residuals()`) aggregate upward but never receive a share when a
-  coarse value is split. `scale_reconcile()` compares aggregated data with an
+  coarse value is split. `reconcile_scale()` compares aggregated data with an
   independent total and can balance the gap.
 
 ## Data backends and large data
@@ -87,7 +89,7 @@
 
 ## Building a dimension package
 
-* `vignette("dimension-package")` shows how to define a `Scale` subclass for a
+* `vignette("dimension-package")` shows how to define a `DiscreteScale` subclass for a
   new dimension, as timescales and geoscales do.
 * `scale_alias_property()` gives an inherited property the dimension's own
   name; `scale_vocab()` puts the dimension's words in error messages;
@@ -95,4 +97,4 @@
   rows are subset; `scale_atom_pairs()` lets a dimension generate its atom
   layer.
 * `.ms_backend()` and the other `.ms_*` helpers provide the backend handling
-  to packages built on multiscales.
+  to packages built on discretescales.

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# multiscales
+# discretescales
 
 <!-- badges: start -->
 
@@ -13,16 +13,16 @@ ordered *frames* that group them — and that shape fits time, space,
 industries, income brackets, temperature regimes or technology vintages
 equally well.
 
-`multiscales` is the engine under
+`discretescales` is the engine under
 [timescales](https://github.com/optimal2050/timescales) (calendars) and
 [geoscales](https://github.com/optimal2050/geoscales) (regions), whose
-classes are subclasses of `Scale`. Use it directly for any other
+classes are subclasses of `DiscreteScale`. Use it directly for any other
 dimension.
 
 ## Installation
 
 ``` r
-pak::pkg_install("optimal2050/multiscales")
+pak::pkg_install("optimal2050/discretescales")
 ```
 
 ## A scale in one call
@@ -30,7 +30,7 @@ pak::pkg_install("optimal2050/multiscales")
 Declare the hierarchy, coarsest frame first:
 
 ``` r
-library(multiscales)
+library(discretescales)
 
 industries <- data.frame(
   section  = c("C",   "C",   "C",   "D",   "D"),
@@ -46,7 +46,7 @@ ind <- scale_from_leaftable(
 )
 
 ind
-#> Scale: nace
+#> DiscreteScale: nace
 #> Frames (3, coarsest first):
 #>   - section (2)
 #>     - division (3)
@@ -73,7 +73,7 @@ given pair happens to nest; conversion never depends on it.
 
 ``` r
 summary(ind)
-#> <summary of Scale 'nace'>
+#> <summary of DiscreteScale 'nace'>
 #>   frames:        section (2) / division (3) / class (5)
 #>   atoms:          5
 #>   weight totals:  gva = 695  (default: gva)

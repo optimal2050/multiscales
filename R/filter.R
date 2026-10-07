@@ -1,5 +1,5 @@
 # =============================================================================
-# Subsetting and collapsing a Scale
+# Subsetting and collapsing a DiscreteScale
 # =============================================================================
 # A genuine subset is a SAMPLE and is book-kept as one, so an object always
 # knows what fraction of its parent it carries and can never impersonate that
@@ -40,7 +40,7 @@ NULL
   meta
 }
 
-#' Rebuild a Scale from a row subset
+#' Rebuild a DiscreteScale from a row subset
 #'
 #' The update is made on a copy of `x` itself, which preserves the concrete
 #' class and any extra properties a subclass carries. The payload hook then
@@ -86,7 +86,7 @@ NULL
   out
 }
 
-#' Subset a Scale by unit
+#' Subset a DiscreteScale by unit
 #'
 #' Keeps only the atoms belonging to `unit` at `frame`, and rebuilds the member
 #' vocabularies accordingly.
@@ -100,12 +100,12 @@ NULL
 #' crosswalk registry or in [`join_scale()`] column names. A filter that keeps
 #' every atom is a true no-op. Read the fraction back with [`scale_coverage()`].
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param frame Frame that `unit` belongs to.
 #' @param unit Character vector of codes to keep.
 #' @param drop_empty_frames Drop frames left with no codes at all.
 #'
-#' @return A [`Scale`].
+#' @return A [`DiscreteScale`].
 #'
 #' @examples
 #' s <- scale_example()
@@ -150,20 +150,19 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
   .rebuild(x, keep, fr, drop_empty_frames, meta = meta)
 }
 
-#' Subset a Scale
+#' Subset a DiscreteScale
 #'
 #' `x[frame, unit]` is [`filter_scale()`].
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param i Frame name.
 #' @param j Unit codes to keep.
 #' @param ... Unused.
-#' @return A [`Scale`].
+#' @return A [`DiscreteScale`].
 #' @examples
 #' scale_example()["sector", "P"]
-#' @export
-#' @method [ Scale
-`[.Scale` <- function(x, i, j, ...) {
+#' @method [ DiscreteScale
+`[.DiscreteScale` <- function(x, i, j, ...) {
   if (missing(i) || missing(j)) {
     .stop("subset a scale as `x[frame, unit]`")
   }
@@ -173,23 +172,23 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
 # The fully-qualified spelling is what `class()` reports for an installed
 # package, so without this alias `x[frame, unit]` falls through to
 # `[.S7_object`, which errors.
-#' @rdname sub-.Scale
+#' @rdname sub-.DiscreteScale
 #' @export
-`[.multiscales::Scale` <- `[.Scale`
+`[.discretescales::DiscreteScale` <- `[.DiscreteScale`
 
-#' Collapse a Scale to a coarser frame
+#' Collapse a DiscreteScale to a coarser frame
 #'
-#' Returns a new [`Scale`] whose atom layer is `frame`, dropping every finer
+#' Returns a new [`DiscreteScale`] whose atom layer is `frame`, dropping every finer
 #' frame. Weights are summed over the collapsed atoms.
 #'
 #' The result is renamed `"name@frame"` with the parent recorded in
 #' `meta$parent_name`; every other meta field is preserved. Atoms with no code
 #' at `frame` are dropped, and that loss is reflected in `meta$coverage`.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param frame The frame to become the new atom layer.
 #'
-#' @return A [`Scale`].
+#' @return A [`DiscreteScale`].
 #'
 #' @examples
 #' prune_scale(scale_example(), "class")
@@ -251,7 +250,7 @@ prune_scale <- function(x, frame) {
 #'
 #' Normalised weights, either of the whole object or within each parent group.
 #'
-#' @param x A [`Scale`].
+#' @param x A [`DiscreteScale`].
 #' @param frame Frame to report shares for.
 #' @param weight Weight column. `NULL` uses the default.
 #' @param within Optional coarser frame to normalise within. `NULL` normalises

@@ -76,7 +76,8 @@ violates the constraint.
 s <- scale_example()
 d <- data.frame(
   unit = rep(scale_units(s), each = 4),
-  t = rep(sprintf("t\%d", 1:4), 7), v = as.numeric(seq_len(28)))
+  t = rep(sprintf("t\%d", 1:4), 7), v = as.numeric(seq_len(28))
+)
 cl <- cluster_contiguous(d, s, k = 3)
 attr(cl, "clustering")
 }

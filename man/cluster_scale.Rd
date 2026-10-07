@@ -80,7 +80,8 @@ set.seed(1)
 d <- data.frame(
   unit = rep(scale_units(s), each = 4),
   t = rep(sprintf("t\%d", 1:4), 7),
-  v = as.numeric(seq_len(28)))
+  v = as.numeric(seq_len(28))
+)
 cl <- cluster_scale(d, s, k = 3)
 scale_frames(cl)
 head(attr(cl, "clustering"))

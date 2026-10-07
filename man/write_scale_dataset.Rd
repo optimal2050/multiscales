@@ -40,12 +40,14 @@ can be recast without re-declaring anything.
 }
 \examples{
 p <- scale_product(a = scale_example(), b = scale_example2())
-d <- merge(data.frame(unit = c("U1", "U2")),
-           data.frame(period = c("p1", "p2")))
+d <- merge(
+  data.frame(unit = c("U1", "U2")),
+  data.frame(period = c("p1", "p2"))
+)
 d$v <- 1:4
 dir <- file.path(tempdir(), "store")
 if (requireNamespace("arrow", quietly = TRUE) &&
-    requireNamespace("yaml", quietly = TRUE)) {
+  requireNamespace("yaml", quietly = TRUE)) {
   write_scale_dataset(d, p, dir, overwrite = TRUE)
   ds <- open_scale_dataset(dir)
   ds

@@ -68,13 +68,16 @@ the result is keyed by.
 p <- scale_product(a = scale_example(), b = scale_example2())
 d <- merge(
   data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6")),
-  data.frame(period = c("p1", "p2", "p3", "p4")))
+  data.frame(period = c("p1", "p2", "p3", "p4"))
+)
 d$cap <- seq_len(nrow(d))
 
 # aggregate both axes at once
 recast_product(d, p, to = list(a = "sector", b = "era"), rules = "sum")
 
 # different rules per axis
-recast_product(d, p, to = list(a = "sector", b = "era"),
-               rules = list(cap = c(a = "sum", b = "weighted_mean")))
+recast_product(d, p,
+  to = list(a = "sector", b = "era"),
+  rules = list(cap = c(a = "sum", b = "weighted_mean"))
+)
 }

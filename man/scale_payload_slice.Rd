@@ -22,6 +22,8 @@ whenever the engine rebuilds an object from a row subset, with the kept row
 indices. The \code{Scale} default has no payload and returns \code{x} unchanged.
 }
 \examples{
-identical(scale_payload_slice(scale_example(), 1:3),
-          scale_example())
+identical(
+  scale_payload_slice(scale_example(), 1:3),
+  scale_example()
+)
 }

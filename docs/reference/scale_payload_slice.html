@@ -20,7 +20,7 @@ indices. The Scale default has no payload and returns x unchanged."><!-- mathjax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">multiscales</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
 
@@ -92,8 +92,10 @@ indices.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu">scale_payload_slice</span><span class="op">(</span><span class="fu"><a href="scale_example.html">scale_example</a></span><span class="op">(</span><span class="op">)</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>          <span class="fu"><a href="scale_example.html">scale_example</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu">scale_payload_slice</span><span class="op">(</span><span class="fu"><a href="scale_example.html">scale_example</a></span><span class="op">(</span><span class="op">)</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="scale_example.html">scale_example</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 </code></pre></div>
     </div>
@@ -105,11 +107,11 @@ indices.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Oleg Lugovoy.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
+  <p></p>
 </div>
 
       </footer></div>

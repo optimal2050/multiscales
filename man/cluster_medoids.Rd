@@ -23,6 +23,7 @@ built on medoids is built on things that really happened.
 s <- scale_example()
 d <- data.frame(
   unit = rep(scale_units(s), each = 4),
-  t = rep(sprintf("t\%d", 1:4), 7), v = as.numeric(seq_len(28)))
+  t = rep(sprintf("t\%d", 1:4), 7), v = as.numeric(seq_len(28))
+)
 cluster_medoids(cluster_scale(d, s, k = 3))
 }

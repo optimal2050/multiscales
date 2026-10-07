@@ -70,16 +70,21 @@ default; can also close it.
 \examples{
 lf <- data.frame(
   country = c("DE", "DE", "DE"),
-  unit    = c("DE1", "DE2", "DE_XR"),
-  pop     = c(40, 30, 0), stringsAsFactors = FALSE)
-s <- scale_from_leaftable(lf, frames = c("country", "unit"), key = "unit",
-                          weights = "pop", name = "geo",
-                          residuals = list(unit = "DE_XR"))
+  unit = c("DE1", "DE2", "DE_XR"),
+  pop = c(40, 30, 0), stringsAsFactors = FALSE
+)
+s <- scale_from_leaftable(lf,
+  frames = c("country", "unit"), key = "unit",
+  weights = "pop", name = "geo",
+  residuals = list(unit = "DE_XR")
+)
 fine <- data.frame(unit = c("DE1", "DE2", "DE_XR"), gdp = c(400, 300, 0))
 published <- data.frame(country = "DE", gdp = 750)
 
 scale_reconcile(fine, s, from = "unit", to = "country", published)
 
-scale_reconcile(fine, s, from = "unit", to = "country", published,
-                balance = "residual")
+scale_reconcile(fine, s,
+  from = "unit", to = "country", published,
+  balance = "residual"
+)
 }

@@ -84,8 +84,10 @@ return trip's \code{"weighted_mean"} reproduces the source weighting exactly.
 \examples{
 s <- scale_example()
 d <- data.frame(sector = c("P", "S"), capacity = c(10, 20))
-atoms <- recast_to_atoms(d, s, from = "sector", rule = "sum",
-                         weight = "size")
+atoms <- recast_to_atoms(d, s,
+  from = "sector", rule = "sum",
+  weight = "size"
+)
 head(atoms)
 recast_from_atoms(atoms, s, to = "class", rule = "sum")
 }

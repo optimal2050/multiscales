@@ -24,10 +24,14 @@ dynamic property once with \code{NULL} before the real values are set, so a
 setter that forwards \code{NULL} makes the class impossible to construct.
 }
 \examples{
-Aliased <- S7::new_class("Aliased", parent = scale_class(),
-  properties = list(levels = scale_alias_property("frames")))
-a <- Aliased(leaftable = scale_leaftable(scale_example()),
-             frames = scale_frames(scale_example()),
-             members = S7::prop(scale_example(), "members"))
+Aliased <- S7::new_class("Aliased",
+  parent = scale_class(),
+  properties = list(levels = scale_alias_property("frames"))
+)
+a <- Aliased(
+  leaftable = scale_leaftable(scale_example()),
+  frames = scale_frames(scale_example()),
+  members = S7::prop(scale_example(), "members")
+)
 a@levels
 }

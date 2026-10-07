@@ -44,6 +44,7 @@ measures the distance between its rows.
 s <- scale_example()
 d <- data.frame(
   unit = rep(scale_units(s), each = 3),
-  t = rep(sprintf("t\%d", 1:3), 7), v = as.numeric(seq_len(21)))
+  t = rep(sprintf("t\%d", 1:3), 7), v = as.numeric(seq_len(21))
+)
 round(scale_distance(d, s, method = "correlation"), 2)
 }

@@ -53,6 +53,7 @@ Cluster quality across a range of k
 s <- scale_example()
 d <- data.frame(
   unit = rep(scale_units(s), each = 4),
-  t = rep(sprintf("t\%d", 1:4), 7), v = as.numeric(seq_len(28)))
+  t = rep(sprintf("t\%d", 1:4), 7), v = as.numeric(seq_len(28))
+)
 cluster_sweep(d, s, ks = 2:4)
 }

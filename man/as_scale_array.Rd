@@ -43,8 +43,10 @@ in the order the product declares them, with the units as \code{dimnames}.
 }
 \examples{
 p <- scale_product(a = scale_example(), b = scale_example2())
-d <- merge(data.frame(unit = c("U1", "U2")),
-           data.frame(period = c("p1", "p2")))
+d <- merge(
+  data.frame(unit = c("U1", "U2")),
+  data.frame(period = c("p1", "p2"))
+)
 d$v <- 1:4
 as_scale_array(d, p, value = "v")
 as_scale_table(as_scale_array(d, p, value = "v"), p, value = "v")

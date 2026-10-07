@@ -27,5 +27,5 @@ layer and works either way. This function is a diagnostic.
 }
 \examples{
 s <- scale_example()
-scale_nests(s, "class", "group")   # FALSE - they cross-cut
+scale_nests(s, "class", "group") # FALSE - they cross-cut
 }

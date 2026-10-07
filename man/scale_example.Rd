@@ -25,5 +25,5 @@ different classes, so \code{class} and \code{group} do not form a tree;
 \examples{
 s <- scale_example()
 s
-scale_nests(s, "class", "group")   # FALSE - they cross-cut
+scale_nests(s, "class", "group") # FALSE - they cross-cut
 }

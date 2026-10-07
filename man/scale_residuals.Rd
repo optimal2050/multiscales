@@ -30,12 +30,14 @@ unique across frames:
 }
 \examples{
 s <- scale_example()
-scale_residuals(s)                       # none declared
+scale_residuals(s) # none declared
 
 lf <- scale_leaftable(s)
 r <- scale_from_leaftable(
-  lf, frames = scale_frames(s), key = "unit",
+  lf,
+  frames = scale_frames(s), key = "unit",
   weights = scale_weights(s), name = "with_residual",
-  residuals = list(unit = "OTH"))
+  residuals = list(unit = "OTH")
+)
 scale_residuals(r, "unit")
 }

@@ -86,10 +86,16 @@ combination, comes back \code{NA} unless \code{missing_sources = "ignore"}.
 }
 \examples{
 # Two months onto one quarter, with the months' day counts as atoms
-map <- data.frame(month = c("m01", "m02"), quarter = "Q1",
-                  n_from = c(31, 28), n_overlap = c(31, 28))
-d <- data.frame(month = c("m01", "m02"), energy = c(310, 280),
-                price = c(10, 20))
-recast_crosswalk(d, map, from = "month", to = "quarter",
-                 rule = c(energy = "sum", price = "weighted_mean"))
+map <- data.frame(
+  month = c("m01", "m02"), quarter = "Q1",
+  n_from = c(31, 28), n_overlap = c(31, 28)
+)
+d <- data.frame(
+  month = c("m01", "m02"), energy = c(310, 280),
+  price = c(10, 20)
+)
+recast_crosswalk(d, map,
+  from = "month", to = "quarter",
+  rule = c(energy = "sum", price = "weighted_mean")
+)
 }

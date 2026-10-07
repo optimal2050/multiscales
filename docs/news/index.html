@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">multiscales</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
 
@@ -58,10 +58,10 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.1.0.9000" id="multiscales-0109000">multiscales 0.1.0.9000<a class="anchor" aria-label="anchor" href="#multiscales-0109000"></a></h2>
+<h2 class="page-header" data-toc-text="0.1.0" id="multiscales-010">multiscales 0.1.0<a class="anchor" aria-label="anchor" href="#multiscales-010"></a></h2>
 <ul><li>First release. multiscales is the dimension-agnostic core under <a href="https://github.com/optimal2050/timescales" class="external-link">timescales</a> and <a href="https://github.com/optimal2050/geoscales" class="external-link">geoscales</a>: their <code>Calendar</code> and <code>Geoscale</code> classes are subclasses of its <code>Scale</code>, so every verb below works on calendars and region hierarchies as well as on any other dimension.</li>
 </ul><div class="section level3">
-<h3 id="scales-0-1-0-9000">Scales<a class="anchor" aria-label="anchor" href="#scales-0-1-0-9000"></a></h3>
+<h3 id="scales-0-1-0">Scales<a class="anchor" aria-label="anchor" href="#scales-0-1-0"></a></h3>
 <ul><li>A <code>Scale</code> is a flat table of atoms plus the ordered frames that group them. Build one with <code><a href="../reference/scale_from_leaftable.html">scale_from_leaftable()</a></code>; read it with <code><a href="../reference/scale_frames.html">scale_frames()</a></code>, <code><a href="../reference/scale_units.html">scale_units()</a></code>, <code><a href="../reference/scale_key.html">scale_key()</a></code>, <code><a href="../reference/scale_leaftable.html">scale_leaftable()</a></code>, <code><a href="../reference/scale_weights.html">scale_weights()</a></code>, <code><a href="../reference/scale_rank.html">scale_rank()</a></code> and <code><a href="../reference/scale_atom_level.html">scale_atom_level()</a></code>.</li>
 <li>Frames may cross-cut, and memberships may be partial (<code>NA</code>). The atoms may be the codes of the finest frame or, as for a calendar, combinations of frames held in the key column.</li>
 <li>
@@ -72,7 +72,7 @@
 <code><a href="../reference/scale_class.html">scale_class()</a></code>, <code><a href="../reference/scale_is.html">scale_is()</a></code> and their product counterparts stand in for the classes, which are not exported so as not to mask <code><a href="https://ggplot2.tidyverse.org/reference/Scale.html" class="external-link">ggplot2::Scale</a></code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="conversion-0-1-0-9000">Conversion<a class="anchor" aria-label="anchor" href="#conversion-0-1-0-9000"></a></h3>
+<h3 id="conversion-0-1-0">Conversion<a class="anchor" aria-label="anchor" href="#conversion-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/recast_scale.html">recast_scale()</a></code> converts data between resolutions in either direction with the rules <code>sum</code>, <code>weighted_mean</code>, <code>mean</code>, <code>copy</code>, <code>sd</code>, <code>share</code> and <code>logshare</code> (<code>SCALE_RULES</code>), one per value column if needed. Other columns are kept as identifiers.</li>
 <li>
@@ -88,21 +88,21 @@
 <li>Declared residuals (<code>scale_from_leaftable(residuals = )</code>, <code><a href="../reference/scale_residuals.html">scale_residuals()</a></code>) aggregate upward but never receive a share when a coarse value is split. <code><a href="../reference/scale_reconcile.html">scale_reconcile()</a></code> compares aggregated data with an independent total and can balance the gap.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="data-backends-and-large-data-0-1-0-9000">Data backends and large data<a class="anchor" aria-label="anchor" href="#data-backends-and-large-data-0-1-0-9000"></a></h3>
+<h3 id="data-backends-and-large-data-0-1-0">Data backends and large data<a class="anchor" aria-label="anchor" href="#data-backends-and-large-data-0-1-0"></a></h3>
 <ul><li>Every verb accepts a <code>data.frame</code>, tibble, <code>data.table</code>, dtplyr table or arrow table/dataset, and returns the same class. Lazy inputs return a query unless <code>collect = TRUE</code>.</li>
 <li>A target whose sources are only partly present comes back <code>NA</code>; <code>missing_sources = "ignore"</code> aggregates whatever is there instead.</li>
 <li>
 <code>diagnostics =</code> controls the checks that scan the data (off by default for lazy inputs); <code>batch =</code> and <code>batch_by =</code> process a job in chunks of identifier values.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="products-of-scales-0-1-0-9000">Products of scales<a class="anchor" aria-label="anchor" href="#products-of-scales-0-1-0-9000"></a></h3>
+<h3 id="products-of-scales-0-1-0">Products of scales<a class="anchor" aria-label="anchor" href="#products-of-scales-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/scale_product.html">scale_product()</a></code> combines several scales (time x space, …) into one multi-index without building its atoms. <code><a href="../reference/product_size.html">product_size()</a></code>, <code><a href="../reference/product_keys.html">product_keys()</a></code>, <code><a href="../reference/product_frames.html">product_frames()</a></code>, <code><a href="../reference/product_weights.html">product_weights()</a></code>, <code><a href="../reference/product_coverage.html">product_coverage()</a></code> and <code><a href="../reference/scale_axes.html">scale_axes()</a></code> describe it; <code><a href="../reference/product_atoms.html">product_atoms()</a></code> realises the grid on request.</li>
 <li>
 <code><a href="../reference/recast_product.html">recast_product()</a></code> converts any subset of the axes in one call, with rules per value column and axis. <code><a href="../reference/join_product.html">join_product()</a></code> and <code><a href="../reference/filter_product.html">filter_product()</a></code> work axis by axis.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="clustering-0-1-0-9000">Clustering<a class="anchor" aria-label="anchor" href="#clustering-0-1-0-9000"></a></h3>
+<h3 id="clustering-0-1-0">Clustering<a class="anchor" aria-label="anchor" href="#clustering-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/cluster_scale.html">cluster_scale()</a></code> groups units by their data (k-medoids, hierarchical or k-means) and returns the scale with the clusters as a new frame, so the rest of the package applies to them directly.</li>
 <li>
@@ -111,14 +111,14 @@
 <code><a href="../reference/scale_distance.html">scale_distance()</a></code> and its registry (<code>SCALE_DISTANCES</code>, <code><a href="../reference/register_scale_distance.html">register_scale_distance()</a></code>) supply level and shape distances.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="arrays-and-storage-0-1-0-9000">Arrays and storage<a class="anchor" aria-label="anchor" href="#arrays-and-storage-0-1-0-9000"></a></h3>
+<h3 id="arrays-and-storage-0-1-0">Arrays and storage<a class="anchor" aria-label="anchor" href="#arrays-and-storage-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/as_scale_array.html">as_scale_array()</a></code> and <code><a href="../reference/as_scale_array.html">as_scale_table()</a></code> convert between long data and a dense array over a scale or product.</li>
 <li>
 <code><a href="../reference/write_scale_dataset.html">write_scale_dataset()</a></code>, <code><a href="../reference/open_scale_dataset.html">open_scale_dataset()</a></code> and <code><a href="../reference/scale_dataset_info.html">scale_dataset_info()</a></code> store data as a partitioned Arrow dataset together with its scales, so it reopens ready to recast.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="building-a-dimension-package-0-1-0-9000">Building a dimension package<a class="anchor" aria-label="anchor" href="#building-a-dimension-package-0-1-0-9000"></a></h3>
+<h3 id="building-a-dimension-package-0-1-0">Building a dimension package<a class="anchor" aria-label="anchor" href="#building-a-dimension-package-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../articles/dimension-package.html">vignette("dimension-package")</a></code> shows how to define a <code>Scale</code> subclass for a new dimension, as timescales and geoscales do.</li>
 <li>
@@ -137,11 +137,11 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Oleg Lugovoy.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
+  <p></p>
 </div>
 
       </footer></div>

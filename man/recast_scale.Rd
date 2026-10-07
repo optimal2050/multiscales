@@ -139,14 +139,18 @@ completion (and its \code{NA} rows) applies when the result is materialised.
 s <- scale_example()
 
 # Extensive quantity, fine -> coarse: totals are preserved
-d <- data.frame(unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
-                capacity = c(1, 2, 3, 4, 5, 6))
+d <- data.frame(
+  unit = c("U1", "U2", "U3", "U4", "U5", "U6"),
+  capacity = c(1, 2, 3, 4, 5, 6)
+)
 recast_scale(d, s, from = "unit", to = "sector", rule = "sum")
 
 # Coarse -> fine: split proportionally to size
 y <- data.frame(sector = c("P", "S"), capacity = c(10, 20))
-recast_scale(y, s, from = "sector", to = "class",
-             rule = "sum", weight = "size")
+recast_scale(y, s,
+  from = "sector", to = "class",
+  rule = "sum", weight = "size"
+)
 
 # Share within parent: result stays at the atoms, sums to 1 per sector
 recast_scale(d, s, from = "unit", to = "sector", rule = "share")

@@ -37,11 +37,13 @@ resolutions -- for cases where the exact correspondence is known
 }
 \examples{
 s <- scale_example()
-fake <- data.frame(class = "G1", group = "GC", n_from = 1L,
-                   n_overlap = 1L, w = 1, w_from = 1)
+fake <- data.frame(
+  class = "G1", group = "GC", n_from = 1L,
+  n_overlap = 1L, w = 1, w_from = 1
+)
 register_scale_map("class", "group", fake, x = s)
 list_scale_maps()
 get_scale_map("class", "group", x = s)
-register_scale_map("class", "group", NULL, x = s)  # remove
+register_scale_map("class", "group", NULL, x = s) # remove
 clear_scale_maps()
 }

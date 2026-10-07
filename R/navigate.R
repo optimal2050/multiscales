@@ -93,6 +93,88 @@ scale_nests <- function(x, parent, child) {
   ok
 }
 
+#' Do two frames form a product?
+#'
+#' `TRUE` when every unit of `a` combines with the same set of units of `b`,
+#' as the months and hours of a `MONTH x HOUR` calendar do: the frames overlay
+#' rather than nest, and the atoms are their combinations. The complement of
+#' [`scale_nests()`] for the other common shape; a pair can be neither.
+#'
+#' @inheritParams scale_nests
+#' @param a,b Frame names.
+#'
+#' @return A logical scalar. When `FALSE`, the attribute `"offenders"` names
+#'   the units of `a` whose set of `b` units differs from the first one's.
+#'
+#' @examples
+#' s <- scale_example()
+#' scale_crosses(s, "class", "group")
+#'
+#' grid <- expand.grid(m = c("m1", "m2"), h = c("h1", "h2", "h3"),
+#'                     stringsAsFactors = FALSE)
+#' grid$unit <- paste(grid$m, grid$h, sep = "_")
+#' mh <- scale_from_leaftable(grid, frames = c("m", "h"), key = "unit")
+#' scale_crosses(mh, "m", "h")
+#' scale_nests(mh, "m", "h")
+#' @export
+scale_crosses <- function(x, a, b) {
+  fam <- scale_family(x, a, b)
+  sets <- split(fam$child, fam$parent)
+  if (length(sets) == 0L) {
+    return(FALSE)
+  }
+  same <- vapply(sets, function(s) setequal(s, sets[[1L]]), logical(1))
+  ok <- all(same)
+  if (!ok) attr(ok, "offenders") <- names(sets)[!same]
+  ok
+}
+
+#' Are the units of a frame the same size?
+#'
+#' `TRUE` when every unit of `frame` holds the same number of atoms, or the
+#' same total of a weight column: the dimension-free form of a "regular"
+#' calendar (equal durations) or an equal-area regionalisation. Atoms with
+#' no code at `frame` are ignored.
+#'
+#' @inheritParams scale_nests
+#' @param frame A frame name.
+#' @param weight `NULL` compares atom counts; a weight column name compares
+#'   its per-unit totals.
+#' @param tolerance Relative tolerance for weight totals.
+#'
+#' @return A logical scalar. When `FALSE`, the attribute `"sizes"` holds the
+#'   per-unit counts or totals.
+#'
+#' @examples
+#' s <- scale_example()
+#' scale_is_uniform(s, "class")                  # two atoms each
+#' scale_is_uniform(s, "class", weight = "size") # but not the same size
+#' @export
+scale_is_uniform <- function(x, frame, weight = NULL, tolerance = 1e-9) {
+  .check_scale(x)
+  .check_frame(x, frame, "frame")
+  lf <- S7::prop(x, "leaftable")
+  units <- as.character(lf[[frame]])
+  keep <- !is.na(units)
+  w <- if (is.null(weight)) {
+    rep(1, nrow(lf))
+  } else {
+    wts <- scale_weights(x)
+    if (!weight %in% wts) {
+      .stop("unknown weight `%s`; declared: %s", weight, .preview(wts))
+    }
+    as.numeric(lf[[weight]])
+  }
+  sizes <- tapply(w[keep], units[keep], sum, na.rm = TRUE)
+  if (length(sizes) == 0L) {
+    return(FALSE)
+  }
+  ref <- sizes[[1L]]
+  ok <- all(abs(sizes - ref) <= tolerance * max(1, abs(ref)))
+  if (!ok) attr(ok, "sizes") <- stats::setNames(as.numeric(sizes), names(sizes))
+  ok
+}
+
 #' Ancestry between all frame pairs
 #'
 #' Every `(coarser, finer)` code pair that shares at least one atom, for all

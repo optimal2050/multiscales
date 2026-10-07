@@ -297,6 +297,35 @@ length(scale_units(cal))
 A dimension whose atoms are combinations of other categories works the same
 way, with no extra code.
 
+## Trees and overlays
+
+Frames do not have to nest. In the industry scale every activity belongs to
+exactly one division: the frames form a tree. In `m12_h24` an hour of the day
+belongs to every month: the two frames overlay, and the atoms are their
+combinations. Both are ordinary scales, because every conversion routes
+through the atoms and a crosswalk carries the overlap of each pair of units;
+nothing is stored about the relationship between frames. Three queries report
+the structure a scale actually has:
+
+```{r}
+scale_nests(ind, "division", "activity")   # one parent per activity
+scale_crosses(ind, "division", "activity") # not a product
+scale_is_uniform(ind, "division")          # divisions differ in size
+```
+
+```{r, eval = has_ts, purl = FALSE}
+scale_nests(cal, "MONTH", "HOUR")          # an hour belongs to every month
+scale_crosses(cal, "MONTH", "HOUR")        # the frames form a product
+scale_is_uniform(cal, "MONTH")             # 24 atoms in every month
+```
+
+What the order of `frames` does decide is direction. `scale_rank()` is the
+position in that vector, and the rules that need a notion of "coarser" use
+it: `"share"` needs a parent frame that nests, residuals aggregate upward
+only, and `reconcile_scale()` compares against the coarser frame. For a tree
+the order is forced; for an overlay it is a convention the author sets, and
+it should list first the frame they think of as the coarser one.
+
 ## Turning it into a package
 
 Inside a script, methods can be registered directly, as above. A package

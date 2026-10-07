@@ -7,9 +7,9 @@
 
 <!-- badges: end -->
 
-Nested discrete scales for optimization and simulation models, without
-naming the dimension. A **scale** is a flat table of *atoms* plus the
-ordered *frames* that group them — and that shape fits time, space,
+Discrete scales for optimization and simulation models, without naming
+the dimension. A **scale** is a flat table of *atoms* plus the *frames*
+that group them, nested or overlapping — and that shape fits time, space,
 industries, income brackets, temperature regimes or technology vintages
 equally well.
 

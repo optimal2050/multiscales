@@ -39,6 +39,8 @@ reference:
   - scale_family
   - scale_ancestry
   - scale_nests
+  - scale_crosses
+  - scale_is_uniform
   - scale_share
   - scale_coverage
 - title: Subsetting

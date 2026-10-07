@@ -18,6 +18,11 @@
 * `scale_family()`, `scale_ancestry()`, `scale_nests()`, `scale_children()`,
   `scale_parents()`, `scale_descendants()` and `scale_ancestors()` navigate
   the hierarchy; `scale_share()` and `scale_coverage()` report weights.
+* Frames need not nest. `scale_nests()`, `scale_crosses()` and
+  `scale_is_uniform()` report the structure a pair of frames (or one frame)
+  actually has, computed from the atoms; the order of `frames` is the
+  convention the direction-dependent rules (`share`, residuals,
+  reconciliation) follow.
 * `filter_scale()` (or `x[frame, unit]`) and `prune_scale()` subset and
   collapse a scale, recording the result's coverage of the original.
 * `scale_class()`, `scale_is()` and their product counterparts stand in for

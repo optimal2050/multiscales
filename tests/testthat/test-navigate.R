@@ -69,3 +69,39 @@ test_that("scale_coverage() reads the bookkeeping when present", {
   expect_output(print(summary(sampled)), "SAMPLED")
   expect_output(print(summary(sampled)), "of 'tidy'")
 })
+
+# scale_crosses() / scale_is_uniform(): structure a frame pair actually has --
+
+test_that("scale_crosses() tells a product apart from a tree", {
+  s <- scale_example()
+  expect_true(scale_nests(s, "sector", "class"))
+  expect_false(scale_crosses(s, "sector", "class"))
+  expect_false(scale_nests(s, "class", "group"))  # GB sits under G2 and S1
+  no <- scale_crosses(s, "class", "group")
+  expect_false(no)
+  expect_true(length(attr(no, "offenders")) > 0)
+
+  grid <- expand.grid(m = c("m1", "m2"), h = c("h1", "h2", "h3"),
+                      stringsAsFactors = FALSE)
+  grid$unit <- paste(grid$m, grid$h, sep = "_")
+  mh <- scale_from_leaftable(grid, frames = c("m", "h"), key = "unit")
+  expect_true(scale_crosses(mh, "m", "h"))
+  expect_true(scale_crosses(mh, "h", "m"))
+  expect_false(scale_nests(mh, "m", "h"))
+  expect_identical(scale_atom_level(mh), "unit")
+
+  grid2 <- grid[-1, ]                      # drop m1_h1: no longer a product
+  mh2 <- scale_from_leaftable(grid2, frames = c("m", "h"), key = "unit")
+  expect_false(scale_crosses(mh2, "m", "h"))
+})
+
+test_that("scale_is_uniform() compares atom counts or weight totals", {
+  s <- scale_example()
+  expect_true(scale_is_uniform(s, "unit"))
+  expect_true(scale_is_uniform(s, "class"))   # two atoms in each class
+  by_size <- scale_is_uniform(s, "class", weight = "size")
+  expect_false(by_size)
+  expect_named(attr(by_size, "sizes"), c("G1", "G2", "S1"))
+  expect_error(scale_is_uniform(s, "class", weight = "nope"), "unknown weight")
+  expect_error(scale_is_uniform(s, "nope"), "frame")
+})

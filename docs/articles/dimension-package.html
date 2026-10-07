@@ -398,13 +398,55 @@ which case applies:</p>
 the same way, with no extra code.</p>
 </div>
 <div class="section level2">
+<h2 id="trees-and-overlays">Trees and overlays<a class="anchor" aria-label="anchor" href="#trees-and-overlays"></a>
+</h2>
+<p>Frames do not have to nest. In the industry scale every activity
+belongs to exactly one division: the frames form a tree. In
+<code>m12_h24</code> an hour of the day belongs to every month: the two
+frames overlay, and the atoms are their combinations. Both are ordinary
+scales, because every conversion routes through the atoms and a
+crosswalk carries the overlap of each pair of units; nothing is stored
+about the relationship between frames. Three queries report the
+structure a scale actually has:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/scale_nests.html">scale_nests</a></span><span class="op">(</span><span class="va">ind</span>, <span class="st">"division"</span>, <span class="st">"activity"</span><span class="op">)</span>   <span class="co"># one parent per activity</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="fu"><a href="../reference/scale_crosses.html">scale_crosses</a></span><span class="op">(</span><span class="va">ind</span>, <span class="st">"division"</span>, <span class="st">"activity"</span><span class="op">)</span> <span class="co"># not a product</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span>
+<span><span class="co">#&gt; attr(,"offenders")</span></span>
+<span><span class="co">#&gt; [1] "C24" "D35"</span></span>
+<span><span class="fu"><a href="../reference/scale_is_uniform.html">scale_is_uniform</a></span><span class="op">(</span><span class="va">ind</span>, <span class="st">"division"</span><span class="op">)</span>          <span class="co"># divisions differ in size</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span>
+<span><span class="co">#&gt; attr(,"sizes")</span></span>
+<span><span class="co">#&gt; C10 C24 D35 </span></span>
+<span><span class="co">#&gt;   2   1   2</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/scale_nests.html">scale_nests</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"MONTH"</span>, <span class="st">"HOUR"</span><span class="op">)</span>          <span class="co"># an hour belongs to every month</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span>
+<span><span class="co">#&gt; attr(,"offenders")</span></span>
+<span><span class="co">#&gt;  [1] "h00" "h01" "h02" "h03" "h04" "h05" "h06" "h07" "h08" "h09" "h10" "h11"</span></span>
+<span><span class="co">#&gt; [13] "h12" "h13" "h14" "h15" "h16" "h17" "h18" "h19" "h20" "h21" "h22" "h23"</span></span>
+<span><span class="fu"><a href="../reference/scale_crosses.html">scale_crosses</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"MONTH"</span>, <span class="st">"HOUR"</span><span class="op">)</span>        <span class="co"># the frames form a product</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="fu"><a href="../reference/scale_is_uniform.html">scale_is_uniform</a></span><span class="op">(</span><span class="va">cal</span>, <span class="st">"MONTH"</span><span class="op">)</span>             <span class="co"># 24 atoms in every month</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>What the order of <code>frames</code> does decide is direction.
+<code><a href="../reference/scale_rank.html">scale_rank()</a></code> is the position in that vector, and the rules
+that need a notion of “coarser” use it: <code>"share"</code> needs a
+parent frame that nests, residuals aggregate upward only, and
+<code><a href="../reference/reconcile_scale.html">reconcile_scale()</a></code> compares against the coarser frame. For a
+tree the order is forced; for an overlay it is a convention the author
+sets, and it should list first the frame they think of as the coarser
+one.</p>
+</div>
+<div class="section level2">
 <h2 id="turning-it-into-a-package">Turning it into a package<a class="anchor" aria-label="anchor" href="#turning-it-into-a-package"></a>
 </h2>
 <p>Inside a script, methods can be registered directly, as above. A
 package registers them on the discretescales generics with S7’s external
 generics, so that discretescales finds them without depending on the
 package:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># R/industry-class.R</span></span>
 <span><span class="va">.scale_vocab_generic</span> <span class="op">&lt;-</span> <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/new_external_generic.html" class="external-link">new_external_generic</a></span><span class="op">(</span></span>
 <span>  <span class="st">"discretescales"</span>,</span>
@@ -430,7 +472,7 @@ their own, because their conversions take extra arguments – timescales
 needs a <code>year</code> to place a calendar on real dates – and
 re-export the generic so that <code><a href="https://optimal2050.github.io/timescales/r/" class="external-link">library(timescales)</a></code> or
 <code><a href="https://optimal2050.github.io/geoscales/r/" class="external-link">library(geoscales)</a></code> alone provides it:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">.recast_generic</span> <span class="op">&lt;-</span> <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="https://rconsortium.github.io/S7/reference/new_external_generic.html" class="external-link">new_external_generic</a></span><span class="op">(</span></span>
 <span>  <span class="st">"discretescales"</span>, <span class="st">"recast"</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"from"</span><span class="op">)</span></span>

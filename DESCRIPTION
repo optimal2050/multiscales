@@ -1,5 +1,5 @@
 Package: discretescales
-Title: Nested Scales and Multi-Dimensional Indexes for Modeling
+Title: Discrete Scales and Multi-Dimensional Indexes for Modeling
 Version: 0.1.0
 URL: https://optimal2050.github.io/discretescales/r/,
     https://optimal2050.github.io/discretescales/,
@@ -11,9 +11,10 @@ Authors@R:
            role = c("aut", "cre"),
            email = "olugovoy@optimalsolution.dev",
            comment = c(ORCID = "0000-0001-5546-9875"))
-Description: A dimension-agnostic representation of nested discrete scales for
-    optimization and simulation models: a flat table of atoms plus the ordered
-    frames that group them, conversion of data between resolutions, and
+Description: A dimension-agnostic representation of discrete scales for
+    optimization and simulation models: a flat table of atoms plus the frames
+    that group them, nested or overlapping, conversion of data between
+    resolutions, and
     combination of several scales into a product index. Time and space are
     provided by the companion packages 'timescales' and 'geoscales'; any other
     dimension - industries, income brackets, temperature regimes - is declared

@@ -1,4 +1,4 @@
-# multiscales 0.1.0.9000
+# multiscales 0.1.0
 
 * First release. multiscales is the dimension-agnostic core under
   [timescales](https://github.com/optimal2050/timescales) and

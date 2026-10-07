@@ -42,7 +42,7 @@ Declare the hierarchy, coarsest frame first:
 library(multiscales)
 
 industries <- data.frame(
-  section  = c("C",   "C",   "C",   "D",   "D"),
+  section  = c("C", "C", "C", "D", "D"),
   division = c("C10", "C10", "C11", "D35", "D35"),
   class    = c("C101", "C102", "C110", "D351", "D352"),
   gva      = c(120, 80, 45, 300, 150)

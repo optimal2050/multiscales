@@ -19,7 +19,7 @@ NULL
 .sample_meta <- function(x, meta, kept, tag) {
   wts <- scale_weights(x)
   leaves <- S7::prop(x, "leaftable")
-  totals <- meta$parent_totals
+  totals <- meta[["parent_totals"]]
   if (is.null(totals)) {
     totals <- vapply(
       wts, function(w) sum(leaves[[w]], na.rm = TRUE),
@@ -32,7 +32,7 @@ NULL
     numeric(1)
   )
   names(cov) <- wts
-  base <- meta$parent_name %||% meta$name
+  base <- meta[["parent_name"]] %||% meta[["name"]]
   meta$parent_totals <- totals
   meta$coverage <- cov
   meta$parent_name <- base
@@ -231,14 +231,14 @@ prune_scale <- function(x, frame) {
   if (!all(covered)) { # NA atoms dropped = coverage loss
     new_meta <- .sample_meta(x, new_meta, kept = leaves, tag = "")
   }
-  new_meta$parent_name <- meta$name
-  new_meta$name <- paste0(meta$name, "@", frame)
+  new_meta$parent_name <- meta[["name"]] %||% ""
+  new_meta$name <- paste0(meta[["name"]] %||% "", "@", frame)
 
   s <- scale_from_leaftable(
     out,
     frames = keep_fr, key = akey, weights = wts,
-    default_weight = meta$default_weight,
-    name = new_meta$name, desc = meta$desc %||% ""
+    default_weight = meta[["default_weight"]],
+    name = new_meta$name, desc = meta[["desc"]] %||% ""
   )
   full_meta <- utils::modifyList(new_meta, S7::prop(s, "meta")[
     c("weights", "default_weight")

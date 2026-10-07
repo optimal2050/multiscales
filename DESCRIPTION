@@ -1,7 +1,6 @@
 Package: multiscales
 Title: Nested Scales and Multi-Dimensional Indexes for Modeling
-Version: 0.1.0.9000
-Date: 2026-10-05
+Version: 0.1.0
 URL: https://optimal2050.github.io/multiscales/r/,
     https://optimal2050.github.io/multiscales/,
     https://github.com/optimal2050/multiscales
@@ -35,17 +34,14 @@ Suggests:
     cluster,
     data.table,
     dtplyr,
-    geoscales,
     ggplot2,
     knitr,
     pkgdown,
     rmarkdown,
     testthat (>= 3.0.0),
     tibble,
-    timescales,
     withr,
     yaml
-Remotes: optimal2050/geoscales, optimal2050/timescales
 Config/testthat/edition: 3
 Config/Needs/website: pkgdown, rmarkdown, ggplot2
 VignetteBuilder: knitr

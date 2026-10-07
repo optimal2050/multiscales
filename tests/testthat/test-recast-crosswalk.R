@@ -42,6 +42,14 @@ test_that("sum splits by n_overlap / n_from, or by w / w_from when given", {
   map$w_from <- 4
   out <- recast_crosswalk(d, map, from = "src", to = "tgt", rule = "sum")
   expect_equal(out$v, c(25, 75))
+
+  # w_from without w: the count split applies, and `w` must not be read as
+  # `w_from` by partial matching (which gave a factor of 1 for every pair)
+  map$w <- NULL
+  expect_no_warning(
+    out <- recast_crosswalk(d, map, from = "src", to = "tgt", rule = "sum")
+  )
+  expect_equal(out$v, c(40, 60))
 })
 
 test_that("identifiers are kept as groups and `by` matches crosswalk columns", {

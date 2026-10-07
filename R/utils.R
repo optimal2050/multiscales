@@ -32,7 +32,7 @@
 #' named after the object, so those operations need a non-empty name.
 #' @noRd
 .scale_name <- function(x, require = TRUE, arg = "x") {
-  nm <- S7::prop(x, "meta")$name %||% ""
+  nm <- S7::prop(x, "meta")[["name"]] %||% ""
   if (require && (!is.character(nm) || length(nm) != 1L || is.na(nm) ||
     !nzchar(nm))) {
     .stop(paste0(

@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r, include = FALSE, purl = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 has_ts <- requireNamespace("timescales", quietly = TRUE)
 has_gs <- requireNamespace("geoscales", quietly = TRUE)
@@ -48,7 +48,7 @@ Both classes are subclasses of `Scale`, so each package adds what is special
 about its dimension and gets the conversion machinery from multiscales. A
 `Calendar` is a `Scale`:
 
-```{r, eval = has_ts}
+```{r, eval = has_ts, purl = FALSE}
 cal <- timescales::calendar("m12_h24") # 12 months x 24 hours
 scale_is(cal)
 scale_frames(cal)
@@ -57,7 +57,7 @@ head(scale_leaftable(cal), 3)
 
 and so is a `Geoscale`:
 
-```{r, eval = has_gs}
+```{r, eval = has_gs, purl = FALSE}
 gs <- geoscales::geoscale_example()
 scale_is(gs)
 scale_frames(gs)
@@ -67,7 +67,7 @@ head(scale_leaftable(gs), 3)
 so the functions of this package work on either. Hourly load summed to
 months uses the same `recast_scale()` as any other scale:
 
-```{r, eval = has_ts}
+```{r, eval = has_ts, purl = FALSE}
 load <- data.frame(timeslice = scale_units(cal), mw = 1)
 head(recast_scale(load, cal, from = "timeslice", to = "MONTH", rule = "sum"), 3)
 ```
@@ -75,7 +75,7 @@ head(recast_scale(load, cal, from = "timeslice", to = "MONTH", rule = "sum"), 3)
 and the regions of country `N` come from the same navigation function as
 anything else:
 
-```{r, eval = has_gs}
+```{r, eval = has_gs, purl = FALSE}
 scale_children(gs, "country", "N")
 ```
 
@@ -235,7 +235,7 @@ recast_scale(jobs, ind,
 This is why a calendar's errors talk about timeframes and a region
 hierarchy's about geoframes:
 
-```{r, eval = has_ts, error = TRUE}
+```{r, eval = has_ts, error = TRUE, purl = FALSE}
 scale_vocab(cal)$frame
 recast_scale(load, cal, from = "timeslice", to = "WEEK", rule = "sum")
 ```
@@ -286,7 +286,7 @@ taking the atoms from the key column when no frame lists them.
 scale_atom_level(ind)
 ```
 
-```{r, eval = has_ts}
+```{r, eval = has_ts, purl = FALSE}
 scale_atom_level(cal)
 length(scale_units(cal))
 ```

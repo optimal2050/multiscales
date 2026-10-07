@@ -97,7 +97,7 @@ ScaleProduct <- S7::new_class(
         next
       }
       # the crosswalk and join machinery is keyed by the object's name
-      anm <- S7::prop(a, "meta")$name %||% ""
+      anm <- S7::prop(a, "meta")[["name"]] %||% ""
       if (!nzchar(anm)) {
         errs <- c(errs, sprintf(
           paste0(
@@ -346,7 +346,7 @@ product_weights <- function(x) {
 product_coverage <- function(x, weight = NULL) {
   .check_product(x)
   vapply(S7::prop(x, "axes"), function(a) {
-    w <- weight %||% (S7::prop(a, "meta")$default_weight %||%
+    w <- weight %||% (S7::prop(a, "meta")[["default_weight"]] %||%
       (if (length(scale_weights(a))) {
         scale_weights(a)[[1L]]
       } else {
@@ -431,10 +431,10 @@ print.ScaleProduct <- function(x, ...) {
   sz <- product_size(x)
   meta <- S7::prop(x, "meta")
 
-  nm <- meta$name %||% ""
+  nm <- meta[["name"]] %||% ""
   cat("ScaleProduct:", if (nzchar(nm)) nm else "<unnamed>", "\n")
-  if (!is.null(meta$desc) && nzchar(meta$desc)) {
-    cat("Description:", meta$desc, "\n")
+  if (!is.null(meta[["desc"]]) && nzchar(meta[["desc"]])) {
+    cat("Description:", meta[["desc"]], "\n")
   }
   cat("Axes (", length(axes), "):\n", sep = "")
   w <- max(nchar(names(axes)))
@@ -442,7 +442,7 @@ print.ScaleProduct <- function(x, ...) {
     a <- axes[[ax]]
     v <- scale_vocab(a)
     cat("  ", format(ax, width = w), " : ", v$object, " '",
-      S7::prop(a, "meta")$name %||% "", "'  ",
+      S7::prop(a, "meta")[["name"]] %||% "", "'  ",
       paste(scale_frames(a), collapse = "/"),
       "  atoms ", format(sz$axes[[ax]], big.mark = ","),
       "  key: ", keys[[ax]], "\n",
@@ -507,7 +507,7 @@ summary.ScaleProduct <- function(object, ...) {
   rows <- data.frame(
     axis = names(axes),
     scale = vapply(
-      axes, function(a) S7::prop(a, "meta")$name %||% "",
+      axes, function(a) S7::prop(a, "meta")[["name"]] %||% "",
       character(1)
     ),
     frames = vapply(axes, function(a) length(scale_frames(a)), integer(1)),

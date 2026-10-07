@@ -17,11 +17,6 @@
                    requireNamespace("data.table", quietly = TRUE),
     "arrow"      = requireNamespace("arrow", quietly = TRUE),
     FALSE)
-    "dtplyr" = requireNamespace("dtplyr", quietly = TRUE) &&
-      requireNamespace("data.table", quietly = TRUE),
-    "arrow" = requireNamespace("arrow", quietly = TRUE),
-    FALSE
-  )
 }
 
 .bk_lazy <- function(bk) bk %in% c("dtplyr", "arrow")

@@ -218,12 +218,12 @@ scale_example2 <- function() {
 #' @export
 scale_example <- function() {
   df <- data.frame(
-    sector = c("P",  "P",  "P",  "P",  "S",  "S",  NA),
-    class  = c("G1", "G1", "G2", "G2", "S1", "S1", NA),
-    group  = c("G1", "G1", "GB", "GB", "GB", "GC", NA),
-    unit   = c("U1", "U2", "U3", "U4", "U5", "U6", "OTH"),
-    size   = c(100,  200,  300,  400,  500,  600,  1000),
-    count  = c(10,   90,   30,   70,   50,   50,   0),
+    sector = c("P", "P", "P", "P", "S", "S", NA),
+    class = c("G1", "G1", "G2", "G2", "S1", "S1", NA),
+    group = c("G1", "G1", "GB", "GB", "GB", "GC", NA),
+    unit = c("U1", "U2", "U3", "U4", "U5", "U6", "OTH"),
+    size = c(100, 200, 300, 400, 500, 600, 1000),
+    count = c(10, 90, 30, 70, 50, 50, 0),
     stringsAsFactors = FALSE
   )
   scale_from_leaftable(

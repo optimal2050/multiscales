@@ -627,7 +627,8 @@ recast_scale <- function(data, x, from = NULL, to,
   wide <- .widen_maps(maps, from, to, key, wt_of, res_targets)
   res <- .recast_pipeline(data, backend, wide$jmap, key, values, rules,
     id_cols, map_by, missing_sources, wide$sfx,
-    unit = v$unit
+    unit = v$unit,
+    check_copy = !(.ms_is_lazy(backend) && !isTRUE(collect))
   )
 
   if (!identical(key, to)) {
@@ -934,7 +935,7 @@ recast_scale <- function(data, x, from = NULL, to,
 .recast_pipeline <- function(data, backend, jmap, key, values, rules,
                              id_cols, map_by = character(),
                              missing_sources = "na", sfx = NULL,
-                             unit = "unit") {
+                             unit = "unit", check_copy = TRUE) {
   shared_ids <- intersect(map_by, id_cols)
 
   # THE JOIN. The crosswalk is the build side -- |map| rows, which is what the
@@ -998,7 +999,9 @@ recast_scale <- function(data, x, from = NULL, to,
       ))
   }
 
-  if (length(copy_cols) > 0L) {
+  # The constancy guard collects the aggregate; a caller that wants a lazy
+  # query passes check_copy = FALSE, as for the other diagnostics.
+  if (check_copy && length(copy_cols) > 0L) {
     .check_copy_result(res, copy_cols, backend, unit)
   }
 
@@ -1117,16 +1120,21 @@ recast_crosswalk <- function(data, map, from, to, key = from,
   map <- as.data.frame(map)
   jmap <- map[c(from, to, "n_from", "n_overlap", by)]
   names(jmap)[1:4] <- c(key, ".ms_to", ".ms_n_from", ".ms_n_overlap")
-  jmap$.ms_w <- if ("w" %in% names(map)) map$w else map$n_overlap
-  jmap$.ms_f <- if ("w_from" %in% names(map)) {
-    ifelse(map$w_from > 0, map$w / map$w_from, map$n_overlap / map$n_from)
+  # Weighted split needs both `w` and `w_from`; `[[` because `map$w` would
+  # partial-match `w_from` when `w` is absent.
+  has_w <- all(c("w", "w_from") %in% names(map))
+  jmap$.ms_w <- if ("w" %in% names(map)) map[["w"]] else map$n_overlap
+  jmap$.ms_f <- if (has_w) {
+    ifelse(map[["w_from"]] > 0, map[["w"]] / map[["w_from"]],
+           map$n_overlap / map$n_from)
   } else {
     map$n_overlap / map$n_from
   }
 
   res <- .recast_pipeline(data, backend, jmap, key, values, rules, ids,
     map_by = by, missing_sources = missing_sources,
-    unit = unit
+    unit = unit,
+    check_copy = !(.ms_is_lazy(backend) && !isTRUE(collect))
   )
   if (!identical(key, to)) {
     res <- dplyr::rename(res, !!rlang::sym(to) := !!rlang::sym(key))
@@ -1387,7 +1395,9 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
     dplyr::group_by(dplyr::across(dplyr::all_of(grp_cols))) |>
     dplyr::summarise(!!!exprs, .groups = "drop")
   if (length(copy_cols) > 0L) {
-    .check_copy_result(res, copy_cols, backend, scale_vocab(x)$unit)
+    if (!(.ms_is_lazy(backend) && !isTRUE(collect))) {
+      .check_copy_result(res, copy_cols, backend, scale_vocab(x)$unit)
+    }
     res <- dplyr::select(res, -dplyr::any_of(
       c(paste0(".ms_mx_", copy_cols), paste0(".ms_mn_", copy_cols))
     ))

@@ -153,9 +153,19 @@ cluster_scale <- function(data, x, k, frame = NULL, key = NULL, value = NULL,
   )
 }
 
-#' Seed without leaking the change out of the call
+#' Seed the RNG for the calling function only: the caller's `.Random.seed` is
+#' put back when that function exits.
 #' @noRd
-withr_seed <- function(seed) {
+withr_seed <- function(seed, envir = parent.frame()) {
+  old <- if (exists(".Random.seed", globalenv(), inherits = FALSE)) {
+    get(".Random.seed", globalenv(), inherits = FALSE)
+  }
+  restore <- if (is.null(old)) {
+    quote(rm(".Random.seed", envir = globalenv()))
+  } else {
+    bquote(assign(".Random.seed", .(old), envir = globalenv()))
+  }
+  do.call(on.exit, list(restore, add = TRUE), envir = envir)
   set.seed(seed)
   invisible(NULL)
 }
@@ -212,8 +222,8 @@ withr_seed <- function(seed) {
     lt,
     frames = new_frames, key = scale_key(x),
     weights = scale_weights(x),
-    default_weight = meta$default_weight,
-    name = meta$name %||% "", desc = meta$desc %||% ""
+    default_weight = meta[["default_weight"]],
+    name = meta[["name"]] %||% "", desc = meta[["desc"]] %||% ""
   )
   # keep everything the constructor does not take (source, labels, sampling)
   keep <- setdiff(names(meta), c("name", "desc", "weights", "default_weight"))

@@ -173,7 +173,8 @@ write_scale_dataset <- function(data, x, path, partitioning = NULL,
   axes <- if (is_prod) {
     S7::prop(x, "axes")
   } else {
-    stats::setNames(list(x), .scale_name(x, require = FALSE) %||% "scale")
+    nm <- .scale_name(x, require = FALSE)
+    stats::setNames(list(x), if (nzchar(nm)) nm else "scale")
   }
   keys <- if (is_prod) {
     product_keys(x)

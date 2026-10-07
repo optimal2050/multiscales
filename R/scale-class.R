@@ -80,10 +80,10 @@ Scale <- S7::new_class(
     errs <- character()
 
     leaftable <- S7::prop(self, "leaftable")
-    frames    <- S7::prop(self, "frames")
-    members   <- S7::prop(self, "members")
-    key       <- S7::prop(self, "key")
-    meta      <- S7::prop(self, "meta")
+    frames <- S7::prop(self, "frames")
+    members <- S7::prop(self, "members")
+    key <- S7::prop(self, "key")
+    meta <- S7::prop(self, "meta")
 
     # leaftable ---------------------------------------------------------------
     if (!is.data.frame(leaftable)) {
@@ -188,7 +188,7 @@ Scale <- S7::new_class(
     }
 
     # weights -----------------------------------------------------------------
-    wts <- meta$weights
+    wts <- meta[["weights"]]
     if (!is.null(wts)) {
       if (!is.character(wts) || anyNA(wts)) {
         errs <- c(errs, "`meta$weights` must be a character vector")
@@ -211,7 +211,7 @@ Scale <- S7::new_class(
             errs <- c(errs, sprintf("weight column `%s` sums to zero", w))
           }
         }
-        dw <- meta$default_weight
+        dw <- meta[["default_weight"]]
         if (!is.null(dw) && !(length(dw) == 1L && dw %in% wts)) {
           errs <- c(errs, "`meta$default_weight` must be one of `meta$weights`")
         }
@@ -520,7 +520,7 @@ S7::method(as.data.frame, Scale) <- as.data.frame.Scale
 #' @export
 scale_weights <- function(x) {
   .check_scale(x)
-  S7::prop(x, "meta")$weights %||% character()
+  S7::prop(x, "meta")[["weights"]] %||% character()
 }
 
 #' Subset a subclass's per-atom payload
@@ -681,7 +681,7 @@ scale_residuals <- function(x, frame = NULL) {
 .resolve_weight <- function(x, weight = NULL) {
   wts <- scale_weights(x)
   if (is.null(weight)) {
-    weight <- S7::prop(x, "meta")$default_weight %||%
+    weight <- S7::prop(x, "meta")[["default_weight"]] %||%
       (if (length(wts) > 0L) wts[[1L]] else NULL)
   }
   if (is.null(weight)) {
@@ -713,15 +713,15 @@ S7::method(format, Scale) <- function(x, ...) {
 #' @method print Scale
 print.Scale <- function(x, ...) {
   meta <- S7::prop(x, "meta")
-  f    <- S7::prop(x, "frames")
-  mb   <- S7::prop(x, "members")
-  lf   <- S7::prop(x, "leaftable")
-  v    <- scale_vocab(x)
+  f <- S7::prop(x, "frames")
+  mb <- S7::prop(x, "members")
+  lf <- S7::prop(x, "leaftable")
+  v <- scale_vocab(x)
 
-  name <- meta$name %||% ""
+  name <- meta[["name"]] %||% ""
   cat(v$object, ": ", if (nzchar(name)) name else "<unnamed>", "\n", sep = "")
-  if (!is.null(meta$desc) && nzchar(meta$desc)) {
-    cat("Description:", meta$desc, "\n")
+  if (!is.null(meta[["desc"]]) && nzchar(meta[["desc"]])) {
+    cat("Description:", meta[["desc"]], "\n")
   }
 
   cat(toupper(substring(v$frames, 1, 1)), substring(v$frames, 2),
@@ -742,13 +742,13 @@ print.Scale <- function(x, ...) {
 
   wts <- scale_weights(x)
   if (length(wts) > 0L) {
-    dw <- meta$default_weight %||% wts[[1L]]
+    dw <- meta[["default_weight"]] %||% wts[[1L]]
     cat("Weights: ", paste(wts, collapse = ", "),
       " (default: ", dw, ")\n",
       sep = ""
     )
   }
-  if (!is.null(meta$source)) cat("Source: ", meta$source, "\n", sep = "")
+  if (!is.null(meta[["source"]])) cat("Source: ", meta[["source"]], "\n", sep = "")
   invisible(x)
 }
 
@@ -783,10 +783,10 @@ S7::method(print, Scale) <- print.Scale
 #' @method summary Scale
 summary.Scale <- function(object, ...) {
   meta <- S7::prop(object, "meta")
-  lt   <- S7::prop(object, "leaftable")
-  fr   <- S7::prop(object, "frames")
-  wts  <- scale_weights(object)
-  cov  <- scale_coverage(object)
+  lt <- S7::prop(object, "leaftable")
+  fr <- S7::prop(object, "frames")
+  wts <- scale_weights(object)
+  cov <- scale_coverage(object)
 
   nesting <- NULL
   if (length(fr) > 1L) {

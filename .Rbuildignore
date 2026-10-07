@@ -12,6 +12,8 @@
 # Apache-2.0 is a standard R license abbreviation, so the text is not shipped.
 ^LICENSE$
 ^multiscales\.Rcheck$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
 ^.*\.tar\.gz$
 ^dev$
 ^drafts$

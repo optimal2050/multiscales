@@ -29,7 +29,7 @@ NULL
 #' default; can also close it.
 #'
 #' @param data The fine data, keyed at `from`.
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param from,to Frame names: where the data is, and the coarser frame whose
 #'   totals it is checked against.
 #' @param totals The independent parent figures: a table keyed at `to`
@@ -249,7 +249,7 @@ reconcile_scale <- function(data, x, from, to, totals,
   out
 }
 
-#' DiscreteScale each group's children so the group hits its target
+#' NestedScale each group's children so the group hits its target
 #' @noRd
 .balance_proportional <- function(data, x, from, to, key, id_cols, gap) {
   fam <- scale_family(x, to, from)

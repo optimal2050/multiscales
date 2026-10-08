@@ -7,7 +7,7 @@
 scale_ancestry(x)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 }
 \value{
 A \code{data.frame} with columns \code{parent_frame}, \code{parent},

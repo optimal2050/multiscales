@@ -7,7 +7,7 @@
 scale_crosses(x, a, b)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{a, b}{Frame names.}
 }

@@ -2,15 +2,15 @@
 % Please edit documentation in R/scale-class.R
 \name{scale_frames}
 \alias{scale_frames}
-\alias{names.DiscreteScale}
-\title{Frames of a DiscreteScale}
+\alias{names.NestedScale}
+\title{Frames of a NestedScale}
 \usage{
 scale_frames(x, finest = FALSE)
 
-\method{names}{DiscreteScale}(x)
+\method{names}{NestedScale}(x)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{finest}{Return only the finest (atom) frame.}
 }

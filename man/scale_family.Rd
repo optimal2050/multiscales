@@ -7,7 +7,7 @@
 scale_family(x, parent = NULL, child = NULL)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{parent, child}{Frame names. Defaults to every adjacent pair in
 \code{x@frames}.}

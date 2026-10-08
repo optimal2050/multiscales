@@ -116,7 +116,7 @@ NULL
       function(z) as.character(unlist(z))
     )
   }
-  DiscreteScale(
+  NestedScale(
     leaftable = as.data.frame(leaftable),
     frames = as.character(unlist(entry$frames)),
     members = members,
@@ -132,7 +132,7 @@ NULL
 #' can be recast without re-declaring anything.
 #'
 #' @param data The table to write, in any supported backend.
-#' @param x The [`DiscreteScale`] or [`ScaleProduct`] the data is indexed by.
+#' @param x The [`NestedScale`] or [`ScaleProduct`] the data is indexed by.
 #' @param path Directory to create. It must not already contain a store
 #'   unless `overwrite = TRUE`.
 #' @param partitioning Columns to partition the data by (hive style). `NULL`
@@ -212,7 +212,7 @@ write_scale_dataset <- function(data, x, path, partitioning = NULL,
   # Scales first: if one of them cannot be serialised, fail before writing
   # gigabytes of data that would then describe nothing.
   manifest <- list(
-    discretescales = as.character(utils::packageVersion("discretescales")),
+    nestedscales = as.character(utils::packageVersion("nestedscales")),
     kind = if (is_prod) "product" else "scale",
     keys = as.list(keys),
     axes = lapply(axes, .scale_manifest)
@@ -242,7 +242,7 @@ write_scale_dataset <- function(data, x, path, partitioning = NULL,
 #' @param path A folder written by [`write_scale_dataset()`].
 #'
 #' @return A `scale_dataset`: a list with `data` (a lazily-read arrow
-#'   Dataset) and `scale` (the [`DiscreteScale`] or [`ScaleProduct`] it is indexed
+#'   Dataset) and `scale` (the [`NestedScale`] or [`ScaleProduct`] it is indexed
 #'   by). Feed them to the verbs as
 #'   `recast_scale(ds$data, ds$scale, ...)`.
 #'

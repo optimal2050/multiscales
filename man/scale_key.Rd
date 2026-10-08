@@ -7,7 +7,7 @@
 scale_key(x)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 }
 \value{
 A single string.

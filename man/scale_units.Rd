@@ -2,12 +2,12 @@
 % Please edit documentation in R/scale-class.R
 \name{scale_units}
 \alias{scale_units}
-\title{Units of a DiscreteScale}
+\title{Units of a NestedScale}
 \usage{
 scale_units(x, frame = NULL)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{frame}{A single frame name; defaults to the finest frame (the atoms).}
 }

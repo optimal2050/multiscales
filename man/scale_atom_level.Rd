@@ -7,14 +7,14 @@
 scale_atom_level(x)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 }
 \value{
 A single string -- a frame name, or the key.
 }
 \description{
 The finest frame when one code of it sits on each leaftable row, and the
-key column otherwise. A \code{\link{DiscreteScale}} built from a nested hierarchy is the
+key column otherwise. A \code{\link{NestedScale}} built from a nested hierarchy is the
 first kind; a \code{timescales::Calendar} is the second, because its timeslices
 are combinations of its frames rather than codes of any one of them.
 }

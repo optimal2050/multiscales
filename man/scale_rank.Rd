@@ -7,7 +7,7 @@
 scale_rank(x, frame)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{frame}{Character vector of frame names.}
 }

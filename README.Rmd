@@ -13,34 +13,45 @@ knitr::opts_chunk$set(
 )
 ```
 
-# discretescales
+# nestedscales
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-Discrete scales for optimization and simulation models, without naming the
+Nested scales for optimization and simulation models, without naming the
 dimension. A **scale** is a flat table of *atoms* plus the *frames* that
-group them, nested or overlapping — and that shape fits time, space,
+group them. Every frame nests in the atoms; frames need not nest in each
+other, so overlapping layers are ordinary. That shape fits time, space,
 industries, income brackets, temperature regimes or technology vintages
 equally well.
 
-`discretescales` is the engine under [timescales](https://github.com/optimal2050/timescales)
+`nestedscales` is the engine under [timescales](https://github.com/optimal2050/timescales)
 (calendars) and [geoscales](https://github.com/optimal2050/geoscales)
-(regions), whose classes are subclasses of `DiscreteScale`. Use it directly for any
+(regions), whose classes are subclasses of `NestedScale`. Use it directly for any
 other dimension.
 
 ## Installation
 
+From CRAN:
+
 ```r
-pak::pkg_install("optimal2050/discretescales")
+install.packages("nestedscales")
 ```
+
+The development version from GitHub:
+
+```r
+pak::pkg_install("optimal2050/nestedscales")
+```
+
+The package is pure R; its hard dependencies are dplyr, rlang and S7.
 
 ## A scale in one call
 
 Declare the hierarchy, coarsest frame first:
 
 ```{r example}
-library(discretescales)
+library(nestedscales)
 
 industries <- data.frame(
   section  = c("C", "C", "C", "D", "D"),
@@ -87,6 +98,19 @@ summary(ind)
 * **Backend-agnostic.** The verbs are written on dplyr only, so the same
   pipeline runs on a `data.frame`, a `data.table`, or an arrow dataset;
   lazy inputs stay lazy.
+
+## Related packages
+
+* [scales](https://CRAN.R-project.org/package=scales) maps data to
+  graphical aesthetics; its discrete scales are palettes and label
+  formatters, not resolutions of a model dimension.
+* [data.tree](https://CRAN.R-project.org/package=data.tree) represents
+  strict trees as node objects. nestedscales keeps the hierarchy as a flat
+  atom table, allows frames that cross-cut, and converts data between any
+  two frames with weights.
+* [hts](https://CRAN.R-project.org/package=hts) reconciles forecasts across a
+  fixed aggregation tree; `reconcile_scale()` here balances observed data
+  against a total, for any scale and rule.
 
 ## License
 

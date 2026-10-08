@@ -7,7 +7,7 @@
 scale_payload_slice(x, ...)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{...}{Method arguments: \code{i}, the integer vector of kept leaftable row
 indices.}
@@ -19,7 +19,7 @@ indices.}
 The seam a dimension package overrides when it carries per-atom data
 alongside the leaftable -- \code{geoscales::Geoscale} and its geometry. Called
 whenever the engine rebuilds an object from a row subset, with the kept row
-indices. The \code{DiscreteScale} default has no payload and returns \code{x} unchanged.
+indices. The \code{NestedScale} default has no payload and returns \code{x} unchanged.
 }
 \examples{
 identical(

@@ -6,7 +6,7 @@
 
 test_that("scale_product() combines named axes", {
   p <- .p2()
-  expect_s3_class(p, "discretescales::ScaleProduct")
+  expect_s3_class(p, "nestedscales::ScaleProduct")
   expect_identical(names(p), c("a", "b"))
   expect_identical(names(scale_axes(p)), c("a", "b"))
   expect_identical(S7::prop(scale_axes(p, "a"), "meta")$name, "example")
@@ -24,10 +24,10 @@ test_that("a product needs at least two axes", {
   expect_error(scale_product(a = scale_example()), "at least 2 axes")
 })
 
-test_that("axes must be named DiscreteScale objects", {
+test_that("axes must be named NestedScale objects", {
   expect_error(
     scale_product(a = scale_example(), b = 42),
-    "is not a DiscreteScale object"
+    "is not a NestedScale object"
   )
   # a scale with no name cannot key a crosswalk or a join column
   anon <- scale_from_leaftable(
@@ -150,7 +150,7 @@ test_that("joint_weights is accepted and validated but not required", {
     a = scale_example(), b = scale_example2(),
     joint_weights = jw
   )
-  expect_s3_class(q, "discretescales::ScaleProduct")
+  expect_s3_class(q, "nestedscales::ScaleProduct")
 
   expect_error(
     scale_product(
@@ -204,7 +204,7 @@ test_that("summary() returns the classed view and prints it", {
   expect_output(print(s), "example")
 })
 
-test_that("accessors reject a plain DiscreteScale", {
+test_that("accessors reject a plain NestedScale", {
   expect_error(product_keys(scale_example()), "must be a ScaleProduct")
   expect_error(scale_axes(scale_example()), "must be a ScaleProduct")
 })

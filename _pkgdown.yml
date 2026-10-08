@@ -1,4 +1,4 @@
-url: https://optimal2050.github.io/discretescales/
+url: https://optimal2050.github.io/nestedscales/
 
 home:
   sidebar:
@@ -18,7 +18,7 @@ reference:
   - scale_from_leaftable
   - scale_example
   - scale_example2
-  - DiscreteScale
+  - NestedScale
   - scale_class
   - scale_is
   - scale_frames
@@ -30,8 +30,8 @@ reference:
   - scale_atom_level
   - scale_residuals
   - is_valid_frame
-  - summary.DiscreteScale
-  - "`[.DiscreteScale`"
+  - summary.NestedScale
+  - "`[.NestedScale`"
 - title: Navigation and shares
   desc: Move between frames and report what a unit holds.
   contents:
@@ -101,7 +101,7 @@ reference:
   - open_scale_dataset
   - scale_dataset_info
 - title: Building a dimension package
-  desc: Hooks and helpers for packages that subclass DiscreteScale.
+  desc: Hooks and helpers for packages that subclass NestedScale.
   contents:
   - scale_alias_property
   - scale_vocab
@@ -110,4 +110,4 @@ reference:
   - starts_with(".ms_")
 - title: Package
   contents:
-  - discretescales-package
+  - nestedscales-package

@@ -6,8 +6,8 @@ test_that("the result is the scale with a new frame above the clustered one", {
   s <- three_group_scale()
   cl <- cluster_scale(three_group_data(), s, k = 3)
 
-  # Not expect_s3_class("DiscreteScale"): the class is spelled "DiscreteScale" or
-  # "discretescales::DiscreteScale" depending on how the package was loaded.
+  # Not expect_s3_class("NestedScale"): the class is spelled "NestedScale" or
+  # "nestedscales::NestedScale" depending on how the package was loaded.
   expect_true(scale_is(cl))
   expect_identical(
     scale_frames(cl),
@@ -110,7 +110,7 @@ test_that("labels = medoid names clusters after their representative", {
   expect_true(all(codes %in% scale_units(s)))
 })
 
-test_that("the cluster frame works with the rest of discretescales", {
+test_that("the cluster frame works with the rest of nestedscales", {
   s <- three_group_scale()
   cl <- cluster_scale(three_group_data(), s, k = 3, method = "hclust")
 

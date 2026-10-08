@@ -7,7 +7,7 @@
 scale_map(x, from, to, weight = NULL, by = character(), ...)
 }
 \arguments{
-\item{x}{The \code{\link{DiscreteScale}} the frames belong to.}
+\item{x}{The \code{\link{NestedScale}} the frames belong to.}
 
 \item{from, to}{Frame names of \code{x}.}
 

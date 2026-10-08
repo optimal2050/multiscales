@@ -9,14 +9,14 @@ vignette: >
 
 ```{r, include = FALSE, purl = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-# a twin built against an older core is not a DiscreteScale here; skip it as absent
+# a twin built against an older core is not a NestedScale here; skip it as absent
 has_ts <- requireNamespace("timescales", quietly = TRUE) &&
-  discretescales::scale_is(timescales::calendar("m12_h24"))
+  nestedscales::scale_is(timescales::calendar("m12_h24"))
 has_gs <- requireNamespace("geoscales", quietly = TRUE) &&
-  discretescales::scale_is(geoscales::geoscale_example())
+  nestedscales::scale_is(geoscales::geoscale_example())
 ```
 
-## What discretescales is for
+## What nestedscales is for
 
 Models rarely use data at the resolution it arrives in. Demand comes by hour
 and the model runs on twelve representative days; statistics come by
@@ -25,14 +25,14 @@ and the model has six sectors. Each of these is a *scale*: a set of fine
 units, the **atoms**, grouped into coarser levels, the **frames**. Hours sit
 inside days inside months; districts inside provinces inside countries.
 
-discretescales stores such a hierarchy as a `DiscreteScale` and converts data along it:
+nestedscales stores such a hierarchy as a `NestedScale` and converts data along it:
 summing extensive quantities, averaging intensive ones with the right
 weights, splitting coarse values down to fine units, and attaching group
 labels to a dataset. The same functions work whatever the dimension is,
 because a scale is just a table of atoms with one column per frame.
 
 ```{r setup}
-library(discretescales)
+library(nestedscales)
 ```
 
 ## Dimension packages
@@ -40,16 +40,16 @@ library(discretescales)
 Some dimensions need more than a table. Time has calendars, leap years,
 fiscal years, and a mapping from clock time to the model's time slices.
 Space has maps, geometry and coordinate systems. These live in **dimension
-packages** built on discretescales:
+packages** built on nestedscales:
 
 * **timescales** provides `Calendar`, a scale of time: a catalog of standard
   calendars, conversion from datetimes, calendar plots.
 * **geoscales** provides `Geoscale`, a scale of space: region hierarchies
   from data providers, geometry, maps.
 
-Both classes are subclasses of `DiscreteScale`, so each package adds what is special
-about its dimension and gets the conversion machinery from discretescales. A
-`Calendar` is a `DiscreteScale`:
+Both classes are subclasses of `NestedScale`, so each package adds what is special
+about its dimension and gets the conversion machinery from nestedscales. A
+`Calendar` is a `NestedScale`:
 
 ```{r, eval = has_ts, purl = FALSE}
 cal <- timescales::calendar("m12_h24") # 12 months x 24 hours
@@ -113,7 +113,7 @@ at each step how timescales and geoscales do the same thing.
 ## Step 1: a subclass
 
 A dimension class is an S7 class whose parent is `scale_class()`. (The
-`DiscreteScale` class itself is reached this way rather than exported; the
+`NestedScale` class itself is reached this way rather than exported; the
 package exports functions only.)
 
 Two parts are typical. A **constructor** fixes what is fixed for the
@@ -169,17 +169,17 @@ calls them `geoframes`, keys them by `region`, and carries geometry:
 # timescales
 Calendar <- S7::new_class(
   "Calendar",
-  parent = discretescales::scale_class(),
-  properties = list(timeframes = discretescales::scale_alias_property("frames")),
+  parent = nestedscales::scale_class(),
+  properties = list(timeframes = nestedscales::scale_alias_property("frames")),
   ...
 )
 
 # geoscales
 Geoscale <- S7::new_class(
   "Geoscale",
-  parent = discretescales::scale_class(),
+  parent = nestedscales::scale_class(),
   properties = list(
-    geoframes = discretescales::scale_alias_property("frames"),
+    geoframes = nestedscales::scale_alias_property("frames"),
     geometry  = S7::new_property(S7::class_any, default = NULL)
   ),
   ...
@@ -281,7 +281,7 @@ In the industry scale every activity belongs to one division and every
 division to one section: the frames nest, and the finest frame lists the
 atoms. Time does not work that way. In `m12_h24` the frames are months and
 hours of the day; an hour of the day is not inside a month, and the atoms --
-288 time slices -- are combinations of the two. discretescales handles this by
+288 time slices -- are combinations of the two. nestedscales handles this by
 taking the atoms from the key column when no frame lists them.
 `scale_atom_level()` reports which case applies:
 
@@ -329,13 +329,13 @@ it should list first the frame they think of as the coarser one.
 ## Turning it into a package
 
 Inside a script, methods can be registered directly, as above. A package
-registers them on the discretescales generics with S7's external generics, so
-that discretescales finds them without depending on the package:
+registers them on the nestedscales generics with S7's external generics, so
+that nestedscales finds them without depending on the package:
 
 ```{r, eval = FALSE}
 # R/industry-class.R
 .scale_vocab_generic <- S7::new_external_generic(
-  "discretescales",
+  "nestedscales",
   "scale_vocab", "x"
 )
 S7::method(.scale_vocab_generic, Industry) <- function(x, ...) {
@@ -351,11 +351,11 @@ S7::method(.scale_vocab_generic, Industry) <- function(x, ...) {
 }
 ```
 
-The DESCRIPTION names discretescales and S7:
+The DESCRIPTION names nestedscales and S7:
 
 ```
 Imports:
-    discretescales,
+    nestedscales,
     S7
 ```
 
@@ -366,7 +366,7 @@ a calendar on real dates -- and re-export the generic so that
 
 ```{r, eval = FALSE}
 .recast_generic <- S7::new_external_generic(
-  "discretescales", "recast",
+  "nestedscales", "recast",
   c("x", "from")
 )
 S7::method(.recast_generic, list(S7::class_any, Industry)) <-
@@ -374,9 +374,9 @@ S7::method(.recast_generic, list(S7::class_any, Industry)) <-
     recast_scale(x, from, to = to, ...)
   }
 
-#' @importFrom discretescales recast
+#' @importFrom nestedscales recast
 #' @export
-discretescales::recast
+nestedscales::recast
 ```
 
 When a dimension's conversions cannot be read off one scale's table --
@@ -391,8 +391,8 @@ the package builds the correspondence itself and hands it to
   under `pkgload::load_all()` it is plain `"Industry"`.
 * **Saved objects carry their class.** An object saved to `data/` or an
   `.rds` file records its class and parent. If either changes, the saved
-  object stops being a `DiscreteScale` and the shared functions reject it with
-  "`x` must be a DiscreteScale object". Rebuild saved objects after changing a class.
-* **Keep dimension-specific code in the dimension package.** discretescales
+  object stops being a `NestedScale` and the shared functions reject it with
+  "`x` must be a NestedScale object". Rebuild saved objects after changing a class.
+* **Keep dimension-specific code in the dimension package.** nestedscales
   depends on no dimension package, and nothing in it needs to know that
   calendars or regions exist.

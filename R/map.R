@@ -9,11 +9,11 @@
 #
 # Two shapes:
 #   * within ONE scale -- `from`/`to` are frame names of `x`;
-#   * across TWO scales -- `from`/`to` are DiscreteScale objects, matched on shared
+#   * across TWO scales -- `from`/`to` are NestedScale objects, matched on shared
 #     atom keys.
 #
 # The ADAPTER SEAM is `scale_atom_pairs()`: a dimension supplies the atom-level
-# (from, to, w) correspondence and everything downstream is shared. The `DiscreteScale`
+# (from, to, w) correspondence and everything downstream is shared. The `NestedScale`
 # default reads it straight from the leaftable, which is already the atom
 # enumeration. A dimension whose atom layer must be GENERATED rather than read
 # -- time, where the atoms are a datetime grid that depends on the year --
@@ -33,7 +33,7 @@ NULL
 #' rather than enumerated. Returns one row per atom (or per atom and extra
 #' identifier, e.g. per grid instant and year).
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param ... Method arguments: `from` and `to` (frame names of `x`), `weight`
 #'   (a weight column, or `NULL` for the scale's default), and whatever else
 #'   the dimension needs to generate its atoms -- `year` for a calendar.
@@ -47,7 +47,7 @@ NULL
 #' @export
 scale_atom_pairs <- S7::new_generic("scale_atom_pairs", "x")
 
-S7::method(scale_atom_pairs, DiscreteScale) <- function(x, from, to, weight = NULL,
+S7::method(scale_atom_pairs, NestedScale) <- function(x, from, to, weight = NULL,
                                                 ...) {
   leaves <- S7::prop(x, "leaftable")
   wcol <- .map_weight(x, weight)
@@ -76,7 +76,7 @@ S7::method(scale_atom_pairs, DiscreteScale) <- function(x, from, to, weight = NU
 #' label are atoms `to` does not cover. A crosswalk registered with
 #' [`register_scale_map()`] is returned as-is instead of being derived.
 #'
-#' @param x The [`DiscreteScale`] the frames belong to.
+#' @param x The [`NestedScale`] the frames belong to.
 #' @param from,to Frame names of `x`.
 #' @param weight Weight column for `w`. `NULL` uses the default weight; when
 #'   the object declares no weights at all, every atom gets weight 1 (an equal
@@ -95,7 +95,7 @@ S7::method(scale_atom_pairs, DiscreteScale) <- function(x, from, to, weight = NU
 #' scale_map(s, "sector", "class", weight = "count")
 #' @export
 scale_map <- function(x, from, to, weight = NULL, by = character(), ...) {
-  if (S7::S7_inherits(from, DiscreteScale) || S7::S7_inherits(to, DiscreteScale)) {
+  if (S7::S7_inherits(from, NestedScale) || S7::S7_inherits(to, NestedScale)) {
     .stop(paste0(
       "`from` and `to` are frame names of `x`; for the map between two ",
       "scales use `scale_map_between()`"
@@ -130,7 +130,7 @@ scale_map <- function(x, from, to, weight = NULL, by = character(), ...) {
 #' (with a warning). A crosswalk registered with
 #' [`register_scale_map_between()`] is returned as-is instead of being derived.
 #'
-#' @param from,to Two named [`DiscreteScale`] objects whose atom keys overlap.
+#' @param from,to Two named [`NestedScale`] objects whose atom keys overlap.
 #' @param weight Weight column of `from` for `w`; `NULL` uses its default
 #'   weight, or weight 1 per atom when it declares none.
 #'
@@ -259,9 +259,9 @@ scale_map_between <- function(from, to, weight = NULL) {
 #' different scales does not collide. `register_scale_map_between()` and
 #' `get_scale_map_between()` handle a pair of scales.
 #'
-#' @param x The [`DiscreteScale`] the frames belong to, or its name.
+#' @param x The [`NestedScale`] the frames belong to, or its name.
 #' @param from,to For the within-scale functions, frame names of `x`. For the
-#'   `_between` functions, two [`DiscreteScale`] objects or their names.
+#'   `_between` functions, two [`NestedScale`] objects or their names.
 #' @param map A `data.frame` shaped like a [`scale_map()`] result: the two
 #'   label columns named after the frames (or scales), plus `n_from`,
 #'   `n_overlap`, `w` and `w_from`. `NULL` removes a previously registered map.
@@ -316,7 +316,7 @@ register_scale_map_between <- function(from, to, map) {
   invisible(key)
 }
 
-#' A DiscreteScale's name, or a name given directly
+#' A NestedScale's name, or a name given directly
 #' @noRd
 .map_name_of <- function(z, arg) {
   if (is.character(z) && length(z) == 1L && nzchar(z)) {

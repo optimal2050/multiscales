@@ -1,14 +1,14 @@
-# discretescales 0.1.0
+# nestedscales 0.1.0
 
-* First release. discretescales is the dimension-agnostic core under
+* First release. nestedscales is the dimension-agnostic core under
   [timescales](https://github.com/optimal2050/timescales) and
   [geoscales](https://github.com/optimal2050/geoscales): their `Calendar` and
-  `Geoscale` classes are subclasses of its `DiscreteScale`, so every verb below works
+  `Geoscale` classes are subclasses of its `NestedScale`, so every verb below works
   on calendars and region hierarchies as well as on any other dimension.
 
 ## Scales
 
-* A `DiscreteScale` is a flat table of atoms plus the ordered frames that group them.
+* A `NestedScale` is a flat table of atoms plus the ordered frames that group them.
   Build one with `scale_from_leaftable()`; read it with `scale_frames()`,
   `scale_units()`, `scale_key()`, `scale_leaftable()`, `scale_weights()`,
   `scale_rank()` and `scale_atom_level()`.
@@ -94,7 +94,7 @@
 
 ## Building a dimension package
 
-* `vignette("dimension-package")` shows how to define a `DiscreteScale` subclass for a
+* `vignette("dimension-package")` shows how to define a `NestedScale` subclass for a
   new dimension, as timescales and geoscales do.
 * `scale_alias_property()` gives an inherited property the dimension's own
   name; `scale_vocab()` puts the dimension's words in error messages;
@@ -102,4 +102,4 @@
   rows are subset; `scale_atom_pairs()` lets a dimension generate its atom
   layer.
 * `.ms_backend()` and the other `.ms_*` helpers provide the backend handling
-  to packages built on discretescales.
+  to packages built on nestedscales.

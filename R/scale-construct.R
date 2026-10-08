@@ -7,10 +7,10 @@
 # `geoscales`) and delegate here.
 # =============================================================================
 
-#' Build a DiscreteScale from a flat table of atoms
+#' Build a NestedScale from a flat table of atoms
 #'
 #' The general constructor. Takes a wide `data.frame` with one row per atom
-#' (the finest unit) and one column per frame, and returns a [`DiscreteScale`].
+#' (the finest unit) and one column per frame, and returns a [`NestedScale`].
 #'
 #' Blank strings (`""`) in frame columns are normalised to `NA`, meaning "this
 #' atom has no code at this frame" -- partial coverage is normal in real
@@ -33,7 +33,7 @@
 #' @param ... Further named entries merged into `meta` (e.g. `source`,
 #'   `labels`).
 #'
-#' @return A [`DiscreteScale`].
+#' @return A [`NestedScale`].
 #'
 #' @examples
 #' df <- data.frame(
@@ -162,7 +162,7 @@ scale_from_leaftable <- function(leaftable,
     list(...)
   )
 
-  DiscreteScale(
+  NestedScale(
     leaftable = leaftable,
     frames    = frames,
     members   = members,
@@ -171,14 +171,14 @@ scale_from_leaftable <- function(leaftable,
   )
 }
 
-#' A second small example DiscreteScale
+#' A second small example NestedScale
 #'
 #' A different dimension from [`scale_example()`], for the examples that need
 #' two axes. Two frames, four atoms, its own key column (`period`) and a
 #' weight -- deliberately well behaved, so the awkwardness in an example stays
 #' on the other axis.
 #'
-#' @return A [`DiscreteScale`] with 4 atoms and frames `era`/`period`.
+#' @return A [`NestedScale`] with 4 atoms and frames `era`/`period`.
 #'
 #' @examples
 #' scale_example2()
@@ -198,7 +198,7 @@ scale_example2 <- function() {
   )
 }
 
-#' A small example DiscreteScale
+#' A small example NestedScale
 #'
 #' A synthetic 3-frame hierarchy used in examples and tests. It deliberately
 #' reproduces three awkward features of real classification tables:
@@ -209,7 +209,7 @@ scale_example2 <- function() {
 #'   different classes, so `class` and `group` do not form a tree;
 #' * a unit (`"OTH"`) with no code at any coarser frame (partial coverage).
 #'
-#' @return A [`DiscreteScale`] with 7 atoms and frames `sector`/`class`/`group`/`unit`.
+#' @return A [`NestedScale`] with 7 atoms and frames `sector`/`class`/`group`/`unit`.
 #'
 #' @examples
 #' s <- scale_example()

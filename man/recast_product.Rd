@@ -22,7 +22,7 @@ axis (see \code{\link[=product_keys]{product_keys()}}) plus the value columns.}
 \item{x}{A \code{\link{ScaleProduct}}.}
 
 \item{to}{Named list or character vector, one entry per axis to convert:
-either a frame name of that axis's scale, or another \code{\link{DiscreteScale}} to convert
+either a frame name of that axis's scale, or another \code{\link{NestedScale}} to convert
 into. Axes omitted pass through unchanged.}
 
 \item{values}{Value columns to convert. Default: all numeric columns that

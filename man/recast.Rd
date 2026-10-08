@@ -11,7 +11,7 @@ recast(x, from, ...)
 
 \item{from}{The scale to recast through.}
 
-\item{...}{Passed to the dispatched method: for a \code{\link{DiscreteScale}} the arguments of
+\item{...}{Passed to the dispatched method: for a \code{\link{NestedScale}} the arguments of
 \code{\link[=recast_scale]{recast_scale()}}, with \code{to} the target frame and \code{from_frame} the source
 frame (inferred when omitted); for a \code{\link{ScaleProduct}} those of
 \code{\link[=recast_product]{recast_product()}}.}
@@ -21,7 +21,7 @@ The recast data, in the input's class.
 }
 \description{
 The bare pipeline verb, dispatching on the scale so one entry point serves
-a \code{\link{DiscreteScale}}, a \code{\link{ScaleProduct}}, and the dimension subclasses in
+a \code{\link{NestedScale}}, a \code{\link{ScaleProduct}}, and the dimension subclasses in
 \code{timescales} and \code{geoscales}, which register their own methods against this
 generic. \code{\link[=recast_scale]{recast_scale()}} and \code{\link[=recast_product]{recast_product()}} are the explicit
 workers.

@@ -6,7 +6,7 @@
 # motivating case: an hourly year crossed with a European region hierarchy.
 # =========================================================================== #
 
-suppressMessages(library(discretescales))
+suppressMessages(library(nestedscales))
 
 BENCH_SCALE <- Sys.getenv("MULTISCALES_BENCH_SCALE", "small")
 BENCH_DIR   <- file.path("benchmark", "_data")

@@ -284,7 +284,7 @@ utils::globalVariables(c(
 #'
 #' The central conversion verb: takes a table keyed by unit code at frame
 #' `from` and returns one keyed at `to` -- a frame name of the same
-#' [`DiscreteScale`], or ANOTHER DiscreteScale (whose atom layer is the target, matched on
+#' [`NestedScale`], or ANOTHER NestedScale (whose atom layer is the target, matched on
 #' shared atom keys). Handles both aggregation (fine to coarse) and
 #' disaggregation (coarse to fine) with one rule per value column; frames that
 #' cross-cut work too, because the route always goes through the atom layer.
@@ -308,11 +308,11 @@ utils::globalVariables(c(
 #' @param data The data to recast, in any supported backend, with a column
 #'   named by `key` plus one or more numeric value columns; other columns are
 #'   preserved as identifiers.
-#' @param x The [`DiscreteScale`] the codes in `data` belong to.
+#' @param x The [`NestedScale`] the codes in `data` belong to.
 #' @param from Frame name the codes belong to. `NULL` (default) is inferred:
 #'   `key` when it is a frame name, else the single frame name appearing among
 #'   the data's columns.
-#' @param to Target frame name of `x`, or another (named) [`DiscreteScale`] -- then
+#' @param to Target frame name of `x`, or another (named) [`NestedScale`] -- then
 #'   the target is that object's atom layer, matched on shared atom keys.
 #' @param key Name of the code column in `data`. Defaults to `from` when that
 #'   column exists, otherwise the scale's own key.
@@ -424,8 +424,8 @@ recast_scale <- function(data, x, from = NULL, to,
     .stop("the data has no column named `%s`; pass `key=`", key)
   }
 
-  # -- cross-object route: `to` is another DiscreteScale ------------------------------
-  if (S7::S7_inherits(to, DiscreteScale)) {
+  # -- cross-object route: `to` is another NestedScale ------------------------------
+  if (S7::S7_inherits(to, NestedScale)) {
     if (any(rule %in% .SHARE_RULES)) {
       .stop(paste0(
         "rule \"share\" needs a parent frame of the same scale; ",
@@ -722,7 +722,7 @@ recast_scale <- function(data, x, from = NULL, to,
 #' @noRd
 .scale_scope <- function(x) {
   v <- scale_vocab(x)
-  if (identical(v$object, "DiscreteScale")) NULL else tolower(v$object)
+  if (identical(v$object, "NestedScale")) NULL else tolower(v$object)
 }
 
 #' Resolve the parent frame for rule "share"
@@ -1181,7 +1181,7 @@ recast_crosswalk <- function(data, map, from, to, key = from,
 #'
 #' @param data The data: for `recast_to_atoms()` keyed by unit code at frame
 #'   `from`; for `recast_from_atoms()` keyed by atom IDs.
-#' @param x The [`DiscreteScale`] the data is keyed in, or aggregated into.
+#' @param x The [`NestedScale`] the data is keyed in, or aggregated into.
 #' @param from `to_atoms` only: frame name the codes belong to. `NULL`
 #'   (default) is inferred as in [`recast_scale()`].
 #' @param to `from_atoms` only: target frame name.
@@ -1432,7 +1432,7 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
 #' Recast data through a scale
 #'
 #' The bare pipeline verb, dispatching on the scale so one entry point serves
-#' a [`DiscreteScale`], a [`ScaleProduct`], and the dimension subclasses in
+#' a [`NestedScale`], a [`ScaleProduct`], and the dimension subclasses in
 #' `timescales` and `geoscales`, which register their own methods against this
 #' generic. [`recast_scale()`] and [`recast_product()`] are the explicit
 #' workers.
@@ -1443,7 +1443,7 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
 #'
 #' @param x The data to recast.
 #' @param from The scale to recast through.
-#' @param ... Passed to the dispatched method: for a [`DiscreteScale`] the arguments of
+#' @param ... Passed to the dispatched method: for a [`NestedScale`] the arguments of
 #'   [`recast_scale()`], with `to` the target frame and `from_frame` the source
 #'   frame (inferred when omitted); for a [`ScaleProduct`] those of
 #'   [`recast_product()`].
@@ -1460,7 +1460,7 @@ recast_from_atoms <- function(data, x, to, key = NULL, values = NULL,
 #' @export
 recast <- S7::new_generic("recast", dispatch_args = c("x", "from"))
 
-S7::method(recast, list(S7::class_any, DiscreteScale)) <-
+S7::method(recast, list(S7::class_any, NestedScale)) <-
   function(x, from, to, from_frame = NULL, ...) {
     recast_scale(data = x, x = from, from = from_frame, to = to, ...)
   }

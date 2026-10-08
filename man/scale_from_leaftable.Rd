@@ -2,7 +2,7 @@
 % Please edit documentation in R/scale-construct.R
 \name{scale_from_leaftable}
 \alias{scale_from_leaftable}
-\title{Build a DiscreteScale from a flat table of atoms}
+\title{Build a NestedScale from a flat table of atoms}
 \usage{
 scale_from_leaftable(
   leaftable,
@@ -42,11 +42,11 @@ frame. Derived from \code{leaftable} when \code{NULL} (first-appearance order).}
 \code{labels}).}
 }
 \value{
-A \code{\link{DiscreteScale}}.
+A \code{\link{NestedScale}}.
 }
 \description{
 The general constructor. Takes a wide \code{data.frame} with one row per atom
-(the finest unit) and one column per frame, and returns a \code{\link{DiscreteScale}}.
+(the finest unit) and one column per frame, and returns a \code{\link{NestedScale}}.
 }
 \details{
 Blank strings (\code{""}) in frame columns are normalised to \code{NA}, meaning "this

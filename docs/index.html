@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Discrete Scales and Multi-Dimensional Indexes for Modeling • discretescales</title>
+<title>Nested Scales and Multi-Dimensional Indexes for Modeling • nestedscales</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Discrete Scales and Multi-Dimensional Indexes for Modeling">
-<meta property="og:description" content="A dimension-agnostic representation of discrete scales for optimization and simulation models: a flat table of atoms plus the frames that group them, nested or overlapping, conversion of data between resolutions, and combination of several scales into a product index. Time and space are provided by the companion packages timescales and geoscales; any other dimension - industries, income brackets, temperature regimes - is declared directly.">
+<script src="pkgdown.js"></script><meta property="og:title" content="Nested Scales and Multi-Dimensional Indexes for Modeling">
+<meta property="og:description" content="A dimension-agnostic representation of nested scales for optimization and simulation models: a flat table of atoms plus the frames that group them (every frame nests in the atoms, frames need not nest in each other), conversion of data between resolutions, and combination of several scales into a product index. Time and space are provided by the companion packages timescales and geoscales; any other dimension - industries, income brackets, temperature regimes - is declared directly.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -32,7 +32,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">discretescales</a>
+        <a class="navbar-link" href="index.html">nestedscales</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
@@ -60,7 +60,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/optimal2050/discretescales/" class="external-link">
+  <a href="https://github.com/optimal2050/nestedscales/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
 
   </a>
@@ -78,27 +78,32 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="discretescales">discretescales<a class="anchor" aria-label="anchor" href="#discretescales"></a>
+<div class="page-header"><h1 id="nestedscales">nestedscales<a class="anchor" aria-label="anchor" href="#nestedscales"></a>
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>Discrete scales for optimization and simulation models, without naming the dimension. A <strong>scale</strong> is a flat table of <em>atoms</em> plus the <em>frames</em> that group them, nested or overlapping — and that shape fits time, space, industries, income brackets, temperature regimes or technology vintages equally well.</p>
-<p><code>discretescales</code> is the engine under <a href="https://github.com/optimal2050/timescales" class="external-link">timescales</a> (calendars) and <a href="https://github.com/optimal2050/geoscales" class="external-link">geoscales</a> (regions), whose classes are subclasses of <code>DiscreteScale</code>. Use it directly for any other dimension.</p>
+<p>Nested scales for optimization and simulation models, without naming the dimension. A <strong>scale</strong> is a flat table of <em>atoms</em> plus the <em>frames</em> that group them. Every frame nests in the atoms; frames need not nest in each other, so overlapping layers are ordinary. That shape fits time, space, industries, income brackets, temperature regimes or technology vintages equally well.</p>
+<p><code>nestedscales</code> is the engine under <a href="https://github.com/optimal2050/timescales" class="external-link">timescales</a> (calendars) and <a href="https://github.com/optimal2050/geoscales" class="external-link">geoscales</a> (regions), whose classes are subclasses of <code>NestedScale</code>. Use it directly for any other dimension.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<p>From CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"optimal2050/discretescales"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"nestedscales"</span><span class="op">)</span></span></code></pre></div>
+<p>The development version from GitHub:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"optimal2050/nestedscales"</span><span class="op">)</span></span></code></pre></div>
+<p>The package is pure R; its hard dependencies are dplyr, rlang and S7.</p>
 </div>
 <div class="section level2">
 <h2 id="a-scale-in-one-call">A scale in one call<a class="anchor" aria-label="anchor" href="#a-scale-in-one-call"></a>
 </h2>
 <p>Declare the hierarchy, coarsest frame first:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://optimal2050.github.io/discretescales/r/">discretescales</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://optimal2050.github.io/nestedscales/">nestedscales</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">industries</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  section  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"C"</span>,   <span class="st">"C"</span>,   <span class="st">"C"</span>,   <span class="st">"D"</span>,   <span class="st">"D"</span><span class="op">)</span>,</span>
+<span>  section  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"D"</span><span class="op">)</span>,</span>
 <span>  division <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"C10"</span>, <span class="st">"C10"</span>, <span class="st">"C11"</span>, <span class="st">"D35"</span>, <span class="st">"D35"</span><span class="op">)</span>,</span>
 <span>  class    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"C101"</span>, <span class="st">"C102"</span>, <span class="st">"C110"</span>, <span class="st">"D351"</span>, <span class="st">"D352"</span><span class="op">)</span>,</span>
 <span>  gva      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">80</span>, <span class="fl">45</span>, <span class="fl">300</span>, <span class="fl">150</span><span class="op">)</span></span>
@@ -111,7 +116,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ind</span></span>
-<span><span class="co">#&gt; DiscreteScale: nace</span></span>
+<span><span class="co">#&gt; NestedScale: nace</span></span>
 <span><span class="co">#&gt; Frames (3, coarsest first):</span></span>
 <span><span class="co">#&gt;   - section (2)</span></span>
 <span><span class="co">#&gt;     - division (3)</span></span>
@@ -119,7 +124,7 @@
 <span><span class="co">#&gt; Atoms: 5</span></span>
 <span><span class="co">#&gt; Weights: gva (default: gva)</span></span></code></pre></div>
 <p>Every structural question is answered from the atoms, never from an assumed tree:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/scale_frames.html">scale_frames</a></span><span class="op">(</span><span class="va">ind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "section"  "division" "class"</span></span>
 <span><span class="fu"><a href="reference/scale_units.html">scale_units</a></span><span class="op">(</span><span class="va">ind</span>, <span class="st">"division"</span><span class="op">)</span></span>
@@ -127,10 +132,10 @@
 <span><span class="fu"><a href="reference/scale_nests.html">scale_nests</a></span><span class="op">(</span><span class="va">ind</span>, <span class="st">"section"</span>, <span class="st">"division"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 <p>Hierarchies that cross-cut are normal and supported — one detailed code may belong to several aggregates. <code><a href="reference/scale_nests.html">scale_nests()</a></code> tells you whether a given pair happens to nest; conversion never depends on it.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">ind</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;summary of DiscreteScale 'nace'&gt;</span></span>
-<span><span class="co">#&gt;   frames:        section (2) / division (3) / class (5)</span></span>
+<span><span class="co">#&gt; &lt;summary of NestedScale 'nace'&gt;</span></span>
+<span><span class="co">#&gt;   frames:         section (2) / division (3) / class (5)</span></span>
 <span><span class="co">#&gt;   atoms:          5</span></span>
 <span><span class="co">#&gt;   weight totals:  gva = 695  (default: gva)</span></span>
 <span><span class="co">#&gt;   nesting:        section &gt; division: nested</span></span>
@@ -151,6 +156,18 @@
 </ul>
 </div>
 <div class="section level2">
+<h2 id="related-packages">Related packages<a class="anchor" aria-label="anchor" href="#related-packages"></a>
+</h2>
+<ul>
+<li>
+<a href="https://CRAN.R-project.org/package=scales" class="external-link">scales</a> maps data to graphical aesthetics; its discrete scales are palettes and label formatters, not resolutions of a model dimension.</li>
+<li>
+<a href="https://CRAN.R-project.org/package=data.tree" class="external-link">data.tree</a> represents strict trees as node objects. nestedscales keeps the hierarchy as a flat atom table, allows frames that cross-cut, and converts data between any two frames with weights.</li>
+<li>
+<a href="https://CRAN.R-project.org/package=hts" class="external-link">hts</a> reconciles forecasts across a fixed aggregation tree; <code><a href="reference/reconcile_scale.html">reconcile_scale()</a></code> here balances observed data against a total, for any scale and rule.</li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
 <p>Apache License 2.0.</p>
@@ -162,8 +179,8 @@
     <div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/optimal2050/discretescales/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/optimal2050/discretescales/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/optimal2050/nestedscales/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/optimal2050/nestedscales/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
@@ -178,7 +195,7 @@
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li><a href="authors.html#citation">Citing discretescales</a></li>
+<li><a href="authors.html#citation">Citing nestedscales</a></li>
 </ul>
 </div>
 

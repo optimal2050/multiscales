@@ -43,7 +43,7 @@ test_that("the split factor is well defined when no weight is declared", {
   expect_equal(m$w / m$w_from, m$n_overlap / m$n_from)
 })
 
-test_that("scale_map() rejects a same-frame pair and DiscreteScale arguments", {
+test_that("scale_map() rejects a same-frame pair and NestedScale arguments", {
   s <- scale_example()
   expect_error(scale_map(s, "class", "class"), "the same frame")
   expect_error(scale_map(s, s, "group"), "scale_map_between")
@@ -87,7 +87,7 @@ test_that("extra map columns are carried through `by`", {
   s <- scale_example()
   d <- scale_atom_pairs(s, "class", "group")
   d2 <- rbind(cbind(d, year = 2020), cbind(d, year = 2021))
-  m <- discretescales:::.finish_map(d2, "class", "group", by = "year")
+  m <- nestedscales:::.finish_map(d2, "class", "group", by = "year")
   expect_true("year" %in% names(m))
   # the counts are per year, not doubled
   expect_equal(unique(m$n_from[m$class == "G1"]), 2L)

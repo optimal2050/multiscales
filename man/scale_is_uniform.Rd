@@ -7,7 +7,7 @@
 scale_is_uniform(x, frame, weight = NULL, tolerance = 1e-09)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{frame}{A frame name.}
 

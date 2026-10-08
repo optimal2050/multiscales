@@ -19,10 +19,10 @@ get_scale_map_between(from, to)
 list_scale_maps()
 }
 \arguments{
-\item{x}{The \code{\link{DiscreteScale}} the frames belong to, or its name.}
+\item{x}{The \code{\link{NestedScale}} the frames belong to, or its name.}
 
 \item{from, to}{For the within-scale functions, frame names of \code{x}. For the
-\verb{_between} functions, two \code{\link{DiscreteScale}} objects or their names.}
+\verb{_between} functions, two \code{\link{NestedScale}} objects or their names.}
 
 \item{map}{A \code{data.frame} shaped like a \code{\link[=scale_map]{scale_map()}} result: the two
 label columns named after the frames (or scales), plus \code{n_from},

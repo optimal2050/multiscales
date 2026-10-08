@@ -55,7 +55,7 @@ test_that("scale_coverage() is 1 for a scale that was never subset", {
 
 test_that("scale_coverage() reads the bookkeeping when present", {
   s <- tidy_scale()
-  sampled <- DiscreteScale(
+  sampled <- NestedScale(
     leaftable = scale_leaftable(s), frames = scale_frames(s),
     members = S7::prop(s, "members"), key = "leaf",
     meta = list(

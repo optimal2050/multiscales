@@ -143,7 +143,7 @@ clear_scale_distances <- function(names = NULL) {
 #'
 #' @param data Long data: a column of unit codes, one or more identifier
 #'   columns saying which observation each row is, and a value column.
-#' @param x A `DiscreteScale`.
+#' @param x A `NestedScale`.
 #' @param frame Frame whose units are compared. Defaults to the atom frame.
 #' @param key Column of `data` holding the unit codes. Defaults to `frame`
 #'   when present, else the scale's key.

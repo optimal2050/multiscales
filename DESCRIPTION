@@ -1,21 +1,20 @@
-Package: discretescales
-Title: Discrete Scales and Multi-Dimensional Indexes for Modeling
+Package: nestedscales
+Title: Nested Scales and Multi-Dimensional Indexes for Modeling
 Version: 0.1.0
-URL: https://optimal2050.github.io/discretescales/r/,
-    https://optimal2050.github.io/discretescales/,
-    https://github.com/optimal2050/discretescales
-BugReports: https://github.com/optimal2050/discretescales/issues
+URL: https://optimal2050.github.io/nestedscales/,
+    https://github.com/optimal2050/nestedscales
+BugReports: https://github.com/optimal2050/nestedscales/issues
 Authors@R:
     person(given = "Oleg",
            family = "Lugovoy",
            role = c("aut", "cre"),
            email = "olugovoy@optimalsolution.dev",
            comment = c(ORCID = "0000-0001-5546-9875"))
-Description: A dimension-agnostic representation of discrete scales for
+Description: A dimension-agnostic representation of nested scales for
     optimization and simulation models: a flat table of atoms plus the frames
-    that group them, nested or overlapping, conversion of data between
-    resolutions, and
-    combination of several scales into a product index. Time and space are
+    that group them (every frame nests in the atoms, frames need not nest in
+    each other), conversion of data between resolutions, and combination of
+    several scales into a product index. Time and space are
     provided by the companion packages 'timescales' and 'geoscales'; any other
     dimension - industries, income brackets, temperature regimes - is declared
     directly.
@@ -55,13 +54,13 @@ Collate:
     'cluster.R'
     'contiguity.R'
     'dataset.R'
-    'discretescales-package.R'
     'distance.R'
     'navigate.R'
     'filter.R'
     'frames.R'
     'join.R'
     'map.R'
+    'nestedscales-package.R'
     'recast.R'
     'product-recast.R'
     'reconcile.R'

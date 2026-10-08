@@ -1,39 +1,50 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# discretescales
+# nestedscales
 
 <!-- badges: start -->
 
 <!-- badges: end -->
 
-Discrete scales for optimization and simulation models, without naming
-the dimension. A **scale** is a flat table of *atoms* plus the *frames*
-that group them, nested or overlapping — and that shape fits time, space,
+Nested scales for optimization and simulation models, without naming the
+dimension. A **scale** is a flat table of *atoms* plus the *frames* that
+group them. Every frame nests in the atoms; frames need not nest in each
+other, so overlapping layers are ordinary. That shape fits time, space,
 industries, income brackets, temperature regimes or technology vintages
 equally well.
 
-`discretescales` is the engine under
+`nestedscales` is the engine under
 [timescales](https://github.com/optimal2050/timescales) (calendars) and
 [geoscales](https://github.com/optimal2050/geoscales) (regions), whose
-classes are subclasses of `DiscreteScale`. Use it directly for any other
+classes are subclasses of `NestedScale`. Use it directly for any other
 dimension.
 
 ## Installation
 
+From CRAN:
+
 ``` r
-pak::pkg_install("optimal2050/discretescales")
+install.packages("nestedscales")
 ```
+
+The development version from GitHub:
+
+``` r
+pak::pkg_install("optimal2050/nestedscales")
+```
+
+The package is pure R; its hard dependencies are dplyr, rlang and S7.
 
 ## A scale in one call
 
 Declare the hierarchy, coarsest frame first:
 
 ``` r
-library(discretescales)
+library(nestedscales)
 
 industries <- data.frame(
-  section  = c("C",   "C",   "C",   "D",   "D"),
+  section  = c("C", "C", "C", "D", "D"),
   division = c("C10", "C10", "C11", "D35", "D35"),
   class    = c("C101", "C102", "C110", "D351", "D352"),
   gva      = c(120, 80, 45, 300, 150)
@@ -46,7 +57,7 @@ ind <- scale_from_leaftable(
 )
 
 ind
-#> DiscreteScale: nace
+#> NestedScale: nace
 #> Frames (3, coarsest first):
 #>   - section (2)
 #>     - division (3)
@@ -73,8 +84,8 @@ given pair happens to nest; conversion never depends on it.
 
 ``` r
 summary(ind)
-#> <summary of DiscreteScale 'nace'>
-#>   frames:        section (2) / division (3) / class (5)
+#> <summary of NestedScale 'nace'>
+#>   frames:         section (2) / division (3) / class (5)
 #>   atoms:          5
 #>   weight totals:  gva = 695  (default: gva)
 #>   nesting:        section > division: nested
@@ -94,6 +105,19 @@ summary(ind)
 - **Backend-agnostic.** The verbs are written on dplyr only, so the same
   pipeline runs on a `data.frame`, a `data.table`, or an arrow dataset;
   lazy inputs stay lazy.
+
+## Related packages
+
+- [scales](https://CRAN.R-project.org/package=scales) maps data to
+  graphical aesthetics; its discrete scales are palettes and label
+  formatters, not resolutions of a model dimension.
+- [data.tree](https://CRAN.R-project.org/package=data.tree) represents
+  strict trees as node objects. nestedscales keeps the hierarchy as a
+  flat atom table, allows frames that cross-cut, and converts data
+  between any two frames with weights.
+- [hts](https://CRAN.R-project.org/package=hts) reconciles forecasts
+  across a fixed aggregation tree; `reconcile_scale()` here balances
+  observed data against a total, for any scale and rule.
 
 ## License
 

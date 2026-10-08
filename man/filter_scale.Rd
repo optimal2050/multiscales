@@ -2,12 +2,12 @@
 % Please edit documentation in R/filter.R
 \name{filter_scale}
 \alias{filter_scale}
-\title{Subset a DiscreteScale by unit}
+\title{Subset a NestedScale by unit}
 \usage{
 filter_scale(x, frame, unit, drop_empty_frames = FALSE)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{frame}{Frame that \code{unit} belongs to.}
 
@@ -16,7 +16,7 @@ filter_scale(x, frame, unit, drop_empty_frames = FALSE)
 \item{drop_empty_frames}{Drop frames left with no codes at all.}
 }
 \value{
-A \code{\link{DiscreteScale}}.
+A \code{\link{NestedScale}}.
 }
 \description{
 Keeps only the atoms belonging to \code{unit} at \code{frame}, and rebuilds the member

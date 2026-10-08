@@ -7,7 +7,7 @@
 scale_share(x, frame, weight = NULL, within = NULL)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{frame}{Frame to report shares for.}
 

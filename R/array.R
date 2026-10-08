@@ -17,7 +17,7 @@ NULL
 
 #' Axis specification shared by the array converters
 #'
-#' Normalises a `DiscreteScale` or `ScaleProduct` into a list of (key column, units)
+#' Normalises a `NestedScale` or `ScaleProduct` into a list of (key column, units)
 #' pairs, so both cases go through one code path.
 #' @noRd
 .array_axes <- function(x, frames = NULL, cols = NULL) {
@@ -59,7 +59,7 @@ NULL
 #' @param data A long table with one column per axis key plus the value
 #'   column. Lazy inputs are materialised -- an array is a dense in-memory
 #'   object by definition.
-#' @param x A [`DiscreteScale`] or [`ScaleProduct`].
+#' @param x A [`NestedScale`] or [`ScaleProduct`].
 #' @param value Name of the value column. Defaults to the single numeric
 #'   column that is not a key.
 #' @param frames Optional named list giving the frame each axis is keyed at;

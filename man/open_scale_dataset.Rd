@@ -18,7 +18,7 @@ open_scale_dataset(path)
 }
 \value{
 A \code{scale_dataset}: a list with \code{data} (a lazily-read arrow
-Dataset) and \code{scale} (the \code{\link{DiscreteScale}} or \code{\link{ScaleProduct}} it is indexed
+Dataset) and \code{scale} (the \code{\link{NestedScale}} or \code{\link{ScaleProduct}} it is indexed
 by). Feed them to the verbs as
 \code{recast_scale(ds$data, ds$scale, ...)}.
 }

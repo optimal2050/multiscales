@@ -7,7 +7,7 @@
 ScaleProduct(axes, keys, joint_weights = NULL, meta = list())
 }
 \arguments{
-\item{axes}{Named list of \code{\link{DiscreteScale}} objects; the names are the axis names.}
+\item{axes}{Named list of \code{\link{NestedScale}} objects; the names are the axis names.}
 
 \item{keys}{Named character vector, one entry per axis, giving the data
 column that carries that axis's unit codes.}
@@ -22,7 +22,7 @@ version; a supplied table is validated but not yet consumed.}
 A \code{ScaleProduct} object.
 }
 \description{
-Combines two or more \code{\link{DiscreteScale}} objects into one multi-dimensional index --
+Combines two or more \code{\link{NestedScale}} objects into one multi-dimensional index --
 time x space, time x space x industry, and so on. The atoms of the product
 are tuples of the component atoms, and they stay LAZY: nothing is
 materialised at construction, and \code{\link[=product_atoms]{product_atoms()}} is the guarded way to

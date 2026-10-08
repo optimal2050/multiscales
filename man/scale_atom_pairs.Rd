@@ -7,7 +7,7 @@
 scale_atom_pairs(x, ...)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{...}{Method arguments: \code{from} and \code{to} (frame names of \code{x}), \code{weight}
 (a weight column, or \code{NULL} for the scale's default), and whatever else

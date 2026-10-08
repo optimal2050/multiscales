@@ -1,4 +1,4 @@
 library(testthat)
-library(discretescales)
+library(nestedscales)
 
-test_check("discretescales")
+test_check("nestedscales")

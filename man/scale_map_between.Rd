@@ -7,7 +7,7 @@
 scale_map_between(from, to, weight = NULL)
 }
 \arguments{
-\item{from, to}{Two named \code{\link{DiscreteScale}} objects whose atom keys overlap.}
+\item{from, to}{Two named \code{\link{NestedScale}} objects whose atom keys overlap.}
 
 \item{weight}{Weight column of \code{from} for \code{w}; \code{NULL} uses its default
 weight, or weight 1 per atom when it declares none.}

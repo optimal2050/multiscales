@@ -21,7 +21,7 @@ reconcile_scale(
 \arguments{
 \item{data}{The fine data, keyed at \code{from}.}
 
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{from, to}{Frame names: where the data is, and the coarser frame whose
 totals it is checked against.}

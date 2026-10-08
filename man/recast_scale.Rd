@@ -28,13 +28,13 @@ recast_scale(
 named by \code{key} plus one or more numeric value columns; other columns are
 preserved as identifiers.}
 
-\item{x}{The \code{\link{DiscreteScale}} the codes in \code{data} belong to.}
+\item{x}{The \code{\link{NestedScale}} the codes in \code{data} belong to.}
 
 \item{from}{Frame name the codes belong to. \code{NULL} (default) is inferred:
 \code{key} when it is a frame name, else the single frame name appearing among
 the data's columns.}
 
-\item{to}{Target frame name of \code{x}, or another (named) \code{\link{DiscreteScale}} -- then
+\item{to}{Target frame name of \code{x}, or another (named) \code{\link{NestedScale}} -- then
 the target is that object's atom layer, matched on shared atom keys.}
 
 \item{key}{Name of the code column in \code{data}. Defaults to \code{from} when that
@@ -99,7 +99,7 @@ The recast table in the input's class, with columns
 \description{
 The central conversion verb: takes a table keyed by unit code at frame
 \code{from} and returns one keyed at \code{to} -- a frame name of the same
-\code{\link{DiscreteScale}}, or ANOTHER DiscreteScale (whose atom layer is the target, matched on
+\code{\link{NestedScale}}, or ANOTHER NestedScale (whose atom layer is the target, matched on
 shared atom keys). Handles both aggregation (fine to coarse) and
 disaggregation (coarse to fine) with one rule per value column; frames that
 cross-cut work too, because the route always goes through the atom layer.

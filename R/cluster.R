@@ -17,7 +17,7 @@
 #' @param data Long data: unit codes, one or more identifier columns saying
 #'   which observation each row is, and a value column. A unit that is not
 #'   observed over the same set as the others is an error rather than a hole.
-#' @param x A `DiscreteScale`.
+#' @param x A `NestedScale`.
 #' @param k Number of clusters.
 #' @param frame Frame whose units are clustered. Defaults to the atom frame.
 #' @param key,value Columns of `data`; inferred when unambiguous.
@@ -46,7 +46,7 @@
 #' The new frame goes directly above the clustered one, which is the only
 #' position that is always true: the clusters are coarser than `frame` by
 #' construction, but they need not nest inside any existing coarser frame, and
-#' `discretescales` does not require them to. Use
+#' `nestedscales` does not require them to. Use
 #' `scale_nests()` to ask whether a given pair happens to nest.
 #'
 #' @examples

@@ -2,18 +2,18 @@
 % Please edit documentation in R/scale-class.R
 \name{scale_leaftable}
 \alias{scale_leaftable}
-\alias{as.data.frame.DiscreteScale}
-\alias{as.data.frame.discretescales::DiscreteScale}
-\title{The leaftable of a DiscreteScale}
+\alias{as.data.frame.NestedScale}
+\alias{as.data.frame.nestedscales::NestedScale}
+\title{The leaftable of a NestedScale}
 \usage{
 scale_leaftable(x)
 
-\method{as.data.frame}{DiscreteScale}(x, row.names = NULL, optional = FALSE, ...)
+\method{as.data.frame}{NestedScale}(x, row.names = NULL, optional = FALSE, ...)
 
-\method{as.data.frame}{`discretescales::DiscreteScale`}(x, row.names = NULL, optional = FALSE, ...)
+\method{as.data.frame}{`nestedscales::NestedScale`}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 
 \item{row.names, optional}{Ignored (S3 signature compatibility).}
 
@@ -26,7 +26,7 @@ weight columns.
 \description{
 The one-row-per-atom table the scale is built on, as a plain \code{data.frame} --
 the exported accessor to prefer over reaching for \code{x@leaftable}.
-\code{as.data.frame()} and \code{ggplot2::fortify()} on a DiscreteScale are equivalent, so
+\code{as.data.frame()} and \code{ggplot2::fortify()} on a NestedScale are equivalent, so
 \verb{ggplot(s) + geom_*()} pipelines work directly.
 }
 \examples{

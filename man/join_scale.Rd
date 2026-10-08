@@ -20,7 +20,7 @@ join_scale(
 \arguments{
 \item{data}{The data, in any supported backend, with a column of unit codes.}
 
-\item{x}{The \code{\link{DiscreteScale}} to attach.}
+\item{x}{The \code{\link{NestedScale}} to attach.}
 
 \item{key}{Name of the code column in \code{data}. Inferred from the scale's
 name, the keyed frame, or the scale's own key column.}

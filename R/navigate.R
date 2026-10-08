@@ -1,5 +1,5 @@
 # =============================================================================
-# Structure queries over a DiscreteScale
+# Structure queries over a NestedScale
 # =============================================================================
 # Pure leaftable queries -- no conversion engine involved. The wider navigation
 # family (ancestry, children/parents/descendants/ancestors, share) joins this
@@ -8,7 +8,7 @@
 
 #' Immediate parent-child table between two frames
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param parent,child Frame names. Defaults to every adjacent pair in
 #'   `x@frames`.
 #'
@@ -72,10 +72,10 @@ scale_family <- function(x, parent = NULL, child = NULL) {
 #' can straddle two parents, and a reporting classification can assign one
 #' detailed class to several aggregates.
 #'
-#' Nesting is *not* required by [`DiscreteScale`] -- conversion routes through the atom
+#' Nesting is *not* required by [`NestedScale`] -- conversion routes through the atom
 #' layer and works either way. This function is a diagnostic.
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param parent,child Frame names.
 #'
 #' @return `TRUE` or `FALSE`. When `FALSE`, the offending child codes are
@@ -194,7 +194,7 @@ scale_is_uniform <- function(x, frame, weight = NULL, tolerance = 1e-9) {
 #' the example, `"G1"` exists at both `class` and `group`, so a bare
 #' `(parent, child)` pair would read as a self-loop.
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #'
 #' @return A `data.frame` with columns `parent_frame`, `parent`,
 #'   `child_frame`, `child`.
@@ -224,14 +224,14 @@ scale_ancestry <- function(x) {
   out
 }
 
-#' Navigate a DiscreteScale's hierarchy
+#' Navigate a NestedScale's hierarchy
 #'
 #' Codes related to `unit` at another frame, found through the atoms.
 #' `scale_children()`/`scale_parents()` step one frame down/up by default;
 #' `scale_descendants()`/`scale_ancestors()` report every finer/coarser frame
 #' as a frame-tagged table.
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param frame The frame `unit` belongs to.
 #' @param unit Character vector of codes.
 #' @param to Target frame. `NULL` uses the adjacent frame (children/parents)
@@ -359,12 +359,12 @@ scale_ancestors <- function(x, frame, unit, to = NULL) {
   out[order(match(out, ord))]
 }
 
-#' Coverage of a sampled DiscreteScale
+#' Coverage of a sampled NestedScale
 #'
 #' The fraction of the root parent's weight that survives in this object. A
 #' scale that was never subset covers all of itself, so every weight reports 1.
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param weight A single weight name, or `NULL` for all declared weights.
 #'
 #' @return A named numeric over the declared weights, or a single unnamed

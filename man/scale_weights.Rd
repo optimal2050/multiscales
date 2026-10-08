@@ -2,18 +2,18 @@
 % Please edit documentation in R/scale-class.R
 \name{scale_weights}
 \alias{scale_weights}
-\title{Weight columns of a DiscreteScale}
+\title{Weight columns of a NestedScale}
 \usage{
 scale_weights(x)
 }
 \arguments{
-\item{x}{A \code{\link{DiscreteScale}}.}
+\item{x}{A \code{\link{NestedScale}}.}
 }
 \value{
 A character vector of weight column names (possibly empty).
 }
 \description{
-Weight columns of a DiscreteScale
+Weight columns of a NestedScale
 }
 \examples{
 scale_weights(scale_example())

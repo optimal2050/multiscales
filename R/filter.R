@@ -1,5 +1,5 @@
 # =============================================================================
-# Subsetting and collapsing a DiscreteScale
+# Subsetting and collapsing a NestedScale
 # =============================================================================
 # A genuine subset is a SAMPLE and is book-kept as one, so an object always
 # knows what fraction of its parent it carries and can never impersonate that
@@ -40,7 +40,7 @@ NULL
   meta
 }
 
-#' Rebuild a DiscreteScale from a row subset
+#' Rebuild a NestedScale from a row subset
 #'
 #' The update is made on a copy of `x` itself, which preserves the concrete
 #' class and any extra properties a subclass carries. The payload hook then
@@ -86,7 +86,7 @@ NULL
   out
 }
 
-#' Subset a DiscreteScale by unit
+#' Subset a NestedScale by unit
 #'
 #' Keeps only the atoms belonging to `unit` at `frame`, and rebuilds the member
 #' vocabularies accordingly.
@@ -100,12 +100,12 @@ NULL
 #' crosswalk registry or in [`join_scale()`] column names. A filter that keeps
 #' every atom is a true no-op. Read the fraction back with [`scale_coverage()`].
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param frame Frame that `unit` belongs to.
 #' @param unit Character vector of codes to keep.
 #' @param drop_empty_frames Drop frames left with no codes at all.
 #'
-#' @return A [`DiscreteScale`].
+#' @return A [`NestedScale`].
 #'
 #' @examples
 #' s <- scale_example()
@@ -150,19 +150,19 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
   .rebuild(x, keep, fr, drop_empty_frames, meta = meta)
 }
 
-#' Subset a DiscreteScale
+#' Subset a NestedScale
 #'
 #' `x[frame, unit]` is [`filter_scale()`].
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param i Frame name.
 #' @param j Unit codes to keep.
 #' @param ... Unused.
-#' @return A [`DiscreteScale`].
+#' @return A [`NestedScale`].
 #' @examples
 #' scale_example()["sector", "P"]
-#' @method [ DiscreteScale
-`[.DiscreteScale` <- function(x, i, j, ...) {
+#' @method [ NestedScale
+`[.NestedScale` <- function(x, i, j, ...) {
   if (missing(i) || missing(j)) {
     .stop("subset a scale as `x[frame, unit]`")
   }
@@ -172,23 +172,23 @@ filter_scale <- function(x, frame, unit, drop_empty_frames = FALSE) {
 # The fully-qualified spelling is what `class()` reports for an installed
 # package, so without this alias `x[frame, unit]` falls through to
 # `[.S7_object`, which errors.
-#' @rdname sub-.DiscreteScale
+#' @rdname sub-.NestedScale
 #' @export
-`[.discretescales::DiscreteScale` <- `[.DiscreteScale`
+`[.nestedscales::NestedScale` <- `[.NestedScale`
 
-#' Collapse a DiscreteScale to a coarser frame
+#' Collapse a NestedScale to a coarser frame
 #'
-#' Returns a new [`DiscreteScale`] whose atom layer is `frame`, dropping every finer
+#' Returns a new [`NestedScale`] whose atom layer is `frame`, dropping every finer
 #' frame. Weights are summed over the collapsed atoms.
 #'
 #' The result is renamed `"name@frame"` with the parent recorded in
 #' `meta$parent_name`; every other meta field is preserved. Atoms with no code
 #' at `frame` are dropped, and that loss is reflected in `meta$coverage`.
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param frame The frame to become the new atom layer.
 #'
-#' @return A [`DiscreteScale`].
+#' @return A [`NestedScale`].
 #'
 #' @examples
 #' prune_scale(scale_example(), "class")
@@ -250,7 +250,7 @@ prune_scale <- function(x, frame) {
 #'
 #' Normalised weights, either of the whole object or within each parent group.
 #'
-#' @param x A [`DiscreteScale`].
+#' @param x A [`NestedScale`].
 #' @param frame Frame to report shares for.
 #' @param weight Weight column. `NULL` uses the default.
 #' @param within Optional coarser frame to normalise within. `NULL` normalises

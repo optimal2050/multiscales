@@ -64,7 +64,7 @@ NestedScale <- S7::new_class(
     frames    = S7::new_property(S7::class_character),
     members   = S7::new_property(S7::class_list),
     key       = S7::new_property(S7::class_character, default = "unit"),
-    meta      = S7::new_property(S7::class_list, default = list())
+    meta      = S7::new_property(S7::class_list, default = quote(list()))
   ),
   constructor = function(leaftable, frames, members, key = "unit",
                          meta = list()) {

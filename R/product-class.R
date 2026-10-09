@@ -50,7 +50,7 @@ ScaleProduct <- S7::new_class(
     axes          = S7::new_property(S7::class_list),
     keys          = S7::new_property(S7::class_character),
     joint_weights = S7::new_property(S7::class_any, default = NULL),
-    meta          = S7::new_property(S7::class_list, default = list())
+    meta          = S7::new_property(S7::class_list, default = quote(list()))
   ),
   constructor = function(axes, keys, joint_weights = NULL, meta = list()) {
     S7::new_object(

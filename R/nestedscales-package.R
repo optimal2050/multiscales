@@ -1,18 +1,26 @@
 #' nestedscales: Nested Scales and Multi-Dimensional Indexes for Modeling
 #'
-#' A dimension-agnostic representation of nested scales: a flat table
-#' of atoms plus the ordered frames that group them, conversion of data between
-#' resolutions, combination of several scales into a product index, and
+#' A multi-level discrete representation of a data dimension, for modeling,
+#' data processing and visualization. A nested scale is a flat table of atoms
+#' plus the frames that group them; every frame nests in the atoms, and frames
+#' may nest in or overlay each other. The package defines the transition rules
+#' between levels (sum, weighted mean, mean, copy, sd, share) and the
+#' operations on them: conversion of data between resolutions, labelling,
+#' subsetting, combination of several scales into a product index, and
 #' construction of new frames by clustering.
 #'
-#' Time and space live in dimension packages built on this one:
+#' Time and space live in dimension packages built on this one, designed for
+#' optimization and simulation models where labeled time slices and regions
+#' are the index sets:
 #' [timescales](https://github.com/optimal2050/timescales)' `Calendar` and
 #' [geoscales](https://github.com/optimal2050/geoscales)' `Geoscale` are
 #' subclasses of `NestedScale`, so every verb here accepts them. Any other
 #' dimension -- industries, income brackets, temperature regimes, technology
-#' vintages -- is declared directly with [`scale_from_leaftable()`], or given
-#' a package of its own the same way: see
-#' `vignette("dimension-package", package = "nestedscales")`.
+#' vintages -- is declared directly with [`scale_from_leaftable()`].
+#' `vignette("nestedscales", package = "nestedscales")` introduces the
+#' functions; the
+#' [package website](https://optimal2050.github.io/nestedscales/) includes a
+#' roadmap of what is available and what is planned.
 #'
 #' A clustering is treated as scale construction: [`cluster_scale()`] returns
 #' the scale with a new coarser frame inserted above the one clustered, so

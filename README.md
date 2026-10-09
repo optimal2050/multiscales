@@ -7,38 +7,58 @@
 
 <!-- badges: end -->
 
-Nested scales for optimization and simulation models, without naming the
-dimension. A **scale** is a flat table of *atoms* plus the *frames* that
-group them. Every frame nests in the atoms; frames need not nest in each
-other, so overlapping layers are ordinary. That shape fits time, space,
-industries, income brackets, temperature regimes or technology vintages
-equally well.
+nestedscales represents a discrete data dimension at multiple
+resolutions and recasts tabular data between them. A **nested scale**
+stores one row per finest-grained unit, or *atom*, and one column for
+each coarser grouping, or *frame*. Each frame assigns atoms to units;
+frames may form a hierarchy or cross-cut one another, including
+product-like overlays. All mappings are derived from membership at the
+atom level.
 
-`nestedscales` is the engine under
-[timescales](https://github.com/optimal2050/timescales) (calendars) and
-[geoscales](https://github.com/optimal2050/geoscales) (regions), whose
-classes are subclasses of `NestedScale`. Use it directly for any other
-dimension.
+The package defines:
+
+- **Structure**: the levels of a scale, the units at each level, and the
+  relations between levels (nested, crossed, uniform).
+- **Transition rules** between levels, chosen per value column and aware
+  of direction: `sum`, `weighted_mean`, `mean`, and `copy`; `sd` for
+  aggregation; and `share` or `logshare` for within-parent shares.
+- **Operations**: converting data between levels, attaching level labels
+  to a dataset, subsetting, combining several scales into one
+  multi-dimensional index, clustering units into new levels, and storing
+  data together with its scales.
+
+The package is dimension-agnostic. Time and space are provided by two
+packages built on it, designed for optimization and simulation models,
+where labeled time slices and regions serve as the index sets of
+variables and constraints:
+
+- [timescales](https://github.com/optimal2050/timescales): `Calendar`,
+  labeled discrete time slices (hours, days, seasons, representative
+  days).
+- [geoscales](https://github.com/optimal2050/geoscales): `Geoscale`,
+  labeled geographical regions with geometry.
+
+Both classes are subclasses of `NestedScale`. Any other dimension
+(industries, income brackets, technology vintages) is declared directly
+from a table. `vignette("nestedscales")` introduces the functions; the
+[package website](https://optimal2050.github.io/nestedscales/) includes
+a roadmap of what is available and what is planned.
 
 ## Installation
 
-From CRAN:
-
-``` r
-install.packages("nestedscales")
-```
-
-The development version from GitHub:
+Until the first CRAN release, install the development version from
+GitHub:
 
 ``` r
 pak::pkg_install("optimal2050/nestedscales")
 ```
 
-The package is pure R; its hard dependencies are dplyr, rlang and S7.
+The package is pure R; its non-base runtime dependencies are dplyr,
+rlang and S7.
 
 ## A scale in one call
 
-Declare the hierarchy, coarsest frame first:
+Declare the levels, coarsest first:
 
 ``` r
 library(nestedscales)
@@ -53,6 +73,7 @@ industries <- data.frame(
 ind <- scale_from_leaftable(
   industries,
   frames = c("section", "division", "class"),
+  weights = "gva",
   name   = "nace"
 )
 
@@ -78,9 +99,10 @@ scale_nests(ind, "section", "division")
 #> [1] TRUE
 ```
 
-Hierarchies that cross-cut are normal and supported — one detailed code
-may belong to several aggregates. `scale_nests()` tells you whether a
-given pair happens to nest; conversion never depends on it.
+Hierarchies that cross-cut are normal and supported – one detailed code
+may belong to several aggregates. `scale_nests(x, parent, child)` tests
+whether every child code belongs to a single parent code; conversion
+never depends on that relationship.
 
 ``` r
 summary(ind)
@@ -90,6 +112,27 @@ summary(ind)
 #>   weight totals:  gva = 695  (default: gva)
 #>   nesting:        section > division: nested
 #>   nesting:        division > class: nested
+```
+
+## Moving data between levels
+
+Data keyed at one level is recast to another with a rule per value
+column. With complete coverage, `"sum"` conserves totals; intensive
+quantities use `"weighted_mean"` with a declared weight:
+
+``` r
+x <- data.frame(
+  class = c("C101", "C102", "C110", "D351", "D352"),
+  jobs  = c(12, 8, 5, 30, 20),
+  wage  = c(31, 29, 27, 45, 40)
+)
+
+recast_scale(x, ind, from = "class", to = "section",
+             rule = c(jobs = "sum", wage = "weighted_mean"),
+             weight = "gva")
+#>   section jobs     wage
+#> 1       C   25 29.61224
+#> 2       D   50 43.33333
 ```
 
 ## Design
@@ -102,7 +145,7 @@ summary(ind)
 - **Partial coverage is first class.** An atom with no code at a frame
   is `NA`, not an error, and a subset records what fraction of its
   parent it keeps.
-- **Backend-agnostic.** The verbs are written on dplyr only, so the same
+- **Backend-agnostic.** The verbs use the dplyr interface, so the same
   pipeline runs on a `data.frame`, a `data.table`, or an arrow dataset;
   lazy inputs stay lazy.
 
@@ -116,8 +159,9 @@ summary(ind)
   flat atom table, allows frames that cross-cut, and converts data
   between any two frames with weights.
 - [hts](https://CRAN.R-project.org/package=hts) reconciles forecasts
-  across a fixed aggregation tree; `reconcile_scale()` here balances
-  observed data against a total, for any scale and rule.
+  across a fixed aggregation tree; `reconcile_scale()` here compares
+  data aggregated with `sum` or `weighted_mean` against independent
+  totals and can balance discrepancies.
 
 ## License
 

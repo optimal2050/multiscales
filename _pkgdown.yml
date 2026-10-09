@@ -11,6 +11,22 @@ footer:
   components:
     blank: ""
 
+# No Articles dropdown. The intro (vignettes/nestedscales.Rmd, package-named)
+# surfaces as "Get started" on its own; the roadmap is an online-only article
+# (vignettes/articles/, build-ignored) with a navbar item of its own.
+navbar:
+  structure:
+    left: [intro, reference, roadmap, news]
+  components:
+    roadmap:
+      text: Roadmap
+      href: articles/roadmap.html
+
+articles:
+  - title: "Roadmap"
+    contents:
+      - articles/roadmap
+
 reference:
 - title: Scales
   desc: Build a scale and read its structure.

@@ -10,14 +10,18 @@ Authors@R:
            role = c("aut", "cre"),
            email = "olugovoy@optimalsolution.dev",
            comment = c(ORCID = "0000-0001-5546-9875"))
-Description: A dimension-agnostic representation of nested scales for
-    optimization and simulation models: a flat table of atoms plus the frames
-    that group them (every frame nests in the atoms, frames need not nest in
-    each other), conversion of data between resolutions, and combination of
-    several scales into a product index. Time and space are
-    provided by the companion packages 'timescales' and 'geoscales'; any other
-    dimension - industries, income brackets, temperature regimes - is declared
-    directly.
+Description: Provides multi-level discrete representations of data dimensions
+    for modeling, data processing and visualization. A nested scale records
+    its finest units (atoms) and their membership in coarser levels (frames),
+    including nested, cross-cutting and partially covered relationships.
+    Recasts tabular data between levels using explicit, direction-aware rules
+    for sums, means, standard deviations, copying and within-parent shares.
+    Also supports labeling, subsetting, combining scales into
+    multi-dimensional indexes, clustering units and storing data with its
+    scale metadata. Forms the dimension-agnostic core of 'timescales'
+    <https://github.com/optimal2050/timescales> (calendars) and 'geoscales'
+    <https://github.com/optimal2050/geoscales> (regions), designed for
+    optimization and simulation models.
 License: Apache License (>= 2)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

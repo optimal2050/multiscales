@@ -4,3 +4,6 @@
 .Ruserdata
 benchmark/_data/
 benchmark/results/*.csv
+
+# archived material, not part of the package
+drafts/

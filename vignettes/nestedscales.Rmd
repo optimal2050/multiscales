@@ -1,0 +1,164 @@
+---
+title: "Get started with nestedscales"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get started with nestedscales}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+nestedscales provides a multi-level discrete representation of a data
+dimension and the operations that move data between its levels. This
+vignette introduces the representation and the main functions on a small
+industry classification. The dimension packages
+[timescales](https://github.com/optimal2050/timescales) and
+[geoscales](https://github.com/optimal2050/geoscales) apply the same
+functions to calendars and region hierarchies. The
+[package website](https://optimal2050.github.io/nestedscales/) includes a
+roadmap of the package's scope.
+
+```{r setup}
+library(nestedscales)
+```
+
+## Representation
+
+A **nested scale** is a table with one row per atom, the finest unit of the
+dimension, and one column per frame, a coarser level that groups the atoms.
+The frames are given coarsest first. Numeric columns that are not frames are
+weights.
+
+```{r build}
+industries <- data.frame(
+  section  = c("C", "C", "C", "D", "D"),
+  division = c("C10", "C10", "C11", "D35", "D35"),
+  class    = c("C101", "C102", "C110", "D351", "D352"),
+  gva      = c(120, 80, 45, 300, 150)
+)
+
+ind <- scale_from_leaftable(
+  industries,
+  frames = c("section", "division", "class"),
+  name   = "nace"
+)
+ind
+```
+
+The scale records the frames, the units at each frame, the atom key and the
+weights:
+
+```{r accessors}
+scale_frames(ind)
+scale_units(ind, "division")
+scale_key(ind)
+scale_weights(ind)
+```
+
+Every frame partitions the atoms. Frames need not nest in each other: a
+unit at one frame may belong to several units at a coarser frame, and two
+frames may be independent, in which case the atoms are their combinations.
+`scale_nests()`, `scale_crosses()` and `scale_is_uniform()` report the
+relation a given pair of frames has; no relation is assumed.
+
+```{r structure}
+scale_nests(ind, "section", "division")
+scale_family(ind, "section", "division")
+```
+
+## Transition rules
+
+Data keyed at one frame is converted to another frame with
+`recast_scale()`. Each value column follows a rule from `SCALE_RULES`:
+
+| rule | aggregation (fine to coarse) | disaggregation (coarse to fine) |
+|---|---|---|
+| `sum` | sum | split in proportion to the weight |
+| `weighted_mean` | weighted mean | copy |
+| `mean` | mean over atoms | copy |
+| `copy` | the common value | copy |
+| `sd` | standard deviation over atoms | not defined |
+| `share` | value as a share of its parent's total | not defined |
+
+The rule is given per value column, so extensive and intensive quantities
+convert in one call:
+
+```{r recast-up}
+x <- data.frame(
+  class = c("C101", "C102", "C110", "D351", "D352"),
+  jobs  = c(12, 8, 5, 30, 20),
+  wage  = c(31, 29, 27, 45, 40)
+)
+
+recast_scale(x, ind,
+  from = "class", to = "section",
+  rule = c(jobs = "sum", wage = "weighted_mean")
+)
+```
+
+The same function converts in the other direction. A total at the section
+level is split over the classes in proportion to the weight:
+
+```{r recast-down}
+y <- data.frame(section = c("C", "D"), investment = c(100, 400))
+
+recast_scale(y, ind, from = "section", to = "class", rule = "sum")
+```
+
+Columns that are neither the key nor a value column are identifiers and are
+preserved as groups, so a panel of several years or scenarios converts in
+one call. A rule may also be registered once for a named value column with
+`register_scale_rule()`, after which `rule =` can be omitted for that
+column.
+
+## Labels
+
+`join_scale()` attaches the scale's labels to a dataset: the unit at the
+keyed frame, optionally the coarser frames (`attach =`) and the unit's share
+and weight (`meta =`):
+
+```{r join}
+join_scale(x, ind, frame = "class", attach = TRUE)
+```
+
+## Subsets
+
+`filter_scale()` keeps the atoms under given units; the result records what
+fraction of each weight it retains. `prune_scale()` collapses a scale to a
+coarser atom level.
+
+```{r subset}
+manufacturing <- filter_scale(ind, "section", "C")
+scale_units(manufacturing)
+scale_coverage(manufacturing)
+
+scale_frames(prune_scale(ind, "division"))
+```
+
+## Several dimensions
+
+`scale_product()` combines scales into one multi-dimensional index without
+materialising the product of their atoms. `recast_product()`,
+`join_product()` and `filter_product()` apply the single-scale operations
+axis by axis.
+
+```{r product}
+p <- scale_product(a = scale_example(), b = scale_example2())
+product_size(p)
+```
+
+## Further operations
+
+* `cluster_scale()` groups units by their data and returns the scale with
+  the clusters as a new frame.
+* `reconcile_scale()` compares aggregated data with an independent total.
+* `as_scale_array()` converts long data to a dense array over a scale, and
+  `write_scale_dataset()` stores data as an Arrow dataset together with its
+  scales.
+
+All operations accept a `data.frame`, tibble, `data.table`, dtplyr table or
+arrow dataset and return the same class; lazy inputs return a query unless
+`collect = TRUE`.

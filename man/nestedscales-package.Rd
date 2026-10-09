@@ -6,20 +6,28 @@
 \alias{nestedscales-package}
 \title{nestedscales: Nested Scales and Multi-Dimensional Indexes for Modeling}
 \description{
-A dimension-agnostic representation of nested scales: a flat table
-of atoms plus the ordered frames that group them, conversion of data between
-resolutions, combination of several scales into a product index, and
+A multi-level discrete representation of a data dimension, for modeling,
+data processing and visualization. A nested scale is a flat table of atoms
+plus the frames that group them; every frame nests in the atoms, and frames
+may nest in or overlay each other. The package defines the transition rules
+between levels (sum, weighted mean, mean, copy, sd, share) and the
+operations on them: conversion of data between resolutions, labelling,
+subsetting, combination of several scales into a product index, and
 construction of new frames by clustering.
 }
 \details{
-Time and space live in dimension packages built on this one:
+Time and space live in dimension packages built on this one, designed for
+optimization and simulation models where labeled time slices and regions
+are the index sets:
 \href{https://github.com/optimal2050/timescales}{timescales}' \code{Calendar} and
 \href{https://github.com/optimal2050/geoscales}{geoscales}' \code{Geoscale} are
 subclasses of \code{NestedScale}, so every verb here accepts them. Any other
 dimension -- industries, income brackets, temperature regimes, technology
-vintages -- is declared directly with \code{\link[=scale_from_leaftable]{scale_from_leaftable()}}, or given
-a package of its own the same way: see
-\code{vignette("dimension-package", package = "nestedscales")}.
+vintages -- is declared directly with \code{\link[=scale_from_leaftable]{scale_from_leaftable()}}.
+\code{vignette("nestedscales", package = "nestedscales")} introduces the
+functions; the
+\href{https://optimal2050.github.io/nestedscales/}{package website} includes a
+roadmap of what is available and what is planned.
 
 A clustering is treated as scale construction: \code{\link[=cluster_scale]{cluster_scale()}} returns
 the scale with a new coarser frame inserted above the one clustered, so

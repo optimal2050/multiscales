@@ -1,0 +1,139 @@
+---
+title: "Roadmap"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Roadmap}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+nestedscales is the core package of a family for multi-level discrete
+representations of data, used in modelling, data processing and
+visualization. This page lists what the core provides in the current
+release, what the dimension packages add, and what is planned. It is updated
+with each release.
+
+## Scope
+
+A **nested scale** represents one dimension of a dataset or model as a table
+of atoms, the finest units, with one column per coarser level, the frames.
+Every frame nests in the atoms. Frames may nest in each other (a tree:
+activity in division in section) or overlay each other (hours of the day and
+months of the year); every operation routes through the atoms, so both are
+handled alike.
+
+The package covers three things:
+
+1. **Structure**: the levels, the units at each level, and which pairs of
+   levels nest, cross or are uniform.
+2. **Transition rules**: how a value moves between levels -- summed,
+   averaged, weighted, copied, or expressed as a share of its parent.
+3. **Operations**: converting data, attaching labels, subsetting, combining
+   dimensions, grouping units into new levels, and storing data with its
+   scales.
+
+## Available now (0.1.0)
+
+### Structure
+
+* `scale_from_leaftable()` builds a scale from a table; `scale_frames()`,
+  `scale_units()`, `scale_key()`, `scale_leaftable()`, `scale_weights()`,
+  `scale_rank()` and `scale_atom_level()` read it.
+* Relations between levels: `scale_nests()`, `scale_crosses()`,
+  `scale_is_uniform()`; `scale_family()` and `scale_ancestry()` list
+  parent-child pairs; `scale_children()`, `scale_parents()`,
+  `scale_descendants()` and `scale_ancestors()` navigate.
+* `scale_share()` and `scale_coverage()` report weights and what fraction of
+  a parent a subset keeps.
+* Partial membership (`NA` at a level) and declared residual units
+  (`scale_residuals()`) are part of the representation.
+* `filter_scale()` and `prune_scale()` subset and collapse a scale, keeping
+  the record of coverage.
+
+### Transition rules
+
+* Seven rules, `SCALE_RULES`: `sum`, `weighted_mean`, `mean`, `copy`, `sd`,
+  `share`, `logshare`. Each is defined in both directions, so aggregation
+  and disaggregation are one operation.
+* Weights are named columns of the scale; several can coexist and each value
+  column may use its own.
+* `register_scale_rule()` records the rule for a named value column, scoped
+  per dimension, so a model's parameters recast without repeating the rule.
+* Declared residuals aggregate upward but are never allocated to when a
+  coarse value is split.
+
+### Operations
+
+* `recast_scale()` converts data between any two levels of a scale, or to
+  the atoms of another scale that shares atom keys; `recast_to_atoms()` and
+  `recast_from_atoms()` are its two halves; `recast_crosswalk()` runs the
+  same engine over a correspondence built elsewhere.
+* `scale_map()` and `scale_map_between()` expose the crosswalks;
+  `register_scale_map()` installs exact or hand-audited ones.
+* `join_scale()` attaches labels, coarser levels, shares and weights to a
+  dataset.
+* `reconcile_scale()` compares aggregated data with an independent total and
+  can balance the gap.
+* `scale_product()` combines several scales into one multi-dimensional
+  index; `recast_product()`, `join_product()` and `filter_product()` work
+  over it without materialising the product of atoms.
+* `cluster_scale()`, `cluster_contiguous()`, `cluster_medoids()` and
+  `cluster_sweep()` group units by their data and return the scale with the
+  clusters as a new level.
+* `as_scale_array()` and `as_scale_table()` move between long tables and
+  dense arrays; `write_scale_dataset()` and `open_scale_dataset()` store data
+  as a partitioned Arrow dataset together with its scales.
+* Every operation accepts a `data.frame`, tibble, `data.table`, dtplyr table
+  or arrow dataset and returns the same class; lazy inputs return a query.
+
+### Dimension packages
+
+* [timescales](https://github.com/optimal2050/timescales): `Calendar`, a
+  nested scale of time. A catalog of standard calendars, construction from
+  tokens, conversion from datetimes, sampled and fiscal calendars, calendar
+  plots.
+* [geoscales](https://github.com/optimal2050/geoscales): `Geoscale`, a
+  nested scale of space. Region hierarchies from data providers, geometry
+  and area weights, maps.
+* `vignette("dimension-package")` shows how to write another one.
+
+Both are designed for optimization and simulation models, where the labelled
+time slices and regions become the index sets of variables and constraints
+(see [energyRt](https://github.com/optimal2050/energyRt)).
+
+## Planned
+
+The order is not fixed; items move up as the modelling packages need them.
+
+* **User-defined transition rules.** Today a rule is one of the seven names.
+  A registered rule will also be able to be a function of the values and
+  weights in a group, so a dimension or a model can define its own
+  aggregation (a maximum, a quantile, a nonlinear combination).
+* **Joint weights on products.** `ScaleProduct` reserves `joint_weights`
+  for a weight that varies across axes together (an hourly profile that
+  differs by region). The slot is validated but not yet used by
+  `recast_product()`.
+* **Residual protection across scales.** Declared residuals are protected
+  when disaggregating within one scale; the cross-scale route does not yet
+  apply it.
+* **Visualization in the core.** Plots live in the dimension packages
+  (calendar heat maps, choropleths). A dimension-free layout of a scale's
+  structure -- icicle and stacked views of levels and shares -- belongs in
+  the core, so any dimension can be drawn and the dimension packages can
+  build on it.
+* **Scales from continuous variables.** Income brackets, temperature
+  regimes and vintage bins are nested scales whose atoms are intervals of a
+  continuous variable. Today they are binned by hand before
+  `scale_from_leaftable()`; a constructor taking breakpoints, with the
+  interval bounds kept as weights, would build them directly.
+* **More dimension packages.** Industry classifications and technology
+  vintages are used directly from tables today; shipped classifications
+  with their own vocabulary are the obvious next packages.
+
+## Not planned
+
+* Trees as node objects, or an object per unit. The flat atom table is the
+  representation, and it is what keeps conversion the same for every
+  dimension.
+* Guessing a rule when none is given. A value column with no rule is an
+  error; a silently chosen rule is a silent unit error.

@@ -39,7 +39,13 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
+  <a href="../articles/nestedscales.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
+</li>
+<li>
+  <a href="../articles/roadmap.html">Roadmap</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -50,6 +56,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/dimension-package.html">Writing a dimension package</a>
+    </li>
+    <li>
+      <a href="../articles/roadmap.html">Roadmap</a>
     </li>
   </ul>
 </li>
@@ -88,21 +97,20 @@
     
     
 <div class="section level2">
-<h2 id="what-nestedscales-is-for">What nestedscales is for<a class="anchor" aria-label="anchor" href="#what-nestedscales-is-for"></a>
+<h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a>
 </h2>
-<p>Models rarely use data at the resolution it arrives in. Demand comes
-by hour and the model runs on twelve representative days; statistics
-come by district and the model has five regions; accounts come by
-detailed industry and the model has six sectors. Each of these is a
-<em>scale</em>: a set of fine units, the <strong>atoms</strong>, grouped
-into coarser levels, the <strong>frames</strong>. Hours sit inside days
-inside months; districts inside provinces inside countries.</p>
-<p>nestedscales stores such a hierarchy as a <code>NestedScale</code>
-and converts data along it: summing extensive quantities, averaging
-intensive ones with the right weights, splitting coarse values down to
-fine units, and attaching group labels to a dataset. The same functions
-work whatever the dimension is, because a scale is just a table of atoms
-with one column per frame.</p>
+<p>nestedscales represents a dimension of a dataset or model as a nested
+scale: a set of atoms, the finest units, grouped into coarser levels,
+the frames (hours in days in months; districts in provinces in
+countries; activities in divisions in sections). The
+<code>NestedScale</code> class stores the hierarchy and the relations
+between its levels, and the package’s functions apply transition rules
+between levels: aggregation of extensive quantities, weighted averaging
+of intensive ones, disaggregation of coarse values to fine units, and
+attachment of level labels to a dataset. The representation is a table
+of atoms with one column per frame, so the functions are independent of
+the dimension. <code><a href="../articles/nestedscales.html">vignette("nestedscales")</a></code> introduces them;
+<code><a href="../articles/roadmap.html">vignette("roadmap")</a></code> lists the package’s scope.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://optimal2050.github.io/nestedscales/">nestedscales</a></span><span class="op">)</span></span></code></pre></div>
 </div>

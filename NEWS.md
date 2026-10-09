@@ -94,9 +94,11 @@
 
 ## Building a dimension package
 
-* `vignette("dimension-package")` shows how to define a `NestedScale` subclass for a
-  new dimension, as timescales and geoscales do.
-* `scale_alias_property()` gives an inherited property the dimension's own
+* `vignette("nestedscales")` introduces the representation and the main
+  functions; the [package website](https://optimal2050.github.io/nestedscales/)
+  includes a roadmap of what the package offers and what is planned.
+* A dimension package defines a `NestedScale` subclass, as timescales and
+  geoscales do. `scale_alias_property()` gives an inherited property the dimension's own
   name; `scale_vocab()` puts the dimension's words in error messages;
   `scale_payload_slice()` keeps per-atom data (such as geometry) in step when
   rows are subset; `scale_atom_pairs()` lets a dimension generate its atom

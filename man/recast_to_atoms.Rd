@@ -89,5 +89,10 @@ atoms <- recast_to_atoms(d, s,
   weight = "size"
 )
 head(atoms)
-recast_from_atoms(atoms, s, to = "class", rule = "sum")
+recast_from_atoms(
+  atoms, s,
+  to = "class",
+  rule = "sum",
+  na_action = "keep"
+)
 }

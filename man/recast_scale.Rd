@@ -153,5 +153,10 @@ recast_scale(y, s,
 )
 
 # Share within parent: result stays at the atoms, sums to 1 per sector
-recast_scale(d, s, from = "unit", to = "sector", rule = "share")
+recast_scale(
+  d, s,
+  from = "unit", to = "sector",
+  rule = "share",
+  na_action = "keep"
+)
 }

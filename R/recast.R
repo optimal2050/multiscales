@@ -393,7 +393,12 @@ utils::globalVariables(c(
 #' )
 #'
 #' # Share within parent: result stays at the atoms, sums to 1 per sector
-#' recast_scale(d, s, from = "unit", to = "sector", rule = "share")
+#' recast_scale(
+#'   d, s,
+#'   from = "unit", to = "sector",
+#'   rule = "share",
+#'   na_action = "keep"
+#' )
 #' @export
 recast_scale <- function(data, x, from = NULL, to,
                          key = NULL,
@@ -1211,7 +1216,12 @@ recast_crosswalk <- function(data, map, from, to, key = from,
 #'   weight = "size"
 #' )
 #' head(atoms)
-#' recast_from_atoms(atoms, s, to = "class", rule = "sum")
+#' recast_from_atoms(
+#'   atoms, s,
+#'   to = "class",
+#'   rule = "sum",
+#'   na_action = "keep"
+#' )
 #' @export
 recast_to_atoms <- function(data, x, from = NULL, key = NULL, values = NULL,
                             rule = NULL, weight = NULL, attach_weight = TRUE,

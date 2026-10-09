@@ -26,7 +26,8 @@ unless \code{overwrite = TRUE}.}
 such as a year, which lets a filtered read skip whole files.}
 
 \item{compression}{Codec for the IPC files, e.g. \code{"zstd"} (default),
-\code{"lz4"} or \code{"uncompressed"}.}
+\code{"lz4"} or \code{"uncompressed"}. If the codec is unavailable in the installed
+Arrow build, the files are written uncompressed with a warning.}
 
 \item{overwrite}{Replace an existing store at \code{path}.}
 }

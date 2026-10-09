@@ -139,7 +139,8 @@ NULL
 #'   (default) picks nothing; a good choice is a low-cardinality identifier
 #'   such as a year, which lets a filtered read skip whole files.
 #' @param compression Codec for the IPC files, e.g. `"zstd"` (default),
-#'   `"lz4"` or `"uncompressed"`.
+#'   `"lz4"` or `"uncompressed"`. If the codec is unavailable in the installed
+#'   Arrow build, the files are written uncompressed with a warning.
 #' @param overwrite Replace an existing store at `path`.
 #'
 #' @return `path`, invisibly.
@@ -199,6 +200,9 @@ write_scale_dataset <- function(data, x, path, partitioning = NULL,
     }
   }
 
+  codec <- .ipc_codec(compression)
+  feather_compression <- if (is.null(codec)) "uncompressed" else compression
+
   if (dir.exists(path)) {
     if (!isTRUE(overwrite)) {
       .stop("`%s` already exists; pass overwrite = TRUE to replace it", path)
@@ -221,13 +225,12 @@ write_scale_dataset <- function(data, x, path, partitioning = NULL,
     arrow::write_feather(
       arrow::as_arrow_table(scale_leaftable(axes[[a]])),
       file.path(sdir, paste0(a, "-leaftable.arrow")),
-      compression = compression
+      compression = feather_compression
     )
   }
   yaml::write_yaml(manifest, file.path(sdir, "manifest.yaml"))
 
   ddir <- file.path(path, "data")
-  codec <- .ipc_codec(compression)
   args <- list(d,
     path = ddir, format = "feather",
     partitioning = partitioning

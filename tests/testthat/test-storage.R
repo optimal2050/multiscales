@@ -120,6 +120,20 @@ test_that("a product dataset round-trips through the store", {
   expect_setequal(paste(got$unit, got$period), paste(d$unit, d$period))
 })
 
+test_that("an unavailable codec falls back to uncompressed IPC", {
+  skip_if_not_installed("arrow")
+  skip_if_not_installed("yaml")
+  dir <- withr::local_tempdir()
+  path <- file.path(dir, "store")
+
+  expect_warning(
+    write_scale_dataset(.sd(), .sp(), path, compression = "not-a-codec"),
+    "unavailable; writing uncompressed"
+  )
+  got <- as.data.frame(dplyr::collect(open_scale_dataset(path)$data))
+  expect_equal(nrow(got), nrow(.sd()))
+})
+
 test_that("the reopened scales are the same scales", {
   skip_if_not_installed("arrow")
   skip_if_not_installed("yaml")

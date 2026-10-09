@@ -1,3 +1,9 @@
+# nestedscales 0.1.1
+
+* `write_scale_dataset()` now falls back to uncompressed Arrow IPC files, with
+  a warning, when the requested compression codec is unavailable in the
+  installed Arrow build.
+
 # nestedscales 0.1.0
 
 * First release. nestedscales is the dimension-agnostic core under
